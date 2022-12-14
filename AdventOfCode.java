@@ -95,7 +95,7 @@ class AdventOfCode2022 {
 
     //-------------- DAY 4: pairing food -------------------
 
-    static Pattern day4Pattern = Pattern.compile( "([0-9]+)-([0-9]+),([0-9]+)-([0-9]+)", Pattern.MULTILINE );
+    static Pattern day4Pattern = Pattern.compile( "([0-9]+)-([0-9]+),([0-9]+)-([0-9]+)" );
 
     record Pair(Coordinates foo, Coordinates bar) {
     }
@@ -126,9 +126,9 @@ class AdventOfCode2022 {
 
 
     //-------------- DAY 5: stacking boxes -------------------
-    final static Pattern day5MovePattern = Pattern.compile( "move ([0-9]+) from ([0-9]+) to ([0-9]+)", Pattern.MULTILINE );
+    final static Pattern day5MovePattern = Pattern.compile( "move ([0-9]+) from ([0-9]+) to ([0-9]+)" );
 
-    final static Pattern day5StackPattern = Pattern.compile( ".(.)...(.)...(.)...(.)...(.)...(.)...(.)...(.)...(.).", Pattern.MULTILINE );
+    final static Pattern day5StackPattern = Pattern.compile( ".(.)...(.)...(.)...(.)...(.)...(.)...(.)...(.)...(.)." );
 
     record Move(int number, int from, int to) {
     }
@@ -160,7 +160,7 @@ class AdventOfCode2022 {
         return boxes.keySet().stream().sorted().map( key -> boxes.get( key ).pop() ).reduce( "", ( a, b ) -> a + b );
     }
 
-    //-------------- DAY 6: -------------------
+    //-------------- DAY 6: Tuning the Signal-------------------
 
     static int day6Part1( Stream<String> input ) {
         String line = input.reduce( "", ( a, b ) -> a + b );
@@ -244,13 +244,11 @@ class AdventOfCode2022 {
     static int day8Part1( Stream<String> input ) {
         Set<Coordinates> visibleTrees = new HashSet<>();
 
-        //int[][] treePatch = { { 0,0,0,0}, { 0,0,0,0}, { 0,0,0,0}, { 0,0,0,0} };
+        Matrix treePatch = new Matrix(input.map( line -> line.chars().map( c -> c - 48 ).toArray() ).toArray( int[][]::new ));
 
-        int[][] treePatch = input.map( line -> line.chars().map( c -> c - 48 ).toArray() ).toArray( int[][]::new );
-
-        for ( int row = 0; row < treePatch.length; row++ ) {
+        for ( int row = 0; row < treePatch.matrix.length; row++ ) {
             int westSize = -1, eastSize = -1, northSize = -1, southSize = -1;
-            int rowLength = treePatch[row].length;
+            int rowLength = treePatch.matrix[row].length;
             for ( int col = 0; col < rowLength; col++ ) {
                 westSize = getMaxSize( visibleTrees, treePatch, row, col, westSize );
                 eastSize = getMaxSize( visibleTrees, treePatch, row, rowLength - col - 1, eastSize );
@@ -261,8 +259,9 @@ class AdventOfCode2022 {
         return visibleTrees.size();
     }
 
-    static int getMaxSize( Set<Coordinates> visibleTrees, int[][] treePatch, int row, int col, int maxSizeForRow ) {
-        Coordinates tree = new Coordinates( row, col, treePatch[row][col] );
+    static int getMaxSize( Set<Coordinates> visibleTrees, Matrix treePatch, int row, int col, int maxSizeForRow ) {
+        Coordinates tree = new Coordinates( row, col);
+        tree.value = treePatch.getValue( tree );
         if ( tree.value > maxSizeForRow ) {
             maxSizeForRow = tree.value;
             visibleTrees.add( tree );
@@ -272,10 +271,10 @@ class AdventOfCode2022 {
 
     static int day8Part2( Stream<String> input ) {
         List<Integer> scenery = new ArrayList<>();
-        int[][] treePatch = input.map( line -> line.chars().map( c -> c - 48 ).toArray() ).toArray( int[][]::new );
+        Matrix treePatch = new Matrix(input.map( line -> line.chars().map( c -> c - 48 ).toArray() ).toArray( int[][]::new ));
 
-        for ( int row = 1; row < treePatch.length - 1; row++ ) {
-            int rowLength = treePatch[row].length;
+        for ( int row = 1; row < treePatch.matrix.length - 1; row++ ) {
+            int rowLength = treePatch.matrix[row].length;
             for ( int col = 1; col < rowLength - 1; col++ ) {
                 scenery.add( scenicScore( treePatch, row, col ) );
             }
@@ -283,8 +282,8 @@ class AdventOfCode2022 {
         return scenery.stream().max( Integer::compareTo ).get();
     }
 
-    static Integer scenicScore( int[][] treePatch, int row, int col ) {
-        int treeSize = treePatch[row][col];
+    static Integer scenicScore( Matrix treePatch, int row, int col ) {
+        int treeSize = treePatch.getValue(new Coordinates( row,col ));
         boolean west = true, east = true, south = true, north = true;
         int score = 1;
         int radius = 1;
@@ -311,9 +310,9 @@ class AdventOfCode2022 {
         return score;
     }
 
-    static boolean lastTree( int[][] treePatch, int treeSize, int row, int col, boolean checkRow ) {
-        return ( checkRow ? ( row == 0 || row == treePatch.length - 1 ) : ( col == 0 || col == treePatch[row].length - 1 ) ) ||
-            treePatch[row][col] >= treeSize;
+    static boolean lastTree( Matrix treePatch, int treeSize, int row, int col, boolean checkRow ) {
+        return ( checkRow ? ( row == 0 || row == treePatch.matrix.length - 1 ) : ( col == 0 || col == treePatch.matrix[row].length - 1 ) ) ||
+            treePatch.matrix[row][col] >= treeSize;
     }
 
     //-------------- DAY 9: moving ropes -------------------
@@ -520,14 +519,14 @@ class AdventOfCode2022 {
     }
 
     //-------------- DAY 12 paths into the hills -------------------
-    static int[][] HILL = {{}};
+    static Matrix HILL;
 
     static List<Coordinates> GOALS = new ArrayList<>();
 
-    static int day12Part1( Stream<String> input ) {
-        HILL = input.map( line -> line.chars().map( c -> c - 96 ).toArray() ).toArray( int[][]::new );
-        GOALS.addAll( findAllPositions( 'a' ) );
-        Coordinates startPos = findPosition( 'E' );
+    static int day12Part2( Stream<String> input ) {
+        HILL = new Matrix( input.map( line -> line.chars().map( c -> c-96 ).toArray() ).toArray( int[][]::new ) );
+        GOALS.addAll( HILL.findValues( ( (int) 'a' ) - 96, false ) );
+        Coordinates startPos = HILL.findValues( ( (int) 'E' ) - 96, true ).get( 0 );
 
         Map<Coordinates, Path> openList = new HashMap<>();
         Map<Coordinates, Path> closedList = new HashMap<>();
@@ -541,7 +540,7 @@ class AdventOfCode2022 {
             Path path = openList.values().stream().min( Comparator.comparing( Path::getFnord ) ).get();
             openList.remove( path.pos );
 
-            List<Path> children = Stream.of( 'U', 'D', 'L', 'R' )//
+            List<Path> children = Stream.of( Direction.north,Direction.south,Direction.east,Direction.west )//
                 .map( path::move )//
                 .filter( Objects::nonNull )//
                 .filter( Path::isLegal ) //
@@ -587,7 +586,7 @@ class AdventOfCode2022 {
             this.pos = new Coordinates( x, y );
             this.move = move;
             this.parent = parent;
-            this.height = parent == null ? 0 : HILL[x][y];
+            this.height = parent == null ? 0 : HILL.matrix[x][y];
             this.cost = 1 + ( parent == null ? 0 : parent.cost );
             this.fnord = cost + lineOfSight();
             this.steps = parent == null ? 0 : parent.steps + 1;
@@ -609,13 +608,13 @@ class AdventOfCode2022 {
             return fnord;
         }
 
-        Path move( char move ) {
+        Path move( Direction move ) {
             try {
                 return switch ( move ) {
-                    case 'L' -> new Path( this.pos.x, this.pos.y - 1, this, "<" );
-                    case 'R' -> new Path( this.pos.x, this.pos.y + 1, this, ">" );
-                    case 'U' -> new Path( this.pos.x - 1, this.pos.y, this, "^" );
-                    case 'D' -> new Path( this.pos.x + 1, this.pos.y, this, "v" );
+                    case west -> new Path( this.pos.x, this.pos.y - 1, this, "<" );
+                    case east -> new Path( this.pos.x, this.pos.y + 1, this, ">" );
+                    case north -> new Path( this.pos.x - 1, this.pos.y, this, "^" );
+                    case south -> new Path( this.pos.x + 1, this.pos.y, this, "v" );
                     default -> null;
                 };
             }
@@ -632,8 +631,8 @@ class AdventOfCode2022 {
                 current = current.parent;
             }
             StringBuilder builder = new StringBuilder();
-            for ( int x = 0; x < HILL.length; x++ ) {
-                for ( int y = 0; y < HILL[0].length; y++ ) {
+            for ( int x = 0; x < HILL.matrix.length; x++ ) {
+                for ( int y = 0; y < HILL.matrix[0].length; y++ ) {
                     Coordinates currentPos = new Coordinates( x, y );
                     if ( GOALS.contains( currentPos ) ) {
                         builder.append( "X" );
@@ -651,31 +650,6 @@ class AdventOfCode2022 {
             builder.append( this.steps );
             return builder.toString();
         }
-    }
-
-    static Coordinates findPosition( char search ) {
-        for ( int x = 0; x < HILL.length; x++ ) {
-            for ( int y = 0; y < HILL[0].length; y++ ) {
-                if ( HILL[x][y] == (int) search - 96 ) {
-                    return new Coordinates( x, y );
-
-                }
-            }
-        }
-        return null;
-    }
-
-    static List<Coordinates> findAllPositions( char search ) {
-        List<Coordinates> positions = new ArrayList<>();
-        for ( int x = 0; x < HILL.length; x++ ) {
-            for ( int y = 0; y < HILL[0].length; y++ ) {
-                if ( HILL[x][y] == (int) search - 96 ) {
-                    positions.add( new Coordinates( x, y ) );
-
-                }
-            }
-        }
-        return positions;
     }
 
     //-------------- DAY 13 SOS Packets -------------------
@@ -799,10 +773,10 @@ class AdventOfCode2022 {
 
     //-------------- DAY 14 Falling Sand -------------------
     static Integer day14( Stream<String> input ) {
-        List<String> testInput = List.of( "498,4 -> 498,6 -> 496,6", "503,4 -> 502,4 -> 502,9 -> 494,9" );
+        //List<String> testInput = List.of( "498,4 -> 498,6 -> 496,6", "503,4 -> 502,4 -> 502,9 -> 494,9" );
         List<Coordinates> start = List.of(new Coordinates( 500,0 , 2));
         List<List<Coordinates>> walls =
-            new ArrayList<>(testInput.stream().map( line -> Arrays.stream( line.split( "->" ) ).map( coord -> new Coordinates( coord, "," ,1 ) ).toList() ).toList());
+            new ArrayList<>(input.map( line -> Arrays.stream( line.split( "->" ) ).map( coord -> new Coordinates( coord, "," ,1 ) ).toList() ).toList());
         walls.add( start );
         int xMin = walls.stream().flatMap( Collection::stream ).map( Coordinates::getX ).min( Integer::compareTo ).get();
         int xMax = walls.stream().flatMap( Collection::stream ).map( Coordinates::getX ).max( Integer::compareTo ).get();
@@ -830,16 +804,29 @@ class AdventOfCode2022 {
 
     static class Matrix {
         //to prevent further x y mistakes and include offset
-        Integer[][] matrix;
+        int[][] matrix;
 
         int xOffset;
 
         int yOffset;
 
-        Matrix( int xDim, int yDim, int xOffset, int yOffset ) {
-            matrix = new Integer[yDim][xDim];
+        Map<Integer,String> printMap = Map.of(
+           0, " . ",
+           1, " X ",
+           2, " o "
+        );
+
+        Matrix(int[][] initialized){
+           this(initialized,0,0);
+        }
+        Matrix(int[][] initialized, int xOffset,int yOffset){
+           this.matrix = initialized;
             this.xOffset = xOffset;
-            this.yOffset = yOffset;
+            this.yOffset= yOffset;
+        }
+
+        Matrix( int xDim, int yDim, int xOffset, int yOffset ) {
+            this(new int[yDim][xDim], xOffset,yOffset);
         }
 
         void setValue( Coordinates coordinates ) {
@@ -854,13 +841,28 @@ class AdventOfCode2022 {
             return matrix[y][x];
         }
 
+        List<Coordinates> findValues(int value, boolean firstOnly){
+            List<Coordinates> positions = new ArrayList<>();
+            for ( int x = 0; x < matrix.length; x++ ) {
+                for ( int y = 0; y < matrix[0].length; y++ ) {
+                    if ( matrix[x][y] == value ) {
+                        positions.add( new Coordinates( x, y, value ) );
+                        if(firstOnly){
+                            break;
+                        }
+                    }
+                }
+            }
+            return positions;
+        }
+
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
             for ( int x = 0; x < matrix.length; x++ ) {
                 for ( int y = 0; y < matrix[0].length; y++ ) {
                     Integer value = matrix[x][y];
-                    builder.append( value==null ? " . " : value==1 ? " X ": " o ");
+                    builder.append( value==null ? printMap.get( 0 ) : printMap.get( value ));
                 }
                 builder.append( "\n" );
             }
@@ -868,12 +870,7 @@ class AdventOfCode2022 {
         }
     }
 
-    enum Direction {
-        north,
-        south,
-        east,
-        west
-    }
+    enum Direction { north, south, east, west, southeast, southwest, northeast, northwest }
 
     static class Coordinates {
         Coordinates previous;
@@ -921,6 +918,10 @@ class AdventOfCode2022 {
                     case east -> new Coordinates( this.x, this.y + 1, value, this );
                     case south -> new Coordinates( this.x + 1, this.y, value, this );
                     case north -> new Coordinates( this.x - 1, this.y, value, this );
+                    case southwest -> new Coordinates( this.x + 1, this.y-1, value, this );
+                    case southeast -> new Coordinates( this.x + 1, this.y+1, value, this );
+                    case northwest -> new Coordinates( this.x - 1, this.y-1, value, this );
+                    case northeast -> new Coordinates( this.x - 1, this.y+1, value, this );
                 };
         }
 
@@ -1024,7 +1025,7 @@ class AdventOfCode2022 {
             daysOfAdvent.add( new Day( 9, "Positions", AdventOfCode2022::day9Part1, null ) );
             daysOfAdvent.add( new Day( 10, "Frequency", AdventOfCode2022::day10Part1, null ) );
             daysOfAdvent.add( new Day( 11, "Monkey", AdventOfCode2022::day11Part1, null ) );
-            daysOfAdvent.add( new Day( 12, "Steps", AdventOfCode2022::day12Part1, null ) );
+            daysOfAdvent.add( new Day( 12, "Steps", null, AdventOfCode2022::day12Part2 ) );
             daysOfAdvent.add( new Day( 13, "Order", AdventOfCode2022::day13Part1, AdventOfCode2022::day13Part2 ) );
         }
 
