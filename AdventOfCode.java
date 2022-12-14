@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -772,48 +773,83 @@ class AdventOfCode2022 {
     }
 
     //-------------- DAY 14 Falling Sand -------------------
+
+    static final int SOURCE = 3;
+    static final int SAND = 2;
+    static final int WALL = 1;
+
+    static final int WIDEN = 10000; //several attempts
     static Integer day14( Stream<String> input ) {
-        //List<String> testInput = List.of( "498,4 -> 498,6 -> 496,6", "503,4 -> 502,4 -> 502,9 -> 494,9" );
-        List<Coordinates> start = List.of(new Coordinates( 500,0 , 2));
+        List<String> testInput = List.of( "498,4 -> 498,6 -> 496,6", "503,4 -> 502,4 -> 502,9 -> 494,9" );
         List<List<Coordinates>> walls =
-            new ArrayList<>(input.map( line -> Arrays.stream( line.split( "->" ) ).map( coord -> new Coordinates( coord, "," ,1 ) ).toList() ).toList());
-        walls.add( start );
+            new ArrayList<>(input.map( line -> Arrays.stream( line.split( "->" ) ).map( coord -> new Coordinates( coord, "," ,WALL ) ).toList() ).toList());
+        walls.add( List.of( new Coordinates( 500, 0, SOURCE ) ) );
         int xMin = walls.stream().flatMap( Collection::stream ).map( Coordinates::getX ).min( Integer::compareTo ).get();
         int xMax = walls.stream().flatMap( Collection::stream ).map( Coordinates::getX ).max( Integer::compareTo ).get();
         int yMin = walls.stream().flatMap( Collection::stream ).map( Coordinates::getY ).min( Integer::compareTo ).get();
-        int yMax = walls.stream().flatMap( Collection::stream ).map( Coordinates::getY ).max( Integer::compareTo ).get();
-        Matrix cave = new Matrix( xMax - xMin+1, yMax - yMin+1, xMin, yMin );
+        int yMax = walls.stream().flatMap( Collection::stream ).map( Coordinates::getY ).max( Integer::compareTo ).get()+2;
+        System.out.println(walls);
+        Matrix cave = new Matrix( (xMax - xMin) +WIDEN, yMax - yMin+1, xMin-(WIDEN/2), yMin );
+        cave.setAllValuesRow( yMax, WALL ); //add floor
 
         for ( List<Coordinates> wall : walls ) {
             Coordinates previous = null; //each wall is separate
             for ( Coordinates next : wall ) {
                 cave.setValue( next );
                 if ( previous != null ) {
-                    Direction dir = previous.getDirection( next );
+                    Direction dir = previous.lookingTowards( next );
                     while ( !next.equals( previous ) ) {
-                        previous = previous.moveTo( dir,1 );
+                        previous = previous.moveTo( dir,WALL );
                         cave.setValue( previous  );
                     }
                 }
                 previous = next;
             }
         }
-        System.out.println( cave );
-        return 0;
+        System.out.println(cave);
+        while(true) {
+            try {
+                //begin a new grain
+                Coordinates last = null;
+                Coordinates currentGrain = move( new Coordinates( 500, 0, SOURCE ), cave );
+                while ( currentGrain != null )
+                {
+                    last = currentGrain;
+                    currentGrain = move( currentGrain, cave );
+                }
+                if(last==null){
+                    break;
+                }
+                cave.setValue( last );
+            } catch (ArrayIndexOutOfBoundsException e){ //cheating but who cares
+                break;
+            }
+        }
+        System.out.println(cave);
+        return cave.findValues( SAND,false ).size()+1;
     }
 
+    static Coordinates move( Coordinates previous, Matrix cave){
+        return Stream.of( Direction.south, Direction.southwest, Direction.southeast)
+            .map( d -> previous.moveTo( d,SAND ) ).filter( cave::isEmpty ).findFirst().orElse( null );
+    }
+
+
+
     static class Matrix {
-        //to prevent further x y mistakes and include offset
-        int[][] matrix;
+        //y = cols , -1 = more west, +1 more east
+        //x = rows , -1 = more north, +1 more south
+        int[][] matrix; //int rows | cols
 
         int xOffset;
 
         int yOffset;
 
         Map<Integer,String> printMap = Map.of(
-           0, " . ",
-           1, " X ",
-           2, " o "
+           0, ".",
+           1, "#",
+           2, "o",
+           3, "S"
         );
 
         Matrix(int[][] initialized){
@@ -826,27 +862,53 @@ class AdventOfCode2022 {
         }
 
         Matrix( int xDim, int yDim, int xOffset, int yOffset ) {
-            this(new int[yDim][xDim], xOffset,yOffset);
+            this(new int[xDim][yDim], xOffset,yOffset);
         }
 
         void setValue( Coordinates coordinates ) {
             int x = coordinates.x - xOffset;
             int y = coordinates.y - yOffset;
-            matrix[y][x] = coordinates.value;
+            matrix[x][y] = coordinates.value;
         }
 
         int getValue( Coordinates coordinates ) {
             int y = coordinates.y - yOffset;
             int x = coordinates.x - xOffset;
-            return matrix[y][x];
+            return matrix[x][y];
+        }
+
+        void setAllValuesRow(int y , int value){
+            for(int i=0;i<matrix.length;i++){
+                matrix[i][y]=value;
+            }
+        }
+
+        boolean isEmpty( Coordinates coordinates){
+           return getValue( coordinates )==0;
+        }
+        boolean isInTheMatrix( Coordinates coordinates){
+            try { getValue( coordinates ); return true; } catch (ArrayIndexOutOfBoundsException e){ return false; }
+        }
+
+        Coordinates createCoords(int x,int y){
+            return new Coordinates( x+xOffset, y+yOffset );
+        }
+
+        int getXLength(){
+            return matrix.length;
+        }
+        int  getYLength(){
+            return matrix[0].length;
         }
 
         List<Coordinates> findValues(int value, boolean firstOnly){
             List<Coordinates> positions = new ArrayList<>();
-            for ( int x = 0; x < matrix.length; x++ ) {
-                for ( int y = 0; y < matrix[0].length; y++ ) {
-                    if ( matrix[x][y] == value ) {
-                        positions.add( new Coordinates( x, y, value ) );
+            for ( int x = 0; x <getXLength(); x++ ) {
+                for ( int y = 0; y < getYLength(); y++ ) {
+                    Coordinates coordinates = createCoords( x,y );
+                    coordinates.value = value;
+                    if ( getValue( coordinates ) == value ) {
+                        positions.add( coordinates );
                         if(firstOnly){
                             break;
                         }
@@ -859,10 +921,9 @@ class AdventOfCode2022 {
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
-            for ( int x = 0; x < matrix.length; x++ ) {
-                for ( int y = 0; y < matrix[0].length; y++ ) {
-                    Integer value = matrix[x][y];
-                    builder.append( value==null ? printMap.get( 0 ) : printMap.get( value ));
+            for ( int y = 0; y < getYLength(); y++ ) {
+                for ( int x = 0; x < getXLength(); x++ ) {
+                    builder.append(printMap.get( getValue( createCoords( x,y ) ) ));
                 }
                 builder.append( "\n" );
             }
@@ -914,33 +975,23 @@ class AdventOfCode2022 {
 
         Coordinates moveTo( Direction move, int value ) {
             return switch ( move ) {
-                    case west -> new Coordinates( this.x, this.y - 1, value, this );
-                    case east -> new Coordinates( this.x, this.y + 1, value, this );
-                    case south -> new Coordinates( this.x + 1, this.y, value, this );
-                    case north -> new Coordinates( this.x - 1, this.y, value, this );
-                    case southwest -> new Coordinates( this.x + 1, this.y-1, value, this );
+                    case west -> new Coordinates( this.x-1, this.y, value, this );
+                    case east -> new Coordinates( this.x+1, this.y, value, this );
+                    case south -> new Coordinates( this.x, this.y+1, value, this );
+                    case north -> new Coordinates( this.x, this.y-1, value, this );
+                    case southwest -> new Coordinates( this.x - 1, this.y+1, value, this );
                     case southeast -> new Coordinates( this.x + 1, this.y+1, value, this );
                     case northwest -> new Coordinates( this.x - 1, this.y-1, value, this );
-                    case northeast -> new Coordinates( this.x - 1, this.y+1, value, this );
+                    case northeast -> new Coordinates( this.x + 1, this.y-1, value, this );
                 };
         }
 
-        Direction getDirection( Coordinates other ) {
-            Direction result;
-            if ( x == other.x && y > other.y ) {
-                result = Direction.west;
-            }
-            else if ( x == other.x ) {
-                result = Direction.east;
-            }
-            else if ( y == other.y && x > other.x ) {
-                result = Direction.north;
-            }
-            else if ( y == other.y ) {
-                result = Direction.south;
-            }
-            else {
-                result = null;
+        Direction lookingTowards( Coordinates other ) {
+            Direction result = null;
+            if(x==other.x && y!=other.y){ //north south
+                result = y>other.y ? Direction.north : Direction.south;
+            } else if (y==other.y && x!=other.x) { //east west
+                result = x>other.x ? Direction.west : Direction.east;
             }
             return result;
         }
