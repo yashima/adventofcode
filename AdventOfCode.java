@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -98,31 +97,61 @@ class AdventOfCode2022 {
 
     static Pattern day4Pattern = Pattern.compile( "([0-9]+)-([0-9]+),([0-9]+)-([0-9]+)" );
 
-    record Pair(Coordinates foo, Coordinates bar) {
+    static class Interval implements Comparable<Interval> {
+        int lower;
+        int upper;
+        Interval(String lower,String upper){
+            this( Integer.parseInt( lower ),
+                  Integer.parseInt( upper ));
+        }
+        Interval(int lower, int upper){
+            this.lower = lower;
+            this.upper = upper;
+        }
+
+        boolean contains( Interval bar ) {
+            return this.lower <= bar.lower && this.upper >= bar.upper;
+        }
+
+        boolean overlap(Interval bar ) {
+            return this.lower <= bar.lower && bar.lower <= this.upper;
+        }
+         Interval union(Interval bar){
+            return new Interval(Math.min(this.lower, bar.lower), Math.max( bar.upper, this.upper ));
+        }
+
+        int length(){
+            return Math.abs( upper - lower );
+        }
+
+        @Override
+        public int compareTo( Interval other ) {
+            int lowerCompare = Integer.compare( lower, other.lower );
+            return lowerCompare==0 ? Integer.compare( upper, other.upper ) : lowerCompare;
+        }
+
+        @Override
+        public String toString() {
+            return "Interval{" + "lower=" + lower + ", upper=" + upper + '}';
+        }
+    }
+    record Pair(Interval foo, Interval bar) {
     }
 
     static long day4Part1( Stream<String> input ) {
         return input.map( AdventOfCode2022::parseInputDay4 ).filter( Objects::nonNull ).filter(
-            pair -> contains( pair.foo, pair.bar ) || contains( pair.bar, pair.foo ) ).count();
+            pair -> pair.foo.contains( pair.bar ) || pair.bar.contains( pair.foo ) ).count();
     }
 
     static long day4Part2( Stream<String> input ) {
         return input.map( AdventOfCode2022::parseInputDay4 ).filter( Objects::nonNull ).filter(
-            pair -> overlap( pair.foo, pair.bar ) || contains( pair.foo, pair.bar ) ).count();
+            pair -> pair.foo.overlap(  pair.bar ) || pair.foo.contains( pair.bar ) ).count();
     }
 
     static Pair parseInputDay4( String input ) {
         final Matcher matcher = day4Pattern.matcher( input );
-        return matcher.matches() ? new Pair( new Coordinates( matcher.group( 1 ), matcher.group( 2 ) ,0),
-                                             new Coordinates( matcher.group( 3 ), matcher.group( 4 ) ,0) ) : null;
-    }
-
-    static boolean contains( Coordinates foo, Coordinates bar ) {
-        return foo.x <= bar.x && foo.y >= bar.y;
-    }
-
-    static boolean overlap( Coordinates foo, Coordinates bar ) {
-        return foo.x <= bar.x && bar.x <= foo.y;
+        return matcher.matches() ? new Pair(new Interval( matcher.group( 1 ), matcher.group( 2 )),
+                                            new Interval( matcher.group( 3 ), matcher.group( 4 )) ) : null;
     }
 
 
@@ -245,7 +274,7 @@ class AdventOfCode2022 {
     static int day8Part1( Stream<String> input ) {
         Set<Coordinates> visibleTrees = new HashSet<>();
 
-        Matrix treePatch = new Matrix(input.map( line -> line.chars().map( c -> c - 48 ).toArray() ).toArray( int[][]::new ));
+        Matrix treePatch = new Matrix( input.map( line -> line.chars().map( c -> c - 48 ).toArray() ).toArray( int[][]::new ) );
 
         for ( int row = 0; row < treePatch.matrix.length; row++ ) {
             int westSize = -1, eastSize = -1, northSize = -1, southSize = -1;
@@ -261,7 +290,7 @@ class AdventOfCode2022 {
     }
 
     static int getMaxSize( Set<Coordinates> visibleTrees, Matrix treePatch, int row, int col, int maxSizeForRow ) {
-        Coordinates tree = new Coordinates( row, col);
+        Coordinates tree = new Coordinates( row, col );
         tree.value = treePatch.getValue( tree );
         if ( tree.value > maxSizeForRow ) {
             maxSizeForRow = tree.value;
@@ -272,7 +301,7 @@ class AdventOfCode2022 {
 
     static int day8Part2( Stream<String> input ) {
         List<Integer> scenery = new ArrayList<>();
-        Matrix treePatch = new Matrix(input.map( line -> line.chars().map( c -> c - 48 ).toArray() ).toArray( int[][]::new ));
+        Matrix treePatch = new Matrix( input.map( line -> line.chars().map( c -> c - 48 ).toArray() ).toArray( int[][]::new ) );
 
         for ( int row = 1; row < treePatch.matrix.length - 1; row++ ) {
             int rowLength = treePatch.matrix[row].length;
@@ -284,7 +313,7 @@ class AdventOfCode2022 {
     }
 
     static Integer scenicScore( Matrix treePatch, int row, int col ) {
-        int treeSize = treePatch.getValue(new Coordinates( row,col ));
+        int treeSize = treePatch.getValue( new Coordinates( row, col ) );
         boolean west = true, east = true, south = true, north = true;
         int score = 1;
         int radius = 1;
@@ -525,7 +554,7 @@ class AdventOfCode2022 {
     static List<Coordinates> GOALS = new ArrayList<>();
 
     static int day12Part2( Stream<String> input ) {
-        HILL = new Matrix( input.map( line -> line.chars().map( c -> c-96 ).toArray() ).toArray( int[][]::new ) );
+        HILL = new Matrix( input.map( line -> line.chars().map( c -> c - 96 ).toArray() ).toArray( int[][]::new ) );
         GOALS.addAll( HILL.findValues( ( (int) 'a' ) - 96, false ) );
         Coordinates startPos = HILL.findValues( ( (int) 'E' ) - 96, true ).get( 0 );
 
@@ -541,7 +570,7 @@ class AdventOfCode2022 {
             Path path = openList.values().stream().min( Comparator.comparing( Path::getFnord ) ).get();
             openList.remove( path.pos );
 
-            List<Path> children = Stream.of( Direction.north,Direction.south,Direction.east,Direction.west )//
+            List<Path> children = Stream.of( Direction.north, Direction.south, Direction.east, Direction.west )//
                 .map( path::move )//
                 .filter( Objects::nonNull )//
                 .filter( Path::isLegal ) //
@@ -775,21 +804,23 @@ class AdventOfCode2022 {
     //-------------- DAY 14 Falling Sand -------------------
 
     static final int SOURCE = 3;
+
     static final int SAND = 2;
+
     static final int WALL = 1;
 
     static final int WIDEN = 10000; //several attempts
+
     static Integer day14( Stream<String> input ) {
-        List<String> testInput = List.of( "498,4 -> 498,6 -> 496,6", "503,4 -> 502,4 -> 502,9 -> 494,9" );
-        List<List<Coordinates>> walls =
-            new ArrayList<>(input.map( line -> Arrays.stream( line.split( "->" ) ).map( coord -> new Coordinates( coord, "," ,WALL ) ).toList() ).toList());
+        List<List<Coordinates>> walls = new ArrayList<>(
+            input.map( line -> Arrays.stream( line.split( "->" ) ).map( coord -> new Coordinates( coord, ",", WALL ) ).toList() ).toList() );
         walls.add( List.of( new Coordinates( 500, 0, SOURCE ) ) );
         int xMin = walls.stream().flatMap( Collection::stream ).map( Coordinates::getX ).min( Integer::compareTo ).get();
         int xMax = walls.stream().flatMap( Collection::stream ).map( Coordinates::getX ).max( Integer::compareTo ).get();
         int yMin = walls.stream().flatMap( Collection::stream ).map( Coordinates::getY ).min( Integer::compareTo ).get();
-        int yMax = walls.stream().flatMap( Collection::stream ).map( Coordinates::getY ).max( Integer::compareTo ).get()+2;
-        System.out.println(walls);
-        Matrix cave = new Matrix( (xMax - xMin) +WIDEN, yMax - yMin+1, xMin-(WIDEN/2), yMin );
+        int yMax = walls.stream().flatMap( Collection::stream ).map( Coordinates::getY ).max( Integer::compareTo ).get() + 2;
+        System.out.println( walls );
+        Matrix cave = new Matrix( ( xMax - xMin ) + WIDEN, yMax - yMin + 1, xMin - ( WIDEN / 2 ), yMin );
         cave.setAllValuesRow( yMax, WALL ); //add floor
 
         for ( List<Coordinates> wall : walls ) {
@@ -799,41 +830,38 @@ class AdventOfCode2022 {
                 if ( previous != null ) {
                     Direction dir = previous.lookingTowards( next );
                     while ( !next.equals( previous ) ) {
-                        previous = previous.moveTo( dir,WALL );
-                        cave.setValue( previous  );
+                        previous = previous.moveTo( dir, WALL );
+                        cave.setValue( previous );
                     }
                 }
                 previous = next;
             }
         }
-        System.out.println(cave);
-        while(true) {
+        while ( true ) {
             try {
                 //begin a new grain
                 Coordinates last = null;
                 Coordinates currentGrain = move( new Coordinates( 500, 0, SOURCE ), cave );
-                while ( currentGrain != null )
-                {
+                while ( currentGrain != null ) {
                     last = currentGrain;
                     currentGrain = move( currentGrain, cave );
                 }
-                if(last==null){
+                if ( last == null ) {
                     break;
                 }
                 cave.setValue( last );
-            } catch (ArrayIndexOutOfBoundsException e){ //cheating but who cares
+            }
+            catch ( ArrayIndexOutOfBoundsException e ) { //cheating but who cares
                 break;
             }
         }
-        System.out.println(cave);
-        return cave.findValues( SAND,false ).size()+1;
+        return cave.findValues( SAND, false ).size() + 1;
     }
 
-    static Coordinates move( Coordinates previous, Matrix cave){
-        return Stream.of( Direction.south, Direction.southwest, Direction.southeast)
-            .map( d -> previous.moveTo( d,SAND ) ).filter( cave::isEmpty ).findFirst().orElse( null );
+    static Coordinates move( Coordinates previous, Matrix cave ) {
+        return Stream.of( Direction.south, Direction.southwest, Direction.southeast ).map( d -> previous.moveTo( d, SAND ) ).filter(
+            cave::isEmpty ).findFirst().orElse( null );
     }
-
 
 
     static class Matrix {
@@ -845,24 +873,20 @@ class AdventOfCode2022 {
 
         int yOffset;
 
-        Map<Integer,String> printMap = Map.of(
-           0, ".",
-           1, "#",
-           2, "o",
-           3, "S"
-        );
+        Map<Integer, String> printMap = Map.of( 0, ".", 1, "#", 2, "o", 3, "S", 4, "B" );
 
-        Matrix(int[][] initialized){
-           this(initialized,0,0);
+        Matrix( int[][] initialized ) {
+            this( initialized, 0, 0 );
         }
-        Matrix(int[][] initialized, int xOffset,int yOffset){
-           this.matrix = initialized;
+
+        Matrix( int[][] initialized, int xOffset, int yOffset ) {
+            this.matrix = initialized;
             this.xOffset = xOffset;
-            this.yOffset= yOffset;
+            this.yOffset = yOffset;
         }
 
         Matrix( int xDim, int yDim, int xOffset, int yOffset ) {
-            this(new int[xDim][yDim], xOffset,yOffset);
+            this( new int[xDim][yDim], xOffset, yOffset );
         }
 
         void setValue( Coordinates coordinates ) {
@@ -877,39 +901,47 @@ class AdventOfCode2022 {
             return matrix[x][y];
         }
 
-        void setAllValuesRow(int y , int value){
-            for(int i=0;i<matrix.length;i++){
-                matrix[i][y]=value;
+        void setAllValuesRow( int y, int value ) {
+            for ( int i = 0; i < matrix.length; i++ ) {
+                matrix[i][y] = value;
             }
         }
 
-        boolean isEmpty( Coordinates coordinates){
-           return getValue( coordinates )==0;
-        }
-        boolean isInTheMatrix( Coordinates coordinates){
-            try { getValue( coordinates ); return true; } catch (ArrayIndexOutOfBoundsException e){ return false; }
+        boolean isEmpty( Coordinates coordinates ) {
+            return getValue( coordinates ) == 0;
         }
 
-        Coordinates createCoords(int x,int y){
-            return new Coordinates( x+xOffset, y+yOffset );
+        boolean isInTheMatrix( Coordinates coordinates ) {
+            try {
+                getValue( coordinates );
+                return true;
+            }
+            catch ( ArrayIndexOutOfBoundsException e ) {
+                return false;
+            }
         }
 
-        int getXLength(){
+        Coordinates createCoords( int x, int y ) {
+            return new Coordinates( x + xOffset, y + yOffset );
+        }
+
+        int getXLength() {
             return matrix.length;
         }
-        int  getYLength(){
+
+        int getYLength() {
             return matrix[0].length;
         }
 
-        List<Coordinates> findValues(int value, boolean firstOnly){
+        List<Coordinates> findValues( int value, boolean firstOnly ) {
             List<Coordinates> positions = new ArrayList<>();
-            for ( int x = 0; x <getXLength(); x++ ) {
+            for ( int x = 0; x < getXLength(); x++ ) {
                 for ( int y = 0; y < getYLength(); y++ ) {
-                    Coordinates coordinates = createCoords( x,y );
+                    Coordinates coordinates = createCoords( x, y );
                     coordinates.value = value;
                     if ( getValue( coordinates ) == value ) {
                         positions.add( coordinates );
-                        if(firstOnly){
+                        if ( firstOnly ) {
                             break;
                         }
                     }
@@ -918,12 +950,13 @@ class AdventOfCode2022 {
             return positions;
         }
 
+
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
             for ( int y = 0; y < getYLength(); y++ ) {
                 for ( int x = 0; x < getXLength(); x++ ) {
-                    builder.append(printMap.get( getValue( createCoords( x,y ) ) ));
+                    builder.append( printMap.get( getValue( createCoords( x, y ) ) ) );
                 }
                 builder.append( "\n" );
             }
@@ -931,7 +964,16 @@ class AdventOfCode2022 {
         }
     }
 
-    enum Direction { north, south, east, west, southeast, southwest, northeast, northwest }
+    enum Direction {
+        north,
+        south,
+        east,
+        west,
+        southeast,
+        southwest,
+        northeast,
+        northwest
+    }
 
     static class Coordinates {
         Coordinates previous;
@@ -974,26 +1016,36 @@ class AdventOfCode2022 {
         }
 
         Coordinates moveTo( Direction move, int value ) {
-            return switch ( move ) {
-                    case west -> new Coordinates( this.x-1, this.y, value, this );
-                    case east -> new Coordinates( this.x+1, this.y, value, this );
-                    case south -> new Coordinates( this.x, this.y+1, value, this );
-                    case north -> new Coordinates( this.x, this.y-1, value, this );
-                    case southwest -> new Coordinates( this.x - 1, this.y+1, value, this );
-                    case southeast -> new Coordinates( this.x + 1, this.y+1, value, this );
-                    case northwest -> new Coordinates( this.x - 1, this.y-1, value, this );
-                    case northeast -> new Coordinates( this.x + 1, this.y-1, value, this );
-                };
+            return moveTo( move, 1, value );
         }
+
+        Coordinates moveTo( Direction move, int distance, int value ) {
+            return switch ( move ) {
+                case west -> new Coordinates( this.x - distance, this.y, value, this );
+                case east -> new Coordinates( this.x + distance, this.y, value, this );
+                case south -> new Coordinates( this.x, this.y + distance, value, this );
+                case north -> new Coordinates( this.x, this.y - distance, value, this );
+                case southwest -> new Coordinates( this.x - distance, this.y + distance, value, this );
+                case southeast -> new Coordinates( this.x + distance, this.y + distance, value, this );
+                case northwest -> new Coordinates( this.x - distance, this.y - distance, value, this );
+                case northeast -> new Coordinates( this.x + distance, this.y - distance, value, this );
+            };
+        }
+
 
         Direction lookingTowards( Coordinates other ) {
             Direction result = null;
-            if(x==other.x && y!=other.y){ //north south
-                result = y>other.y ? Direction.north : Direction.south;
-            } else if (y==other.y && x!=other.x) { //east west
-                result = x>other.x ? Direction.west : Direction.east;
+            if ( x == other.x && y != other.y ) { //north south
+                result = y > other.y ? Direction.north : Direction.south;
+            }
+            else if ( y == other.y && x != other.x ) { //east west
+                result = x > other.x ? Direction.west : Direction.east;
             }
             return result;
+        }
+
+        int manhattanDistance( Coordinates other ) {
+            return Math.abs( x - other.x ) + Math.abs( y - other.y );
         }
 
         @Override
@@ -1014,8 +1066,7 @@ class AdventOfCode2022 {
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "Coordinates{" + "x=" + x + ", y=" + y + '}';
         }
     }
@@ -1023,7 +1074,7 @@ class AdventOfCode2022 {
     static class Day {
         static String PATH = "C:\\Users\\" + System.getProperty( "user.name" ) + "\\Downloads\\day%s-input.txt";
 
-        static String TEST_PATH = "C:\\Users\\" + System.getProperty( "user.name" ) + "\\Downloads\\day%s-input.txt";
+        static String TEST_PATH = "C:\\Users\\" + System.getProperty( "user.name" ) + "\\Downloads\\day%s-test.txt";
 
         int day;
 
@@ -1058,11 +1109,87 @@ class AdventOfCode2022 {
 
     }
 
+    //-------------- DAY 15 The Distress Beacon -------------------
+    record SensorBeacon(Coordinates sensor, Coordinates beacon) { }
+
+
+    static Integer day15Part1( Stream<String> input ) {
+        long time = System.currentTimeMillis();
+        int size = getCoveredCoordinates( parseDay15( input ), 2000000, true ).stream().map( Interval::length ).reduce( 0, Integer::sum );
+        System.out.println( "This took : " + ( System.currentTimeMillis() - time ) + "ms" );
+        return size;
+
+    }
+
+    static int MAX_DIM = 4000000;
+
+    static BigInteger day15Part2( Stream<String> input ) {
+        long time = System.currentTimeMillis();
+        List<SensorBeacon> data = parseDay15( input );
+        Coordinates distressBeacon = null;
+        for ( int y = 0; y <= MAX_DIM; y++ ) {
+            List<Interval> coveredCoordinates = getCoveredCoordinates( data, y, false );
+            if (coveredCoordinates.size()>1) {
+                distressBeacon = new Coordinates( coveredCoordinates.get( 0).upper+1, y );
+                break;
+            }
+        }
+        return BigInteger.valueOf( distressBeacon.x ).multiply( BigInteger.valueOf( 4000000 ) ).add( BigInteger.valueOf( distressBeacon.y ) );
+    }
+
+    private static List<SensorBeacon> parseDay15( Stream<String> input ) {
+        Pattern compile = Pattern.compile( "Sensor at x=(-?\\d+), y=(-?\\d+): closest beacon is at x=(-?\\d+), y=(-?\\d+)" );
+
+        List<SensorBeacon> data = input.map( line -> {
+            Matcher m = compile.matcher( line );
+            return m.matches() ? new SensorBeacon( new Coordinates( new String[]{m.group( 1 ), m.group( 2 )}, 3 ),
+                                                   new Coordinates( new String[]{m.group( 3 ), m.group( 4 )}, 4 ) ) : null;
+        } ).filter( Objects::nonNull ).toList();
+        return data;
+    }
+
+    private static List<Interval> getCoveredCoordinates( List<SensorBeacon> sensorBeacons, int y, boolean noMaxDim ) {
+        LinkedList<Interval> intervals = new LinkedList<>(sensorBeacons.stream()//
+            .map( sb -> findCoveredInterval( sb.sensor, sb.beacon, y, noMaxDim ) )//
+            .filter( Objects::nonNull ).sorted().toList());
+        List<Interval> result = new ArrayList<>();
+        if(intervals.isEmpty()){
+            return result;
+        }
+        Interval current = intervals.pop();
+        while ( !intervals.isEmpty() ) {
+            Interval next = intervals.pop();
+            if ( current.overlap( next ) ) {
+                current = current.union( next );
+            } else {
+                result.add( current );
+                current = next;
+            }
+
+        }
+        result.add(current);
+        return result;
+    }
+
+
+    static Interval findCoveredInterval( Coordinates sensor, Coordinates beacon, int yToCheck, boolean noMaxDim ) {
+        int refDistance = sensor.manhattanDistance( new Coordinates( sensor.x, yToCheck ) );
+        int beaconDist = sensor.manhattanDistance( beacon );
+        if ( refDistance < beaconDist ) {
+            int radius = beaconDist - refDistance ;
+            int lower = sensor.x - radius;
+            int upper = sensor.x + radius;
+            return new Interval( noMaxDim ? lower : Math.max( 0, lower ), noMaxDim ? upper : Math.min( MAX_DIM, upper ) );
+        }
+        return null;
+    }
+
+
     public static void main( String[] args )
         throws Exception {
 
         List<Day> daysOfAdvent = new ArrayList<>();
-        daysOfAdvent.add( new Day( 14, "Sand", AdventOfCode2022::day14, null ) );
+        daysOfAdvent.add( new Day( 15, "Beacons", AdventOfCode2022::day15Part1, AdventOfCode2022::day15Part2 ) );
 
         if ( false ) {
             daysOfAdvent.add( new Day( 1, "Calories", AdventOfCode2022::day1Part1, AdventOfCode2022::day1Part2 ) );
@@ -1078,6 +1205,7 @@ class AdventOfCode2022 {
             daysOfAdvent.add( new Day( 11, "Monkey", AdventOfCode2022::day11Part1, null ) );
             daysOfAdvent.add( new Day( 12, "Steps", null, AdventOfCode2022::day12Part2 ) );
             daysOfAdvent.add( new Day( 13, "Order", AdventOfCode2022::day13Part1, AdventOfCode2022::day13Part2 ) );
+            daysOfAdvent.add( new Day( 14, "Sand", AdventOfCode2022::day14, null ) );
         }
 
         for ( Day day : daysOfAdvent ) {
