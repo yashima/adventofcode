@@ -318,6 +318,8 @@ class AdventOfCode2022 {
 
     interface PathNode<T> {
         int getValue();
+
+        int getId();
         List<T> getChildren();
     }
 
@@ -343,8 +345,20 @@ class AdventOfCode2022 {
             return totalCost - totalHeuristic;
         }
 
+        int length(){ //minus parent
+            return parent==null? 1 : parent.length()+1;
+        }
+
         public int getTotalHeuristic() {
             return totalHeuristic;
+        }
+
+        Set<Integer> getNodeIdsWithoutStart(){
+            Set<Integer> result = parent == null ? new HashSet<>() : parent.getNodeIdsWithoutStart();
+            if(parent!=null) {
+                result.add( node.getId() );
+            }
+            return result;
         }
 
         @Override
@@ -352,37 +366,39 @@ class AdventOfCode2022 {
             return (parent==null ? "" : parent +", ") +totalCost+": "+ node+ " h="+heuristic;
         }
 
-    }
+        List<Path<T>> search(Function<Path<T>,List<Path<T>>> childPaths, Function<Path<T>,Boolean> finished){
+            Map<T, Path<T>> openList = new HashMap<>();
+            Map<T, Path<T>> closedList = new HashMap<>();
 
+            openList.put( this.node, this );
 
-    static <T extends PathNode<T>> List<Path<T>> search(Path<T> start, Function<Path<T>,List<Path<T>>> childPaths, Function<Path<T>,Boolean> finished){
-        Map<T, Path<T>> openList = new HashMap<>();
-        Map<T, Path<T>> closedList = new HashMap<>();
+            List<Path<T>> candidates = new ArrayList<>();
+            while ( !openList.isEmpty() ) {
 
-        openList.put( start.node, start );
+                Path<T> path = openList.values().stream().min( Comparator.comparing( Path::getF ) ).get();
+                openList.remove( path.node );
 
-        List<Path<T>> candidates = new ArrayList<>();
-        while ( !openList.isEmpty() ) {
+                List<Path<T>> children = childPaths.apply( path );
 
-            Path<T> path = openList.values().stream().min( Comparator.comparing( Path::getF ) ).get();
-            openList.remove( path.node );
-
-            List<Path<T>> children = childPaths.apply( path );
-
-            children.forEach( child -> {
-                if ( finished.apply( child ) ) {
-                    candidates.add( child );
-                    return;
-                }
-                if ( ( !openList.containsKey( child.node ) || openList.get( child.node ).getF() > child.getF() ) &&
-                    ( !closedList.containsKey( child.node ) || closedList.get( child.node ).getF() > child.getF() ) ) {
-                    openList.put( child.node, child );
-                }
-            } );
-            closedList.put( path.node, path );
+                children.forEach( child -> {
+                    if ( finished.apply( child ) ) {
+                        candidates.add( child );
+                        return;
+                    }
+                    if ( ( !openList.containsKey( child.node ) || openList.get( child.node ).getF() > child.getF() ) &&
+                        ( !closedList.containsKey( child.node ) || closedList.get( child.node ).getF() > child.getF() ) ) {
+                        openList.put( child.node, child );
+                    }
+                } );
+                closedList.put( path.node, path );
+            }
+            return candidates;
         }
-        return candidates;
+
     }
+
+
+
 
 
     //---- end helper classes ----
@@ -1420,7 +1436,6 @@ class AdventOfCode2022 {
         static String START = "AA";
         static AtomicInteger ID = new AtomicInteger(0);
         static int TIME =  30;
-
         static Map<String,Valve> VALVES;
 
         private Integer[][] pathMatrix;
@@ -1435,11 +1450,35 @@ class AdventOfCode2022 {
         Integer part1( Stream<String> input ) {
             init(input);
             List<Path<Valve>> paths= new ArrayList<>(List.of(new Path<Valve>( null, VALVES.get(START),0,0 )));
-            List<Path<Valve>> results = new ArrayList<>();
+            List<Path<Valve>> results = getPaths( paths, this::getLegalChildPaths );
+            return results.stream().map(Path::getTotalHeuristic).max(Integer::compareTo).orElse( 0 );
+        }
+
+        @Override
+        Integer part2( Stream<String> input ) {
+            //no need to init again?
+            List<Path<Valve>> paths= new ArrayList<>(List.of(new Path<Valve>( null, VALVES.get(START),4,0 )));
+            Map<Path<Valve>, Set<Integer>> results = getPaths( paths, this::getLegalChildPaths2 ).stream().collect(
+                Collectors.toMap( Function.identity(), Path::getNodeIdsWithoutStart ) );
+            Set<Integer> unions = new HashSet<>();
+
+            results.keySet().parallelStream().forEach( path -> {
+                results.keySet().parallelStream().forEach ( compare -> {
+                    if ( results.get(path).stream().noneMatch(a -> results.get( compare ).contains( a ) ) ) {
+                        unions.add( path.getTotalHeuristic() + compare.getTotalHeuristic() );
+                    }
+                });
+            });
+            return unions.stream().max( Integer::compareTo ).orElse( -1 );
+        }
+
+
+        <T> List<T> getPaths( List<T> paths ,Function<T,List<T>> getChildPaths) {
+            List<T> results = new ArrayList<>();
             while(!paths.isEmpty()){
-                List<Path<Valve>> candidates = new ArrayList<>();
-                for(Path<Valve> path : paths){
-                    List<Path<Valve>> childPaths = getChildPaths( path );
+                List<T> candidates = new ArrayList<>();
+                for(T path : paths ){
+                    List<T> childPaths = getChildPaths.apply( path );
                     if(childPaths.isEmpty()){
                         results.add(path);
                     } else {
@@ -1448,21 +1487,19 @@ class AdventOfCode2022 {
                 }
                 paths = candidates;
             }
-            return results.stream().map(Path::getTotalHeuristic).max(Integer::compareTo).orElse( 0 );
-        }
-
-        @Override
-        Integer part2( Stream<String> input ) {
-            //today no need to reread the stuff--probably
-            return 0;
+            return results;
         }
 
         boolean isLegal(Path<Valve> path,Valve v){
             return path.totalCost + cost(path,v)<30 && !path.contains(v);
         }
 
+        boolean isLegal2(Path<Valve> path,Valve v){
+            return path.length()<= workingValves.size()/2 && path.totalCost + cost(path,v)<30 && !path.contains(v);
+        }
+
         //testdata 1651
-        List<Path<Valve>> getChildPaths(Path<Valve> parent){
+        List<Path<Valve>> getLegalChildPaths(Path<Valve> parent){
             //+1: turning on a valve is +1
             return workingValves.stream().filter(v -> isLegal( parent,v ))
                 .map(valve -> {
@@ -1470,6 +1507,17 @@ class AdventOfCode2022 {
                     return new Path<>( parent, valve, cost, ( TIME - ( parent.totalCost + cost ) ) * valve.flowRate );
                 } ).toList();
         }
+
+        List<Path<Valve>> getLegalChildPaths2(Path<Valve> parent){
+            //+1: turning on a valve is +1
+            return workingValves.stream().filter(v -> isLegal2( parent,v ))
+                .map(valve -> {
+                    int cost = cost(parent,valve);
+                    return new Path<>( parent, valve, cost, ( TIME - ( parent.totalCost + cost ) ) * valve.flowRate );
+                } ).toList();
+        }
+
+
         int cost(Path<Valve> parent,Valve valve){
             return pathMatrix[parent.node.id][valve.id] +1;
         }
@@ -1534,6 +1582,10 @@ class AdventOfCode2022 {
                 }
             }
 
+            @Override
+            public int getId() {
+                return id;
+            }
 
             public String getName() {
                 return name;
@@ -1578,6 +1630,7 @@ class AdventOfCode2022 {
             public boolean hasFlow() {
                 return flowRate>0;
             }
+
         }
 
     }
