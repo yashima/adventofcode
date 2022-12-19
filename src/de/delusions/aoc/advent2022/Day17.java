@@ -11,19 +11,40 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
-public class Day17 extends Day<Long> {
+
+/**
+ * Trying to find the cycles.
+ */
+public class Day17
+    extends Day<Long> {
 
     static final int STARTING_Y = 3; //3 above highest reaching rock
 
-    //static BigInteger CYCLES =BigInteger.valueOf(  ).
     static final Integer WALL = Integer.parseInt( "100000001", 2 );
-
     static final Integer FLOOR = Integer.parseInt( "111111111", 2 );
+
+    static final int SIGNATURE_LENGTH = 50;
+    static final int START_CYCLE_DETECTION = 1000; //~ rocks * commands
+
+    private final Set<Long> states = new HashSet<>();
+    private long rocksToDrop;
+    private List<Integer> chute;
+    private long periodHeight = 0;
+    private long periodLength = 0;
+    private long heightAtCycle = 0;
+    private long iterationsSkipped=0;
+
+    private String signature;
+
+    private boolean cycleFound;
 
     Day17() {
         super( 17, "Pyroclastic Flow" );
     }
 
+    /**
+     * Rock shapes are represented as binary strings that can be transformed into numbers
+     */
     enum Shape {
         MINUSS( "000111100" ),//
         PLUSSS( "000010000", "000111000", "000010000" ),//
@@ -31,7 +52,7 @@ public class Day17 extends Day<Long> {
         ISHAPE( "000100000", "000100000", "000100000", "000100000" ),//
         SQUARE( "000110000", "000110000" );
 
-        List<Integer> nums;
+        final List<Integer> nums;
 
         Shape( String... num ) {
             this.nums = Arrays.stream( num ).map( n -> Integer.parseInt( n, 2 ) ).toList();
@@ -39,148 +60,169 @@ public class Day17 extends Day<Long> {
 
         static final AtomicLong shapeCounter = new AtomicLong( 0 );
 
-        static List<Integer> getNext() {
-            if ( shapeCounter.get() == CYCLES ) {
+        static List<Integer> getNext( long cycles ) {
+            if ( shapeCounter.get() == cycles ) {
                 return Collections.emptyList();
             }
             Shape next = values()[(int) ( shapeCounter.getAndIncrement() % values().length )];
             return next.nums;
         }
     }
+    //                                1514285726382
+    //Test input solutions 1:3068 , 2:1514285714288
 
-    static Set<Long> states = new HashSet<>();
+    @Override
+    public Long part1( Stream<String> input ) {
+        rocksToDrop = 2022;
+        cycleFound = false;
+        return calculateResult( solve( input ) );
+    }
 
-    long commandLength;
+    @Override
+    public Long part2( Stream<String> input ) {
+        rocksToDrop = 1000000000000L;
+        cycleFound=false;
+        return calculateResult( solve( input ) );
+    }
 
-    long periodHeight = 0;
+    /**
+     * Calculates the height of the chute after a full simulation from the collected data
+     *
+     * @param chute the current chute (which might be shorter than the result if a cycle was found
+     * @return the result of the simulation
+     */
+    private Long calculateResult( List<Integer> chute ) {
+        if ( periodHeight != 0 ) {
+            return iterationsSkipped * periodHeight + ( chute.size() - 1 );
+        }
+        return (long) chute.size() - 1;
 
-    long periodLength = 0;
+    }
 
-    boolean detectCycle( long nextCommand ) { //only when the rock is 0
-        if ( Shape.shapeCounter.get() % 5L == 0 ) {
-            if ( states.contains( nextCommand ) ) {
-                return true;
+    /**
+     * The main loop of the puzzle that solves the input.
+     * @param input a string of commands (air jets that move the rocks)
+     * @return the chute after all the rocks have fallen
+     */
+    List<Integer> solve( Stream<String> input ) {
+        //init lots of stuffs
+        Shape.shapeCounter.set( 0 );
+        final String commands = input.reduce( "", ( a, b ) -> a + b );
+        chute = new ArrayList<>( List.of( FLOOR ) );
+        AtomicInteger position = new AtomicInteger( STARTING_Y + chute.size() );
+        final List<Integer> currentShape = new ArrayList<>( Shape.getNext( rocksToDrop ) );
+
+        //the big loop
+        while ( true ) {
+            //commands repeat forever until rocks have fallen
+            for ( int cIndex = 0; cIndex < commands.length(); cIndex++ ) {
+                if ( getNewShapeAndCheckCycles( position, currentShape, cIndex ) ) {
+                    return chute;
+                }
+
+                //position of rock against chute
+                int currentPosition = position.getAndDecrement(); //moving down
+                doCommand( currentShape, commands.charAt( cIndex ), currentPosition );
+                moveDown( currentShape, currentPosition );
             }
-            states.add( nextCommand );
+        }
+    }
+
+    /**
+     * Fetches a new shape when the old one has stopped moving and tries to detect cycles
+     *
+     * @param position       the position of the rock against the chute
+     * @param currentShape   the numbers representing the current falling rock
+     * @param commandCounter current command index
+     * @return true if next shape is empty and calculations are done
+     */
+    boolean getNewShapeAndCheckCycles( AtomicInteger position, List<Integer> currentShape, int commandCounter ) {
+        if ( currentShape.isEmpty() ) {
+
+            //try to get a new shape
+            List<Integer> next = Shape.getNext( rocksToDrop );
+            if ( next.isEmpty() ) {
+                return true; //no more new shapes
+            }
+            else {
+                currentShape.addAll( next );
+                position.set( chute.size() + STARTING_Y );
+            }
+
+            if(Shape.shapeCounter.get()==START_CYCLE_DETECTION){
+                signature = getSignature();
+                heightAtCycle = chute.size();
+            }
+            //test for cycles if none have been found yet
+            if (Shape.shapeCounter.get()>START_CYCLE_DETECTION) {
+                if ( !cycleFound && signature.equals( getSignature() ) ) {
+                    //yay
+                    cycleFound=true;
+                    System.out.println("Signature :" + signature);
+                    long cycleDetectedAt = Shape.shapeCounter.get();
+                    long cyclesLeftToProcess = rocksToDrop - cycleDetectedAt;
+                    periodLength = cycleDetectedAt - START_CYCLE_DETECTION; //TODO check minus SIG_LENGTH
+                    periodHeight = chute.size() - heightAtCycle;
+                    Shape.shapeCounter.set( rocksToDrop -  cyclesLeftToProcess % periodLength ) ;//process the rest now
+                    iterationsSkipped = cyclesLeftToProcess / periodLength ;
+                    System.out.println( "Period detected at " + periodLength + " with height=" + periodHeight );
+                }
+            }
         }
         return false;
     }
 
-    long getCycle() {
-        return Shape.shapeCounter.get();
-    }
+    /**
+     * Tries to move the current shape down one position.
+     *
+     * @param currentShape    the numbers representing the current rock
+     * @param currentPosition position against the row
+     */
+    void moveDown( List<Integer> currentShape, int currentPosition ) {
+        List<Integer> movingDown = findCollision( currentShape, currentPosition - 1 );
+        if ( movingDown.isEmpty() ) {  //stuck, so process current shape
 
-    static long CYCLES;
-
-    @Override
-    public Long part1( Stream<String> input ) {
-        CYCLES = 2022;
-        return calculateResult( solve( input ) );
-    }
-
-    @Override
-   public Long part2( Stream<String> input ) {
-        CYCLES = 1000000000000L;
-        if ( periodHeight > 0 ) {
-            Shape.shapeCounter.set( CYCLES - CYCLES % periodLength );
-        }
-        return calculateResult( solve( input ) );
-    }
-
-    //3068 , 1514285714288
-    Long calculateResult( List<Integer> chute ) {
-        //reduce iterations by 1 because we need to initially find period but not on second attempt
-        long iterations = CYCLES / periodLength + ( CYCLES == 2022 ? -1 : 0 );
-        //reduce chute/rest size by 1 to remove floor
-        return periodHeight == 0 ? chute.size() - 1 : iterations * periodHeight + ( chute.size() - 1 );
-    }
-
-    List<Integer> solve( Stream<String> input ) {
-        String commands = input.reduce( "", ( a, b ) -> a + b );
-        commandLength = commands.length();
-        System.out.println( "commands " + commands.length() );
-        List<Integer> chute = new ArrayList<>( List.of( FLOOR ) );
-        AtomicInteger position = new AtomicInteger( STARTING_Y + chute.size() );
-        List<Integer> currentShape = new ArrayList<>( Shape.getNext() );
-        AtomicLong commandCounter = new AtomicLong( 0 );
-        while ( !currentShape.isEmpty() ) {
-            commandCounter.set( 0L );
-            commands.chars().forEach( command -> { //keep cycling commands
-                if ( currentShape.isEmpty() ) {
-                    List<Integer> next = Shape.getNext();
-                    if ( next.isEmpty() ) {
-                        return;//we're done
-                    }
-                    else {
-                        currentShape.addAll( next );
-                        position.set( chute.size() + STARTING_Y );
-                    }
-                    if ( periodHeight == 0 && detectCycle( commandCounter.get() ) ) {
-                        System.out.println( "CYCLES target = " + CYCLES );
-                        periodLength = getCycle();
-                        periodHeight = chute.size() - 1; //height is without floor
-                        System.out.println( "Period detected at " + periodLength + " with height=" + periodHeight );
-                        Shape.shapeCounter.set( CYCLES - CYCLES % periodLength );//process the rest now
-                    }
+            for ( int j = 0; j < currentShape.size(); j++ ) {
+                int chuteIndex = currentPosition + j; //not executing the move we're using previous position
+                int shapeValue = currentShape.get( j );
+                if ( chuteIndex < chute.size() ) {
+                    int element = shapeValue + chute.get( chuteIndex );
+                    chute.set( chuteIndex, element );
                 }
-
-                int currentPosition = position.getAndDecrement(); //moving down
-
-                List<Integer> newShapePosition = new ArrayList<>();
-                //do command:
-                if ( command == '<' ) { //vs 51
-                    newShapePosition = findCollision( chute, currentShape.stream().map( c -> c << 1 ).toList(), currentPosition, "left" );
+                else {
+                    chute.add( shapeValue + WALL );
                 }
-                else if ( command == '>' ) {
-                    newShapePosition = findCollision( chute, currentShape.stream().map( c -> c >> 1 ).toList(), currentPosition, "right" );
-                }
-                if ( !newShapePosition.isEmpty() ) {
-                    //command is ok, so execute:
-                    currentShape.clear();
-                    currentShape.addAll( newShapePosition );
-                }
-
-                //move down
-                List<Integer> movingDown = findCollision( chute, currentShape, currentPosition - 1, "down" );
-                if ( movingDown.isEmpty() ) {  //stuck, so process current shape
-
-                    for ( int j = 0; j < currentShape.size(); j++ ) {
-                        int chuteIndex = currentPosition + j; //not executing the move we're using previous position
-                        int shapeValue = currentShape.get( j );
-                        if ( chuteIndex < chute.size() ) {
-                            int element = shapeValue + chute.get( chuteIndex );
-                            chute.set( chuteIndex, element );
-                        }
-                        else {
-                            chute.add( shapeValue + WALL );
-                        }
-                    }
-                    currentShape.clear();
-                }
-                commandCounter.incrementAndGet();
-            } );
-        }
-        //new LinkedList<>( chute ).descendingIterator().forEachRemaining( i -> System.out.println(printLevel( i )) );
-        return chute;
-    }
-
-    List<Integer> lastBlock( List<Integer> chute ) {
-        List<Integer> lastBlocks = new ArrayList<>();
-        List.of( 2, 4, 8, 16, 32, 64, 128 ).forEach( i -> {
-            int listPos = chute.size() - 1;
-
-            while ( !chute.isEmpty() && listPos > 0 ) {
-                if ( ( i & chute.get( listPos ) ) != 0 ) {
-                    lastBlocks.add( listPos );
-                    break;
-                }
-                listPos = listPos - 1;
             }
-        } );
-        return lastBlocks;
+            currentShape.clear();
+        }
     }
 
-    List<Integer> findCollision( List<Integer> chute, List<Integer> attemptedShape, int chutePosition, String debug ) {
+    /**
+     * There are only 2 commands '>' or '<' As the shapes are represented by numbers the bitshift operators move the rocks left and right--but only if
+     * there is no collision with walls or existing non-moving rocks
+     *
+     * @param currentShape    the current rock
+     * @param command         the command to execute
+     * @param currentPosition the position of the rock against the chute
+     */
+    void doCommand( List<Integer> currentShape, int command, int currentPosition ) {
+        List<Integer> newShapePosition =
+            findCollision( currentShape.stream().map( command == '<' ? c -> c << 1 : c -> c >> 1 ).toList(), currentPosition );
+        if ( !newShapePosition.isEmpty() ) {
+            //command is ok, so execute:
+            currentShape.clear();
+            currentShape.addAll( newShapePosition );
+        }
+    }
+
+    /**
+     * Check if the proposed new position for the shape collides with anything
+     *
+     * @param attemptedShape the shape to check for collisions
+     * @param chutePosition  the current position against the chute
+     * @return the attemptedShape list if no collision is found, an empty list if collision is found
+     */
+     List<Integer> findCollision( List<Integer> attemptedShape, int chutePosition ) {
         for ( int i = 0; i < attemptedShape.size(); i++ ) {
             int chuteValue = ( chutePosition + i < chute.size() ) ? chute.get( chutePosition + i ) : WALL;
             int shapeValue = attemptedShape.get( i );
@@ -190,6 +232,29 @@ public class Day17 extends Day<Long> {
         }
         return attemptedShape;
     }
+
+    /**
+     * Fetches the string representing the SIGNATURE_LENGTH of numbers at the end of the chute
+     * @return the signature string
+     */
+    String getSignature(){
+        if(SIGNATURE_LENGTH> chute.size()) {
+
+            throw new IllegalStateException( "Fnord" );
+        }
+        return numbersToString( chute.subList( Math.max( 0, chute.size() - SIGNATURE_LENGTH), chute.size() - 1 ) );
+    }
+
+    /**
+     * Converts a list of numbers into a string, in this case unicode is needed
+     * @param numbers the numbers to convert
+     * @return the string representing the numbers
+     */
+    String numbersToString(List<Integer> numbers){
+         return numbers.stream().map( c -> String.valueOf( (char)(int)c ) ).reduce( "", ( a, b) -> a+b );
+    }
+
+
 
     String printLevel( int level ) {
         if ( level == 511 ) {
