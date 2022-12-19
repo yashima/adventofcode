@@ -1,6 +1,6 @@
 package de.delusions.aoc.advent2022;
 
-import de.delusions.aoc.Day;
+import de.delusions.aoc.util.Day;
 
 import java.util.List;
 import java.util.stream.Stream;

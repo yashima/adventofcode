@@ -1,9 +1,9 @@
 package de.delusions.aoc.advent2022;
 
-import de.delusions.aoc.Coordinates;
-import de.delusions.aoc.Day;
-import de.delusions.aoc.Direction;
-import de.delusions.aoc.Matrix;
+import de.delusions.aoc.util.Coordinates;
+import de.delusions.aoc.util.Day;
+import de.delusions.aoc.util.Direction;
+import de.delusions.aoc.util.Matrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;

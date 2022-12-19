@@ -1,4 +1,4 @@
-package de.delusions.aoc;
+package de.delusions.aoc.util;
 
 import java.io.IOException;
 import java.nio.file.Files;

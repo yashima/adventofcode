@@ -1,8 +1,8 @@
 package de.delusions.aoc.advent2022;
 
-import de.delusions.aoc.Day;
-import de.delusions.aoc.Path;
-import de.delusions.aoc.PathNode;
+import de.delusions.aoc.util.Day;
+import de.delusions.aoc.util.Path;
+import de.delusions.aoc.util.PathNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;

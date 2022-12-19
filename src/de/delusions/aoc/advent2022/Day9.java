@@ -1,7 +1,7 @@
 package de.delusions.aoc.advent2022;
 
-import de.delusions.aoc.Coordinates;
-import de.delusions.aoc.Day;
+import de.delusions.aoc.util.Coordinates;
+import de.delusions.aoc.util.Day;
 
 import java.util.HashSet;
 import java.util.List;

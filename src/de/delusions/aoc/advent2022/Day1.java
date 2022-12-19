@@ -1,6 +1,6 @@
 package de.delusions.aoc.advent2022;
 
-import de.delusions.aoc.Day;
+import de.delusions.aoc.util.Day;
 
 import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicInteger;

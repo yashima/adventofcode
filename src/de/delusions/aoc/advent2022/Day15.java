@@ -1,8 +1,8 @@
 package de.delusions.aoc.advent2022;
 
-import de.delusions.aoc.Coordinates;
-import de.delusions.aoc.Day;
-import de.delusions.aoc.Interval;
+import de.delusions.aoc.util.Coordinates;
+import de.delusions.aoc.util.Day;
+import de.delusions.aoc.util.Interval;
 
 import java.math.BigInteger;
 import java.util.ArrayList;

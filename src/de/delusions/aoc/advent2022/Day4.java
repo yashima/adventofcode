@@ -1,7 +1,7 @@
 package de.delusions.aoc.advent2022;
 
-import de.delusions.aoc.Day;
-import de.delusions.aoc.Interval;
+import de.delusions.aoc.util.Day;
+import de.delusions.aoc.util.Interval;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
