@@ -8,9 +8,9 @@ import java.util.stream.Stream;
 
 public abstract class Day<T> {
 
-    static String PATH = "C:\\Users\\" + System.getProperty( "user.name" ) + "\\Downloads\\day%s-input.txt";
+    static String PATH = System.getProperty("user.dir"  )+"\\inputs\\day%s-input.txt";
 
-    static String TEST_PATH = "C:\\Users\\" + System.getProperty( "user.name" ) + "\\Downloads\\day%s-test.txt";
+    static String TEST_PATH =  System.getProperty("user.dir"  )+"\\inputs\\day%s-test.txt";
 
     int day;
 
@@ -27,6 +27,7 @@ public abstract class Day<T> {
     }
 
     public void run( boolean test, boolean time ) {
+        System.out.println(System.getProperty("user.dir"  ));
         long timer = System.currentTimeMillis();
         System.out.println( "Day " + day + ", part1: " + tag + "=" + part1( getInput( test ) ) );
         System.out.println( "Day " + day + ", part2: " + tag + "=" + part2( getInput( test ) ) );
