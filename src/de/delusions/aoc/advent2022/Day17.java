@@ -142,7 +142,7 @@ public class Day17 extends Day<Long> {
                     System.out.println( "Signature :" + signature );
                     long cycleDetectedAt = Shape.shapeCounter.get();
                     long cyclesLeftToProcess = rocksToDrop - cycleDetectedAt;
-                    periodLength = cycleDetectedAt - START_CYCLE_DETECTION; //TODO check minus SIG_LENGTH
+                    periodLength = cycleDetectedAt - START_CYCLE_DETECTION;
                     periodHeight = chute.size() - heightAtCycle;
                     Shape.shapeCounter.set( rocksToDrop - cyclesLeftToProcess % periodLength );//process the rest now
                     iterationsSkipped = cyclesLeftToProcess / periodLength;

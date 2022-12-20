@@ -15,8 +15,6 @@ public class Day18 extends Day<Integer> {
 
     public static final int OUTSIDE = 2;
 
-    public static final int INSIDE = 0;
-
     private int[][][] droplet;
 
     Day18() {
@@ -27,29 +25,27 @@ public class Day18 extends Day<Integer> {
 
     record Block(int x, int y, int z) {}
 
+    AtomicInteger blockCounter =  new AtomicInteger();
+
     @Override
     public Integer part1( Stream<String> input ) {
         droplet = parse( input );
+        blockCounter.set( 0 );
         return solve( block -> !isDroplet( block )  );
     }
 
     @Override
     public Integer part2( Stream<String> input ) {
+        blockCounter.set( 0 );
         doWithMatrix(block -> {
             if(isDroplet( block )){
                 return true;
             } else {
-                setValue( block, OUTSIDE );
+                setToOutside( block );
                 return false;
             }
         });
-        AtomicInteger counter = new AtomicInteger(0);
-        doWithMatrix( block -> {
-            counter.addAndGet( countSurface( block, b -> getValue( block )==INSIDE && isOutside( b ) ) );
-            return false; // FDP: never break;
-        } );
-        System.out.println("Found nodes connected to outside "+counter.get());
-        return solve( block -> isOutside( block ) );
+        return solve( this::isOutside );
     }
 
     /**
@@ -60,42 +56,23 @@ public class Day18 extends Day<Integer> {
      */
     int solve( Function<Block, Boolean> surfaceFunc ) {
         AtomicInteger surface = new AtomicInteger( 0 );
-        IntStream.range( 0, MAX_DIM )//
-            .forEach( x -> IntStream.range( 0, MAX_DIM )//
-                .forEach( y -> IntStream.range( 0, MAX_DIM )//
-                    .forEach( z -> surface.addAndGet( countSurface( new Block( x, y, z ), surfaceFunc ) ) ) ) );
+        doWithMatrix( Dimension.X,false, block -> {
+            surface.addAndGet( countSurface( block, surfaceFunc ));
+            return false;
+        });
+        System.out.println("Counted surfaces for blocks="+blockCounter.get());
         return surface.get();
     }
 
     /**
-     * Count all the surfaces for a given position that satisfy the isEmptySpace function
-     * Only counts surfaces for droplets. Other blocks always return 0
-     *
-     * @param surfaceFunc the function that is used for testing
-     * @return the sum of the sides that match the isEmptySpace function
-     */
-    int countSurface( Block block, Function<Block, Boolean> surfaceFunc ) {
-        if ( !isDroplet( block ) ) {
-            return 0;
-        }
-        int result = 0;
-        //test all adjacent coordinates against the surfaceFunc
-        for(Dimension dimension : Dimension.values()){
-            result += surfaceFunc.apply( getModifiedBlock( block,dimension, false ) ) ? 1 : 0;
-            result += surfaceFunc.apply( getModifiedBlock( block,dimension, true ) ) ? 1 : 0;
-        }
-        return result;
-    }
-
-    /**
-     * Tries to fill in the negative space outside of the droplet to make it possible to count the surfaces for part 2
+     * Tries to fill in the negative space outside the droplet to make it possible to count the surfaces for part 2
      */
     void doWithMatrix(Function<Block,Boolean> blockFunc) {
         for ( Dimension dim : Dimension.values() ) {
             doWithMatrix( dim, false, blockFunc );
             doWithMatrix( dim, true ,blockFunc);
         }
-        //IntStream.range( 0, MAX_DIM ).forEach( slice -> System.out.println( print( Dimension.Y, slice ) ) );
+        //IntStream.range( 0, MAX_DIM ).forEach( slice -> System.out.println( print( Dimension.X, slice ) ) );
     }
 
     /**
@@ -106,15 +83,37 @@ public class Day18 extends Day<Integer> {
      * @param inverted or the opposite
      */
     void doWithMatrix( Dimension dim, boolean inverted, Function<Block,Boolean> blockFunc ) {
-        for ( int other = 0; other < MAX_DIM; other++ ) {
-            for ( int another = 0; another < MAX_DIM; another++ ) {
-                for ( int position = 0; position < MAX_DIM; position++ ) {
-                    if(blockFunc.apply( getDimensionBlock( dim, inverted ? MAX_DIM-position-1 : position, other, another ) )){
+        for ( int second = 0; second < MAX_DIM; second++ ) {
+            for ( int third = 0; third < MAX_DIM; third++ ) {
+                for ( int first = 0; first < MAX_DIM; first++ ) {
+                    int position = inverted ? MAX_DIM - first - 1 : first;
+                    if(blockFunc.apply( getDimensionBlock( dim, position, second, third ) )){
                         break;
-                    };
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Count all the surfaces for a given position that satisfy the isEmptySpace function
+     * Only counts surfaces for droplets. Other blocks always return 0
+     *
+     * @param surfaceFunc the function that is used for testing
+     * @return the sum of the sides that match the isEmptySpace function
+     */
+    int countSurface( Block block, Function<Block, Boolean> surfaceFunc ) {
+        if ( !isDroplet( block ) ) { //we're not processing anything but lava
+            return 0;
+        }
+        blockCounter.incrementAndGet();//count dropletblogs
+        int result = 0;
+        //test all adjacent coordinates against the surfaceFunc
+        for(Dimension dimension : Dimension.values()){
+            result += surfaceFunc.apply( getNeighboringBlock( block, dimension, false ) ) ? 1 : 0;
+            result += surfaceFunc.apply( getNeighboringBlock( block, dimension, true ) ) ? 1 : 0;
+        }
+        return result;
     }
 
     /**
@@ -131,10 +130,9 @@ public class Day18 extends Day<Integer> {
      * Sets the value at the block's position
      *
      * @param block the block describing the position
-     * @param value the value to set
      */
-    void setValue( Block block, int value ) {
-        droplet[block.x][block.y][block.z] = value;
+    void setToOutside( Block block ) {
+        droplet[block.x][block.y][block.z] = OUTSIDE;
     }
 
     /**
@@ -145,7 +143,7 @@ public class Day18 extends Day<Integer> {
      * @param negative  if the modifier is negative or positive
      * @return a neighboring block as described by the parameters
      */
-    Block getModifiedBlock( Block block, Dimension dimension, boolean negative ) {
+    Block getNeighboringBlock( Block block, Dimension dimension, boolean negative ) {
         int modifier = negative ? -1 : +1;
         int x = block.x + ( dimension == Dimension.X ? modifier : 0 );
         int y = block.y + ( dimension == Dimension.Y ? modifier : 0 );
@@ -158,20 +156,20 @@ public class Day18 extends Day<Integer> {
      *
      * @param shift    the dimension that is described by the position parameter
      * @param position the position in the dimension we're looking at right now
-     * @param other    the "first" of the other two dimensions
-     * @param another  the "second" of the other two dimensions
+     * @param second    the "first" of the second two dimensions
+     * @param third  the "second" of the second two dimensions
      * @return a block as described by the parameters
      */
-    Block getDimensionBlock( Dimension shift, int position, int other, int another ) {
+    Block getDimensionBlock( Dimension shift, int position, int second, int third ) {
         return switch ( shift ) {
-            case X -> new Block( position, other, another );
-            case Y -> new Block( other, position, another );
-            case Z -> new Block( other, another, position );
+            case X -> new Block( position, second, third );
+            case Y -> new Block( second, position, third );
+            case Z -> new Block( second, third, position );
         };
     }
 
     /**
-     * Checks if a given block is outside of the matrix coordinates (to prevent ArrayIndexOutOfBounds)
+     * Checks if a given block is outside the matrix coordinates (to prevent ArrayIndexOutOfBounds)
      *
      * @param block the block to check
      * @return true if it is within the dimensions
@@ -190,7 +188,7 @@ public class Day18 extends Day<Integer> {
     }
 
     /**
-     * Checks if block is marked as outside of the droplet
+     * Checks if block is marked as outside the droplet
      * @param block the block to check
      * @return true if it is marked as outside or is outside the matrix boundaries
      */
@@ -199,7 +197,7 @@ public class Day18 extends Day<Integer> {
     }
 
     /**
-     * Parses the 3D coordinates for the droplet from the iput
+     * Parses the 3D coordinates for the droplet from the input
      *
      * @param input inputfile as a stream
      * @return a 3D matrix with all the parsed positions set to 1
