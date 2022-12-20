@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
-public class Day14
-    extends Day<Integer> {
+
+public class Day14 extends Day<Integer> {
     static final int SOURCE = 3;
 
     static final int SAND = 2;

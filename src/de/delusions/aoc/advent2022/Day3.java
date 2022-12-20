@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Stream;
 
-public class Day3
-    extends Day<Integer> {
+public class Day3 extends Day<Integer> {
     Day3() {
         super( 3, "Rucksack Reorganization" );
     }
@@ -16,11 +15,11 @@ public class Day3
     @Override
     public Integer part1( Stream<String> input ) {
         return input.map( backpack -> backpack.substring( backpack.length() / 2 ).chars().distinct()//
-                .filter( type -> backpack.substring( 0, backpack.length() / 2 ).chars() //
-                    .filter( c -> c == type ).findFirst().isPresent() ) //
-                .map( this::priority ) //ascii offset
-                .sum() ) //
-            .reduce( 0, Integer::sum );
+                                              .filter( type -> backpack.substring( 0, backpack.length() / 2 ).chars() //
+                                                                       .filter( c -> c == type ).findFirst().isPresent() ) //
+                                              .map( this::priority ) //ascii offset
+                                              .sum() ) //
+                    .reduce( 0, Integer::sum );
     }
 
     @Override

@@ -8,9 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
-//-------------- DAY 7: Directories -------------------
-public class Day7
-    extends Day<Integer> {
+
+public class Day7 extends Day<Integer> {
 
     public Day7() {
         super( 7, "No Space Left On Device" );

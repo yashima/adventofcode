@@ -11,9 +11,8 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-//-------------- DAY 11: Monkey Business -------------------
-public class Day11
-    extends Day<Long> {
+
+public class Day11 extends Day<Long> {
 
     public Day11() {
         super( 11, "Monkey in the Middle" );
@@ -34,11 +33,11 @@ public class Day11
             monkeys.forEach( Monkey::inspect );
         }
         return monkeys.stream()//
-            .peek( System.out::println )//
-            .map( Monkey::getBusiness )//
-            .sorted( Comparator.reverseOrder() )//
-            .limit( 2 )//
-            .reduce( 1L, ( a, b ) -> a * b );
+                      .peek( System.out::println )//
+                      .map( Monkey::getBusiness )//
+                      .sorted( Comparator.reverseOrder() )//
+                      .limit( 2 )//
+                      .reduce( 1L, ( a, b ) -> a * b );
     }
 
     @Override
@@ -50,10 +49,6 @@ public class Day11
 
     static class Monkey {
         BigInteger MAGIC = BigInteger.valueOf( 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 );
-
-        BigInteger lowerAnxiety( BigInteger currentAnxiety ) {
-            return currentAnxiety.mod( MAGIC );
-        }
 
         Stack<BigInteger> items = new Stack<>();
 
@@ -68,27 +63,6 @@ public class Day11
         long business = 0;
 
         List<Monkey> monkeys;
-
-        public Long getBusiness() {
-            return business;
-        }
-
-        void inspect() {
-            while ( !items.isEmpty() ) {
-                BigInteger newItemAnxietyLevel = lowerAnxiety( monkeyFingers.apply( items.pop() ) );
-                if ( newItemAnxietyLevel.mod( monkeyTest ).equals( BigInteger.ZERO ) ) {
-                    monkeys.get( trueMonkey ).items.push( newItemAnxietyLevel );
-                }
-                else {
-                    monkeys.get( falseMonkey ).items.push( newItemAnxietyLevel );
-                }
-                business++;
-            }
-        }
-
-        public String toString() {
-            return String.format( "Monkey[items=%s,div=%s, true=%s,false=%s, busy=%s]", items, monkeyTest, trueMonkey, falseMonkey, business );
-        }
 
         static Monkey parseFromStrings( List<String> monkeyString, List<Monkey> monkeys ) {
             Monkey monkey = new Monkey();
@@ -123,6 +97,31 @@ public class Day11
             }
             monkey.monkeys = monkeys;
             return monkey;
+        }
+
+        BigInteger lowerAnxiety( BigInteger currentAnxiety ) {
+            return currentAnxiety.mod( MAGIC );
+        }
+
+        public Long getBusiness() {
+            return business;
+        }
+
+        void inspect() {
+            while ( !items.isEmpty() ) {
+                BigInteger newItemAnxietyLevel = lowerAnxiety( monkeyFingers.apply( items.pop() ) );
+                if ( newItemAnxietyLevel.mod( monkeyTest ).equals( BigInteger.ZERO ) ) {
+                    monkeys.get( trueMonkey ).items.push( newItemAnxietyLevel );
+                }
+                else {
+                    monkeys.get( falseMonkey ).items.push( newItemAnxietyLevel );
+                }
+                business++;
+            }
+        }
+
+        public String toString() {
+            return String.format( "Monkey[items=%s,div=%s, true=%s,false=%s, busy=%s]", items, monkeyTest, trueMonkey, falseMonkey, business );
         }
     }
 }

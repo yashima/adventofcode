@@ -28,13 +28,12 @@ public class Day4 extends Day<Long> {
             pair -> pair.foo.contains( pair.bar ) || pair.bar.contains( pair.foo ) ).count();
     }
 
-    record Pair(Interval foo, Interval bar) {
-    }
-
     Pair parse( String input ) {
         final Matcher matcher = day4Pattern.matcher( input );
         return matcher.matches() ? new Pair( new Interval( matcher.group( 1 ), matcher.group( 2 ) ),
                                              new Interval( matcher.group( 3 ), matcher.group( 4 ) ) ) : null;
     }
+
+    record Pair(Interval foo, Interval bar) {}
 
 }

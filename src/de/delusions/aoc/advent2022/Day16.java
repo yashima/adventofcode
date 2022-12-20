@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
 public class Day16 extends Day<Integer> {
 
     static String START = "AA";
@@ -155,8 +156,7 @@ public class Day16 extends Day<Integer> {
     }
 
 
-    static class Valve
-        implements PathNode<Valve>, Comparable<Valve> {
+    static class Valve implements PathNode<Valve>, Comparable<Valve> {
         static Pattern pattern = Pattern.compile( "Valve ([A-Z]{2}) has flow rate=(\\d+); tunnels? leads? to valves? (.*)" );
 
         String name;
@@ -181,11 +181,6 @@ public class Day16 extends Day<Integer> {
             }
         }
 
-        @Override
-        public int getId() {
-            return id;
-        }
-
         public String getName() {
             return name;
         }
@@ -193,6 +188,11 @@ public class Day16 extends Day<Integer> {
         @Override
         public int compareTo( Valve o ) {
             return Integer.compare( flowRate, o.flowRate );
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash( getName() );
         }
 
         @Override
@@ -207,11 +207,6 @@ public class Day16 extends Day<Integer> {
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash( getName() );
-        }
-
-        @Override
         public String toString() {
             return getName() + "(" + flowRate + ")";
         }
@@ -219,6 +214,11 @@ public class Day16 extends Day<Integer> {
         @Override
         public int getValue() {
             return flowRate;
+        }
+
+        @Override
+        public int getId() {
+            return id;
         }
 
         @Override

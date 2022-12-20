@@ -13,11 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public class Day15
-    extends Day<Integer> {
-    record SensorBeacon(Coordinates sensor, Coordinates beacon) {
-    }
-
+public class Day15 extends Day<Integer> {
     static int MAX_DIM = 4000000;
 
     Day15() {
@@ -61,8 +57,8 @@ public class Day15
 
     List<Interval> collectCoveredIntervals( List<SensorBeacon> sensorBeacons, int y, boolean noMaxDim ) {
         LinkedList<Interval> intervals = new LinkedList<>( sensorBeacons.stream()//
-                                                               .map( sb -> findCoveredInterval( sb.sensor, sb.beacon, y, noMaxDim ) )//
-                                                               .filter( Objects::nonNull ).sorted().toList() );
+                                                                        .map( sb -> findCoveredInterval( sb.sensor, sb.beacon, y, noMaxDim ) )//
+                                                                        .filter( Objects::nonNull ).sorted().toList() );
         List<Interval> result = new ArrayList<>();
         if ( intervals.isEmpty() ) {
             return result;
@@ -93,4 +89,6 @@ public class Day15
         }
         return null;
     }
+
+    record SensorBeacon(Coordinates sensor, Coordinates beacon) {}
 }

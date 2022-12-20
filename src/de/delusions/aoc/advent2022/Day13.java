@@ -10,8 +10,10 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-public class Day13
-    extends Day<Integer> {
+
+public class Day13 extends Day<Integer> {
+
+    static AtomicInteger PACKET_ID = new AtomicInteger( 1 );
 
     Day13() {
         super( 13, "Distress Signal" );
@@ -37,9 +39,6 @@ public class Day13
         List<PacketContent> packetContents = packets.stream().sorted().peek( System.out::println ).toList();
         return ( packetContents.indexOf( dividerA ) + 1 ) * ( packetContents.indexOf( dividerB ) + 1 );
     }
-
-
-    static AtomicInteger PACKET_ID = new AtomicInteger( 1 );
 
     static class Packet {
         PacketContent left;
@@ -67,8 +66,7 @@ public class Day13
         }
     }
 
-    static class PacketContent
-        implements Comparable<PacketContent> {
+    static class PacketContent implements Comparable<PacketContent> {
         Integer value = null;
 
         List<PacketContent> contents = new ArrayList<>();

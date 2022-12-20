@@ -15,24 +15,31 @@ import java.util.stream.Stream;
 /**
  * Trying to find the cycles.
  */
-public class Day17
-    extends Day<Long> {
+public class Day17 extends Day<Long> {
 
     static final int STARTING_Y = 3; //3 above highest reaching rock
 
     static final Integer WALL = Integer.parseInt( "100000001", 2 );
+
     static final Integer FLOOR = Integer.parseInt( "111111111", 2 );
 
     static final int SIGNATURE_LENGTH = 50;
+
     static final int START_CYCLE_DETECTION = 1000; //~ rocks * commands
 
     private final Set<Long> states = new HashSet<>();
+
     private long rocksToDrop;
+
     private List<Integer> chute;
+
     private long periodHeight = 0;
+
     private long periodLength = 0;
+
     private long heightAtCycle = 0;
-    private long iterationsSkipped=0;
+
+    private long iterationsSkipped = 0;
 
     private String signature;
 
@@ -42,46 +49,19 @@ public class Day17
         super( 17, "Pyroclastic Flow" );
     }
 
-    /**
-     * Rock shapes are represented as binary strings that can be transformed into numbers
-     */
-    enum Shape {
-        MINUSS( "000111100" ),//
-        PLUSSS( "000010000", "000111000", "000010000" ),//
-        LSHAPE( "000111000", "000001000", "000001000" ), //
-        ISHAPE( "000100000", "000100000", "000100000", "000100000" ),//
-        SQUARE( "000110000", "000110000" );
-
-        final List<Integer> nums;
-
-        Shape( String... num ) {
-            this.nums = Arrays.stream( num ).map( n -> Integer.parseInt( n, 2 ) ).toList();
-        }
-
-        static final AtomicLong shapeCounter = new AtomicLong( 0 );
-
-        static List<Integer> getNext( long cycles ) {
-            if ( shapeCounter.get() == cycles ) {
-                return Collections.emptyList();
-            }
-            Shape next = values()[(int) ( shapeCounter.getAndIncrement() % values().length )];
-            return next.nums;
-        }
-    }
-    //                                1514285726382
-    //Test input solutions 1:3068 , 2:1514285714288
-
     @Override
     public Long part1( Stream<String> input ) {
         rocksToDrop = 2022;
         cycleFound = false;
         return calculateResult( solve( input ) );
     }
+    //                                1514285726382
+    //Test input solutions 1:3068 , 2:1514285714288
 
     @Override
     public Long part2( Stream<String> input ) {
         rocksToDrop = 1000000000000L;
-        cycleFound=false;
+        cycleFound = false;
         return calculateResult( solve( input ) );
     }
 
@@ -101,6 +81,7 @@ public class Day17
 
     /**
      * The main loop of the puzzle that solves the input.
+     *
      * @param input a string of commands (air jets that move the rocks)
      * @return the chute after all the rocks have fallen
      */
@@ -149,22 +130,22 @@ public class Day17
                 position.set( chute.size() + STARTING_Y );
             }
 
-            if(Shape.shapeCounter.get()==START_CYCLE_DETECTION){
+            if ( Shape.shapeCounter.get() == START_CYCLE_DETECTION ) {
                 signature = getSignature();
                 heightAtCycle = chute.size();
             }
             //test for cycles if none have been found yet
-            if (Shape.shapeCounter.get()>START_CYCLE_DETECTION) {
+            if ( Shape.shapeCounter.get() > START_CYCLE_DETECTION ) {
                 if ( !cycleFound && signature.equals( getSignature() ) ) {
                     //yay
-                    cycleFound=true;
-                    System.out.println("Signature :" + signature);
+                    cycleFound = true;
+                    System.out.println( "Signature :" + signature );
                     long cycleDetectedAt = Shape.shapeCounter.get();
                     long cyclesLeftToProcess = rocksToDrop - cycleDetectedAt;
                     periodLength = cycleDetectedAt - START_CYCLE_DETECTION; //TODO check minus SIG_LENGTH
                     periodHeight = chute.size() - heightAtCycle;
-                    Shape.shapeCounter.set( rocksToDrop -  cyclesLeftToProcess % periodLength ) ;//process the rest now
-                    iterationsSkipped = cyclesLeftToProcess / periodLength ;
+                    Shape.shapeCounter.set( rocksToDrop - cyclesLeftToProcess % periodLength );//process the rest now
+                    iterationsSkipped = cyclesLeftToProcess / periodLength;
                     System.out.println( "Period detected at " + periodLength + " with height=" + periodHeight );
                 }
             }
@@ -222,7 +203,7 @@ public class Day17
      * @param chutePosition  the current position against the chute
      * @return the attemptedShape list if no collision is found, an empty list if collision is found
      */
-     List<Integer> findCollision( List<Integer> attemptedShape, int chutePosition ) {
+    List<Integer> findCollision( List<Integer> attemptedShape, int chutePosition ) {
         for ( int i = 0; i < attemptedShape.size(); i++ ) {
             int chuteValue = ( chutePosition + i < chute.size() ) ? chute.get( chutePosition + i ) : WALL;
             int shapeValue = attemptedShape.get( i );
@@ -235,26 +216,26 @@ public class Day17
 
     /**
      * Fetches the string representing the SIGNATURE_LENGTH of numbers at the end of the chute
+     *
      * @return the signature string
      */
-    String getSignature(){
-        if(SIGNATURE_LENGTH> chute.size()) {
+    String getSignature() {
+        if ( SIGNATURE_LENGTH > chute.size() ) {
 
             throw new IllegalStateException( "Fnord" );
         }
-        return numbersToString( chute.subList( Math.max( 0, chute.size() - SIGNATURE_LENGTH), chute.size() - 1 ) );
+        return numbersToString( chute.subList( Math.max( 0, chute.size() - SIGNATURE_LENGTH ), chute.size() - 1 ) );
     }
 
     /**
      * Converts a list of numbers into a string, in this case unicode is needed
+     *
      * @param numbers the numbers to convert
      * @return the string representing the numbers
      */
-    String numbersToString(List<Integer> numbers){
-         return numbers.stream().map( c -> String.valueOf( (char)(int)c ) ).reduce( "", ( a, b) -> a+b );
+    String numbersToString( List<Integer> numbers ) {
+        return numbers.stream().map( c -> String.valueOf( (char) (int) c ) ).reduce( "", ( a, b ) -> a + b );
     }
-
-
 
     String printLevel( int level ) {
         if ( level == 511 ) {
@@ -265,6 +246,34 @@ public class Day17
         levelString = levelString.replace( '0', '.' );
         levelString = levelString.replace( '1', '#' );
         return "|" + levelString + "|";
+    }
+
+
+    /**
+     * Rock shapes are represented as binary strings that can be transformed into numbers
+     */
+    enum Shape {
+        MINUSS( "000111100" ),//
+        PLUSSS( "000010000", "000111000", "000010000" ),//
+        LSHAPE( "000111000", "000001000", "000001000" ), //
+        ISHAPE( "000100000", "000100000", "000100000", "000100000" ),//
+        SQUARE( "000110000", "000110000" );
+
+        static final AtomicLong shapeCounter = new AtomicLong( 0 );
+
+        final List<Integer> nums;
+
+        Shape( String... num ) {
+            this.nums = Arrays.stream( num ).map( n -> Integer.parseInt( n, 2 ) ).toList();
+        }
+
+        static List<Integer> getNext( long cycles ) {
+            if ( shapeCounter.get() == cycles ) {
+                return Collections.emptyList();
+            }
+            Shape next = values()[(int) ( shapeCounter.getAndIncrement() % values().length )];
+            return next.nums;
+        }
     }
 
 }

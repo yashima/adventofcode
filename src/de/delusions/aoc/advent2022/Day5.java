@@ -8,19 +8,15 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-public class Day5
-    extends Day<String> {
+
+public class Day5 extends Day<String> {
     final static Pattern day5MovePattern = Pattern.compile( "move ([0-9]+) from ([0-9]+) to ([0-9]+)" );
 
     final static Pattern day5StackPattern = Pattern.compile( ".(.)...(.)...(.)...(.)...(.)...(.)...(.)...(.)...(.)." );
 
-    record Move(int number, int from, int to) {
-    }
-
     Day5() {
         super( 5, "Supply Stacks" );
     }
-
 
     @Override
     public String part1( Stream<String> input ) {
@@ -51,8 +47,10 @@ public class Day5
     }
 
     @Override
-    public  String part2( Stream<String> input ) {
+    public String part2( Stream<String> input ) {
         //TODO (solved it but neglegcted to write code for both separately
         return null;
     }
+
+    record Move(int number, int from, int to) {}
 }

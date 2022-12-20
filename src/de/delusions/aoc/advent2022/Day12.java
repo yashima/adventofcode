@@ -12,14 +12,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
+
 public class Day12 extends Day<Integer> {
+
+    static Matrix HILL;
+
+    static List<Coordinates> GOALS = new ArrayList<>();
 
     Day12() {
         super( 12, "Hill Climbing Algorithm" );
     }
 
+    static boolean hasReachedGoal( Path path, List<Coordinates> goals ) {
+        return goals.contains( path.pos );
+    }
+
     @Override
-   public Integer part1( Stream<String> input ) {
+    public Integer part1( Stream<String> input ) {
         return null;
     }
 
@@ -42,10 +51,10 @@ public class Day12 extends Day<Integer> {
             openList.remove( path.pos );
 
             List<Path> children = Stream.of( Direction.north, Direction.south, Direction.east, Direction.west )//
-                .map( path::move )//
-                .filter( Objects::nonNull )//
-                .filter( Path::isLegal ) //
-                .toList();
+                                        .map( path::move )//
+                                        .filter( Objects::nonNull )//
+                                        .filter( Path::isLegal ) //
+                                        .toList();
 
             children.forEach( child -> {
                 if ( hasReachedGoal( child, GOALS ) ) {
@@ -61,15 +70,6 @@ public class Day12 extends Day<Integer> {
         }
 
         return candidates.stream().map( path -> path.steps ).min( Integer::compareTo ).get();
-    }
-
-    static Matrix HILL;
-
-    static List<Coordinates> GOALS = new ArrayList<>();
-
-
-    static boolean hasReachedGoal( Path path, List<Coordinates> goals ) {
-        return goals.contains( path.pos );
     }
 
     static class Path {

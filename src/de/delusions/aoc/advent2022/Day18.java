@@ -4,11 +4,10 @@ import de.delusions.aoc.util.Day;
 
 import java.util.stream.Stream;
 
-public class Day18
-    extends Day<Integer> {
+public class Day18 extends Day<Integer> {
 
-    Day18(){
-        super(18,"Boiling Boulders");
+    Day18() {
+        super( 18, "Boiling Boulders" );
     }
 
     @Override

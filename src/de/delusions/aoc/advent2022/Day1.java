@@ -26,10 +26,10 @@ public class Day1 extends Day<Integer> {
     int solve( Stream<String> input, int numberOfElves ) {
         AtomicInteger current = new AtomicInteger( 0 );
         return input.map( line -> line.isEmpty() ? "skip" + current.incrementAndGet() : current.get() + "-" + line )//
-            .filter( l -> l.contains( "-" ) ) //
-            .collect( Collectors.toMap( l -> l.split( "-" )[0], l -> Integer.parseInt( l.split( "-" )[1] ), Integer::sum ) )//
-            .values().stream().sorted( Comparator.reverseOrder() ) //
-            .limit( numberOfElves ) //
-            .reduce( 0, Integer::sum );
+                    .filter( l -> l.contains( "-" ) ) //
+                    .collect( Collectors.toMap( l -> l.split( "-" )[0], l -> Integer.parseInt( l.split( "-" )[1] ), Integer::sum ) )//
+                    .values().stream().sorted( Comparator.reverseOrder() ) //
+                    .limit( numberOfElves ) //
+                    .reduce( 0, Integer::sum );
     }
 }

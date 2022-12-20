@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-public class Day8
-    extends Day<Integer> {
+
+public class Day8 extends Day<Integer> {
 
     Day8() {
         super( 8, "Treetop Tree House" );
@@ -51,7 +51,7 @@ public class Day8
 
     private int getMaxSize( Set<Coordinates> visibleTrees, Matrix treePatch, int row, int col, int maxSizeForRow ) {
         Coordinates tree = new Coordinates( row, col );
-        tree.setValue( treePatch.getValue( tree ));
+        tree.setValue( treePatch.getValue( tree ) );
         if ( tree.getValue() > maxSizeForRow ) {
             maxSizeForRow = tree.getValue();
             visibleTrees.add( tree );

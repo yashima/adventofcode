@@ -6,9 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-//-------------- DAY 10: CRT Display -------------------
-public class Day10
-    extends Day<Integer> {
+
+public class Day10 extends Day<Integer> {
     static int WIDTH = 40;
 
     AtomicInteger clock = new AtomicInteger( 0 );
@@ -35,7 +34,7 @@ public class Day10
     }
 
     @Override
-   public Integer part2( Stream<String> input ) {
+    public Integer part2( Stream<String> input ) {
         //TODO solved but...
         return null;
     }

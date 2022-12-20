@@ -8,15 +8,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-public class Day9
-    extends Day<Integer> {
+
+public class Day9 extends Day<Integer> {
 
     public Day9() {
         super( 9, "Rope Bridge" );
     }
 
     @Override
-   public  Integer part1( Stream<String> input ) {
+    public Integer part1( Stream<String> input ) {
         Set<Coordinates> positionsVisited = new HashSet<>();
         RowEnd head = new RowEnd( "head" );
         List<RowEnd> knots = IntStream.range( 1, 10 ).mapToObj( idx -> new RowEnd( "t" + idx ) ).toList();
@@ -38,7 +38,7 @@ public class Day9
     }
 
     @Override
-   public Integer part2( Stream<String> input ) {
+    public Integer part2( Stream<String> input ) {
         //TODO solved both but...
         return null;
     }

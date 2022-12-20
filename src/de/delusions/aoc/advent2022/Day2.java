@@ -20,8 +20,8 @@ public class Day2 extends Day<Integer> {
     }
 
     @Override
-    public  Integer part2( Stream<String> input ) {
+    public Integer part2( Stream<String> input ) {
         return input.map( line -> List.of( "fnord", "B X", "C X", "A X", "A Y", "B Y", "C Y", "C Z", "A Z", "B Z" ) //
-            .indexOf( line ) ).reduce( 0, Integer::sum );
+                                      .indexOf( line ) ).reduce( 0, Integer::sum );
     }
 }
