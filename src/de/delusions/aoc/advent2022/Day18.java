@@ -3,12 +3,13 @@ package de.delusions.aoc.advent2022;
 import de.delusions.aoc.util.Day;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Day18 extends Day<Integer> {
 
-    public static final int MAX_DIM = 25;
+    public static final int MAX_DIM = 7;
 
     public static final int DROPLET = 1;
 
@@ -25,44 +26,57 @@ public class Day18 extends Day<Integer> {
     @Override
     public Integer part1( Stream<String> input ) {
         droplet = parse( input );
-        //fillNegativeSpace();
-        AtomicInteger surface = new AtomicInteger( 0 );
-        IntStream.range( 0, MAX_DIM ).forEach( x -> IntStream.range( 0, MAX_DIM ).forEach(
-            y -> IntStream.range( 0, MAX_DIM ).forEach( z -> surface.addAndGet( countSurface( x, y, z ) ) ) ) );
-        return surface.get();
+        return solve( this::surface );
     }
 
     @Override
     public Integer part2( Stream<String> input ) {
-        return null;
+        fillNegativeSpace();
+        return solve( this::surfaceOutside );
+    }
+
+    int solve( Function<Integer[], Integer> surfaceFunc ) {
+        AtomicInteger surface = new AtomicInteger( 0 );
+        IntStream.range( 0, MAX_DIM ).forEach( x -> IntStream.range( 0, MAX_DIM ).forEach(
+            y -> IntStream.range( 0, MAX_DIM ).forEach( z -> surface.addAndGet( countSurface( x, y, z, surfaceFunc ) ) ) ) );
+        return surface.get();
     }
 
 
-    int countSurface( int x, int y, int z ) {
-        if ( droplet[x][y][z] !=DROPLET ) {
+    int countSurface( int x, int y, int z, Function<Integer[], Integer> surfaceFunc ) {
+        if ( droplet[x][y][z] != DROPLET ) {
             return 0;
         }
         int count = 0;
 
-        count += surface( x+1, y, z);
-        count += surface( x-1, y, z);
-        count += surface( x, y+1, z);
-        count += surface( x, y-1, z);
-        count += surface( x, y, z+1);
-        count += surface( x, y, z-1);
+        count += surfaceFunc.apply( new Integer[]{x + 1, y, z} );
+        count += surfaceFunc.apply( new Integer[]{x - 1, y, z} );
+        count += surfaceFunc.apply( new Integer[]{x, y + 1, z} );
+        count += surfaceFunc.apply( new Integer[]{x, y - 1, z} );
+        count += surfaceFunc.apply( new Integer[]{x, y, z + 1} );
+        count += surfaceFunc.apply( new Integer[]{x, y, z - 1} );
         //System.out.printf( "(%s,%s,%s)=%s%n", x, y, z, count );
         return count;
     }
 
-    int surface( int x, int y, int z){
-        if(x<0 || y<0 || z<0){
+    Integer surface( Integer... coords ) {
+        int x = coords[0];
+        int y = coords[1];
+        int z = coords[2];
+        if ( x < 0 || y < 0 || z < 0 || x>=MAX_DIM || y>=MAX_DIM || z>=MAX_DIM) {
             return 1;
         }
-       return droplet[x][y][z]!=DROPLET ? 1 : 0;
+        return droplet[x][y][z] != DROPLET ? 1 : 0;
     }
 
-    int isOutside( Dimension dim, boolean inverted, int p, int other, int another ) {
-        return OUTSIDE == getValue( dim, inverted, p + 1, other, another ) ? 1 : 0;
+    Integer surfaceOutside( Integer... coords ) {
+        int x = coords[0];
+        int y = coords[1];
+        int z = coords[2];
+        if ( x < 0 || y < 0 || z < 0 || x>MAX_DIM || y>MAX_DIM || z> MAX_DIM) {
+            return 1;
+        }
+        return droplet[x][y][z] == OUTSIDE ? 1 : 0;
     }
 
     void fillNegativeSpace() {
