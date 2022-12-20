@@ -25,9 +25,10 @@ public class Day18 extends Day<Integer> {
     @Override
     public Integer part1( Stream<String> input ) {
         droplet = parse( input );
-        fillNegativeSpace();
+        //fillNegativeSpace();
         AtomicInteger surface = new AtomicInteger( 0 );
-        IntStream.range( 0, MAX_DIM ).forEach( x -> IntStream.range( 0, MAX_DIM ).forEach( y -> IntStream.range( 0, MAX_DIM ).forEach( z -> surface.addAndGet( countSurface( x, y, z ) ) ) ) );
+        IntStream.range( 0, MAX_DIM ).forEach( x -> IntStream.range( 0, MAX_DIM ).forEach(
+            y -> IntStream.range( 0, MAX_DIM ).forEach( z -> surface.addAndGet( countSurface( x, y, z ) ) ) ) );
         return surface.get();
     }
 
@@ -38,37 +39,44 @@ public class Day18 extends Day<Integer> {
 
 
     int countSurface( int x, int y, int z ) {
-        if ( droplet[x][y][z] == OUTSIDE ) {
+        if ( droplet[x][y][z] !=DROPLET ) {
             return 0;
         }
         int count = 0;
 
-        count += isOutside( Dimension.X,false, x,y,z);
-        count += isOutside( Dimension.X,true, x,y,z);
-        count += isOutside( Dimension.Y,false, y,x,z);
-        count += isOutside( Dimension.Y,true, y,x,z);
-        count += isOutside( Dimension.Z,false, z,x,y);
-        count += isOutside( Dimension.Z,true, z,x,y);
+        count += surface( x+1, y, z);
+        count += surface( x-1, y, z);
+        count += surface( x, y+1, z);
+        count += surface( x, y-1, z);
+        count += surface( x, y, z+1);
+        count += surface( x, y, z-1);
         //System.out.printf( "(%s,%s,%s)=%s%n", x, y, z, count );
         return count;
     }
 
-    int isOutside(Dimension dim, boolean inverted, int p, int other, int another){
-        return OUTSIDE==getValue( dim, inverted, p+1, other, another ) ? 1 : 0;
+    int surface( int x, int y, int z){
+        if(x<0 || y<0 || z<0){
+            return 1;
+        }
+       return droplet[x][y][z]!=DROPLET ? 1 : 0;
     }
 
-    void fillNegativeSpace(){
-        for(Dimension dim : Dimension.values()) {
-            fillNegativeSpace(dim, true );
-            fillNegativeSpace(dim, false );
+    int isOutside( Dimension dim, boolean inverted, int p, int other, int another ) {
+        return OUTSIDE == getValue( dim, inverted, p + 1, other, another ) ? 1 : 0;
+    }
+
+    void fillNegativeSpace() {
+        for ( Dimension dim : Dimension.values() ) {
+            fillNegativeSpace( dim, true );
+            fillNegativeSpace( dim, false );
         }
-        IntStream.range( 0,MAX_DIM ).forEach( slice -> System.out.println(print( Dimension.X,slice )) );
+        IntStream.range( 0, MAX_DIM ).forEach( slice -> System.out.println( print( Dimension.X, slice ) ) );
     }
 
     void fillNegativeSpace( Dimension dim, boolean inverted ) {
 
         IntStream.range( 0, MAX_DIM ).forEach( other -> IntStream.range( 0, MAX_DIM ).forEach( another -> {
-            for(int position=0;position<MAX_DIM;position++) {
+            for ( int position = 0; position < MAX_DIM; position++ ) {
                 if ( getValue( dim, inverted, position, other, another ) != DROPLET ) {
                     setValue( dim, inverted, position, other, another, OUTSIDE );
                 }
@@ -76,32 +84,32 @@ public class Day18 extends Day<Integer> {
                     break;
                 }
             }
-        }) ) ;
+        } ) );
     }
 
     int getValue( Dimension dimension, boolean inverted, int p, int other, int another ) {
         return switch ( dimension ) {
-            case X -> droplet[position(p,inverted)][other][another];
-            case Y -> droplet[other][position(p,inverted)][another];
-            case Z -> droplet[other][another][ position(p,inverted)];
+            case X -> droplet[position( p, inverted )][other][another];
+            case Y -> droplet[other][position( p, inverted )][another];
+            case Z -> droplet[other][another][position( p, inverted )];
         };
     }
 
     void setValue( Dimension dimension, boolean inverted, int p, int other, int another, int value ) {
         switch ( dimension ) {
             case X:
-                droplet[position(p,inverted)][other][another] = value;
+                droplet[position( p, inverted )][other][another] = value;
             case Y:
-                droplet[other][position(p,inverted)][another] = value;
+                droplet[other][position( p, inverted )][another] = value;
             case Z:
-                droplet[other][another][position(p,inverted)] = value;
+                droplet[other][another][position( p, inverted )] = value;
         }
     }
 
-    int position(int p,boolean invert){
-        return invert ? MAX_DIM-p-1 : p;
+    int position( int p, boolean invert ) {
+        return invert ? MAX_DIM - p - 1 : p;
     }
-    
+
     /**
      * Parses the 3D coordinates for the droplet from the iput
      *
@@ -110,24 +118,24 @@ public class Day18 extends Day<Integer> {
      */
     int[][][] parse( Stream<String> input ) {
         int[][][] droplet = new int[MAX_DIM][MAX_DIM][MAX_DIM]; //rather make 1 bigger here
-        input.sorted().peek( System.out::println ).forEach( line -> {
+        input.sorted().forEach( line -> {
             String[] split = line.split( "," );
             droplet[Integer.parseInt( split[0] )][Integer.parseInt( split[1] )][Integer.parseInt( split[2] )] = DROPLET;
         } );
         return droplet;
     }
 
-    String print(Dimension dimension, int slice){
+    String print( Dimension dimension, int slice ) {
         StringBuilder builder = new StringBuilder();
-        builder.append("---------").append( dimension ).append( slice ).append( "---------\n" );
+        builder.append( "---------" ).append( dimension ).append( slice ).append( "---------\n" );
         IntStream.range( 0, MAX_DIM ).forEach( other -> IntStream.range( 0, MAX_DIM ).forEach( another -> {
             int value = getValue( dimension, false, slice, other, another );
-            builder.append( " ").append( value==DROPLET ? "#" : value==OUTSIDE ? "." : "o").append( " " );
-           if(another==MAX_DIM-1){
-               builder.append("\n");
-           }
-        }));
-        builder.append("--------------------\n");
+            builder.append( " " ).append( value == DROPLET ? "#" : value == OUTSIDE ? "." : "o" ).append( " " );
+            if ( another == MAX_DIM - 1 ) {
+                builder.append( "\n" );
+            }
+        } ) );
+        builder.append( "--------------------\n" );
         return builder.toString();
     }
 }
