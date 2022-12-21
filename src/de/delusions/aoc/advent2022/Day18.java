@@ -2,11 +2,17 @@ package de.delusions.aoc.advent2022;
 
 import de.delusions.aoc.util.Day;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+//Day 18, part1: Boiling Boulders=4456
+//Day 18, part2: Boiling Boulders=2510
 public class Day18 extends Day<Integer> {
 
     public static final int MAX_DIM = 22;
@@ -25,26 +31,16 @@ public class Day18 extends Day<Integer> {
 
     record Block(int x, int y, int z) {}
 
-    AtomicInteger blockCounter =  new AtomicInteger();
-
     @Override
     public Integer part1( Stream<String> input ) {
         droplet = parse( input );
-        blockCounter.set( 0 );
-        return solve( block -> !isDroplet( block )  );
+
+        return solve( block -> !isDroplet( block ) );
     }
 
     @Override
     public Integer part2( Stream<String> input ) {
-        blockCounter.set( 0 );
-        doWithMatrix(block -> {
-            if(isDroplet( block )){
-                return true;
-            } else {
-                setToOutside( block );
-                return false;
-            }
-        });
+        floodTheMatrix( new Block( 0, 0, 0 ) );
         return solve( this::isOutside );
     }
 
@@ -56,38 +52,24 @@ public class Day18 extends Day<Integer> {
      */
     int solve( Function<Block, Boolean> surfaceFunc ) {
         AtomicInteger surface = new AtomicInteger( 0 );
-        doWithMatrix( Dimension.X,false, block -> {
-            surface.addAndGet( countSurface( block, surfaceFunc ));
+        doWithMatrix( block -> {
+            surface.addAndGet( countSurface( block, surfaceFunc ) );
             return false;
-        });
-        System.out.println("Counted surfaces for blocks="+blockCounter.get());
+        } );
         return surface.get();
     }
 
-    /**
-     * Tries to fill in the negative space outside the droplet to make it possible to count the surfaces for part 2
-     */
-    void doWithMatrix(Function<Block,Boolean> blockFunc) {
-        for ( Dimension dim : Dimension.values() ) {
-            doWithMatrix( dim, false, blockFunc );
-            doWithMatrix( dim, true ,blockFunc);
-        }
-        //IntStream.range( 0, MAX_DIM ).forEach( slice -> System.out.println( print( Dimension.X, slice ) ) );
-    }
 
     /**
-     * Fills the negative space coming from a certain direction and looking as far as the
-     * first droplet block coming from that direction on each of the other two dimensions.
-     * Six passes needed: 2 for each dimension, 1 at forward count and 1 at inverted count
-     * @param dim the dimension we're looking from
-     * @param inverted or the opposite
+     * Fills the negative space coming from a certain direction and looking as far as the first droplet block coming from that direction on each of
+     * the other two dimensions. Six passes needed: 2 for each dimension, 1 at forward count and 1 at inverted count
+     *
      */
-    void doWithMatrix( Dimension dim, boolean inverted, Function<Block,Boolean> blockFunc ) {
+    void doWithMatrix( Function<Block, Boolean> blockFunc ) {
         for ( int second = 0; second < MAX_DIM; second++ ) {
             for ( int third = 0; third < MAX_DIM; third++ ) {
                 for ( int first = 0; first < MAX_DIM; first++ ) {
-                    int position = inverted ? MAX_DIM - first - 1 : first;
-                    if(blockFunc.apply( getDimensionBlock( dim, position, second, third ) )){
+                    if ( blockFunc.apply( getDimensionBlock( Dimension.X, first, second, third ) ) ) {
                         break;
                     }
                 }
@@ -96,8 +78,26 @@ public class Day18 extends Day<Integer> {
     }
 
     /**
-     * Count all the surfaces for a given position that satisfy the isEmptySpace function
-     * Only counts surfaces for droplets. Other blocks always return 0
+     * Alternative method to try and determine which blocks are outside the droplet. After running this all the blocks that can be reached by water
+     * should be marked as OUTSIDE
+     *
+     * @param startBlock a known empty block
+     */
+    void floodTheMatrix( Block startBlock ) {
+        Stack<Block> opens = new Stack<>();
+        opens.push( startBlock );
+        while ( !opens.isEmpty() ) {
+            //only blocks that are inside the matrix, not yet marked
+            opens.addAll( getNeighboringBlocks( setToOutside( opens.pop() ) ).stream().filter( Predicate.not( this::isOutsideOfMatrix ) )//
+                              .filter( Predicate.not( this::isOutside ) )//
+                              .filter( Predicate.not( this::isDroplet ) )//
+                              .toList() );
+        }
+    }
+
+    /**
+     * Count all the surfaces for a given position that satisfy the isEmptySpace function Only counts surfaces for droplets. Other blocks always
+     * return 0
      *
      * @param surfaceFunc the function that is used for testing
      * @return the sum of the sides that match the isEmptySpace function
@@ -106,10 +106,9 @@ public class Day18 extends Day<Integer> {
         if ( !isDroplet( block ) ) { //we're not processing anything but lava
             return 0;
         }
-        blockCounter.incrementAndGet();//count dropletblogs
         int result = 0;
         //test all adjacent coordinates against the surfaceFunc
-        for(Dimension dimension : Dimension.values()){
+        for ( Dimension dimension : Dimension.values() ) {
             result += surfaceFunc.apply( getNeighboringBlock( block, dimension, false ) ) ? 1 : 0;
             result += surfaceFunc.apply( getNeighboringBlock( block, dimension, true ) ) ? 1 : 0;
         }
@@ -130,9 +129,26 @@ public class Day18 extends Day<Integer> {
      * Sets the value at the block's position
      *
      * @param block the block describing the position
+     * @return the same block for further processing
      */
-    void setToOutside( Block block ) {
+    Block setToOutside( Block block ) {
         droplet[block.x][block.y][block.z] = OUTSIDE;
+        return block;
+    }
+
+    /**
+     * Retrieves neighboring blocks for a given block
+     *
+     * @param block the block we're analyzing
+     * @return a list of 6 blocks
+     */
+    List<Block> getNeighboringBlocks( Block block ) {
+        ArrayList<Block> blocks = new ArrayList<>();
+        for ( Dimension dimension : Dimension.values() ) {
+            blocks.add( getNeighboringBlock( block, dimension, false ) );
+            blocks.add( getNeighboringBlock( block, dimension, true ) );
+        }
+        return blocks;
     }
 
     /**
@@ -156,8 +172,8 @@ public class Day18 extends Day<Integer> {
      *
      * @param shift    the dimension that is described by the position parameter
      * @param position the position in the dimension we're looking at right now
-     * @param second    the "first" of the second two dimensions
-     * @param third  the "second" of the second two dimensions
+     * @param second   the "first" of the second two dimensions
+     * @param third    the "second" of the second two dimensions
      * @return a block as described by the parameters
      */
     Block getDimensionBlock( Dimension shift, int position, int second, int third ) {
@@ -180,21 +196,21 @@ public class Day18 extends Day<Integer> {
 
     /**
      * Checks if block is part of the droplet
+     *
      * @param block the block to check
      * @return true if it is part of the droplet
      */
-    boolean isDroplet(Block block){
-        return !isOutsideOfMatrix( block ) && getValue( block )==DROPLET;
+    boolean isDroplet( Block block ) {
+        return !isOutsideOfMatrix( block ) && getValue( block ) == DROPLET;
     }
 
     /**
      * Checks if block is marked as outside the droplet
+     *
      * @param block the block to check
      * @return true if it is marked as outside or is outside the matrix boundaries
      */
-    boolean isOutside(Block block){
-        return isOutsideOfMatrix( block ) || getValue( block )==OUTSIDE;
-    }
+    boolean isOutside( Block block ) { return isOutsideOfMatrix( block ) || getValue( block ) == OUTSIDE; }
 
     /**
      * Parses the 3D coordinates for the droplet from the input
