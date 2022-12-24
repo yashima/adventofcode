@@ -25,7 +25,7 @@ public class Day19 extends Day<Integer> {
 
     Integer solve( List<Blueprint> blueprints ) {
         //TODO I am using a limit, dont forget
-        return blueprints.stream().limit( 1 ).map( this::runBluePrint ).reduce( 0, Integer::sum );
+        return blueprints.stream().limit( 2 ).map( this::runBluePrint ).reduce( 0, Integer::sum );
     }
 
     static int[][] copy( int[][] state ) {
@@ -226,16 +226,24 @@ public class Day19 extends Day<Integer> {
             boolean result = false;
             if ( robotToBuild == ORE ) {
                 //TODO improve heuristic to include more costs for now this is fine
-                result = getCost( ORE ) < state[CLAY.ordinal()][ORE.ordinal()];
+                int oreCostOre = getCost( ORE );
+                int oreCostClay = state[CLAY.ordinal()][ORE.ordinal()];
+                result = oreCostOre < oreCostClay && getProd( ORE ) > oreCostClay / oreCostOre;
             }
             else if ( robotToBuild == CLAY ) {
                 result = true;
             }
-            else if ( robotToBuild == OBSIDIAN ) {
-                result = getProd( CLAY ) > 0;
-            }
-            else if ( robotToBuild == GEODE ) {
-                result = getProd( OBSIDIAN ) > 0 && stepsUntilBuild() < timeLeft;
+            else {
+                int obsProd = getProd( OBSIDIAN );
+                if ( robotToBuild == OBSIDIAN ) {
+                    int obsCost = state[GEODE.ordinal()][OBSIDIAN.ordinal()];
+                    int steps = stepsUntilBuild();
+                    boolean lohntNoch = ( obsCost - getPile( OBSIDIAN ) - steps * obsProd ) / ( obsProd + 1 ) + steps < timeLeft;
+                    result = getProd( CLAY ) > 0 && lohntNoch;
+                }
+                else if ( robotToBuild == GEODE ) {
+                    result = obsProd > 0 && stepsUntilBuild() < timeLeft;
+                }
             }
             return result;
         }
