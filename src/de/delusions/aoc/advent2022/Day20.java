@@ -8,11 +8,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class Day20 extends Day<Integer> {
+public class Day20 extends Day<Long> {
 
     static AtomicInteger ID = new AtomicInteger();
 
     LinkedList<CryptPair> numbers;
+
+    long key = 811589153;
 
     Integer ZERO = null;
 
@@ -20,7 +22,7 @@ public class Day20 extends Day<Integer> {
         super( 20, "Grove Positioning System" );
     }
 
-    static CryptPair newPair( int number ) {
+    static CryptPair newPair( long number ) {
         return new CryptPair( ID.getAndIncrement(), number, false );
     }
 
@@ -36,16 +38,14 @@ public class Day20 extends Day<Integer> {
         return ZERO;
     }
 
-    int getValueAtPosition( int index ) {
+    long getValueAtPosition( int index ) {
         return numbers.get( ( index + getZeroPosition() ) % ( numbers.size() ) ).number;
     }
 
-    //14306 too low
     @Override
-    public Integer part1( Stream<String> input ) {
-        numbers = new LinkedList<>( parse( input ) );
+    public Long part1( Stream<String> input ) {
+        numbers = new LinkedList<>( parse( input, 1 ) );
         mixNumbers();
-        System.out.println( numbers );
         return getValueAtPosition( 1000 ) + getValueAtPosition( 2000 ) + getValueAtPosition( 3000 );
     }
 
@@ -69,10 +69,21 @@ public class Day20 extends Day<Integer> {
         return newIndex;
     }
 
+    @Override
+    public Long part2( Stream<String> input ) {
+        numbers = new LinkedList<>( parse( input, key ) );
+        for ( int mix = 0; mix < 10; mix++ ) {mixNumbers();}
+        return getValueAtPosition( 1000 ) + getValueAtPosition( 2000 ) + getValueAtPosition( 3000 );
+
+    }
+
+    CryptPair getById( int id ) {
+        return numbers.stream().filter( cp -> cp.id == id ).findFirst().orElse( null );
+    }
+
     int calculateNewIndex( CryptPair nextPair, int index ) {
         int numbersWitoutAlice = numbers.size() - 1;
-        int newIndex = ( index + nextPair.number ) % numbersWitoutAlice; //simple sum suffices for many non-loops
-
+        long newIndex = ( index + nextPair.number ) % numbersWitoutAlice;
         if ( newIndex < 0 ) {
             newIndex = numbersWitoutAlice + newIndex;
         }
@@ -82,23 +93,14 @@ public class Day20 extends Day<Integer> {
         else if ( newIndex == 0 && index != 0 ) {
             newIndex = numbersWitoutAlice;
         }
-        return newIndex;
+        return (int) newIndex;
     }
 
-    CryptPair getById( int id ) {
-        return numbers.stream().filter( cp -> cp.id == id ).findFirst().orElse( null );
+    List<CryptPair> parse( Stream<String> input, long key ) {
+        return input.map( line -> newPair( key * Integer.parseInt( line ) ) ).toList();
     }
 
-    List<CryptPair> parse( Stream<String> input ) {
-        return input.map( line -> newPair( Integer.parseInt( line ) ) ).toList();
-    }
-
-    @Override
-    public Integer part2( Stream<String> input ) {
-        return null;
-    }
-
-    record CryptPair(int id, int number, boolean moved) {
+    record CryptPair(int id, long number, boolean moved) {
         @Override
         public String toString() {
             return number + "";
