@@ -70,16 +70,17 @@ public class Day20 extends Day<Integer> {
     }
 
     int calculateNewIndex( CryptPair nextPair, int index ) {
-        int newIndex = index + nextPair.number; //simple sum suffices for many non-loops
         int numbersWitoutAlice = numbers.size() - 1;
-        if ( newIndex < 0 ) { //step left
-            newIndex = numbersWitoutAlice + newIndex % numbersWitoutAlice;
+        int newIndex = index + nextPair.number % numbersWitoutAlice; //simple sum suffices for many non-loops
+
+        if ( newIndex < 0 ) {
+            newIndex = numbers.size() + newIndex - 1;
         }
-        else if ( newIndex > numbersWitoutAlice ) { //loop right
-            newIndex = nextPair.number() % numbersWitoutAlice;
+        else if ( newIndex > numbers.size() ) {
+            newIndex = newIndex % numbers.size() + 1;
         }
-        else if ( newIndex == 0 && index != 0 ) { //the edge goes to the end
-            newIndex = numbersWitoutAlice;
+        else if ( newIndex == 0 && index != 0 ) {
+            newIndex = numbers.size() - 1;
         }
         return newIndex;
     }
