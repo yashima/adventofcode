@@ -2,12 +2,17 @@ package de.delusions.aoc.advent2022;
 
 import de.delusions.aoc.util.Day;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day21 extends Day<Integer> {
+import static de.delusions.aoc.advent2022.Day21.Operation.*;
+
+public class Day21 extends Day<Long> {
     private Map<String, MathMonkey> mathMonkeys;
 
     public Day21() {
@@ -16,14 +21,18 @@ public class Day21 extends Day<Integer> {
 
     //two low: 945240480
     @Override
-    public Integer part1( Stream<String> input ) {
+    public Long part1( Stream<String> input ) {
         mathMonkeys = parse( input );
-        mathMonkeys.values().forEach( m -> m.finishParsing( mathMonkeys ) );
-        return mathMonkeys.get( "root" ).doMath();
+        //mathMonkeys.values().forEach( m -> m.finishParsing( mathMonkeys ) );
+        List<String> operations = mathMonkeys.values().stream().map( m -> m.mathString ).distinct().toList();
+        System.out.println( operations );
+        System.out.println( "Monkey Count=" + mathMonkeys.size() );
+        System.out.println( mathMonkeys.get( "root" ).print( mathMonkeys ) );
+        return mathMonkeys.get( "root" ).doMath( mathMonkeys );
     }
 
     @Override
-    public Integer part2( Stream<String> input ) {
+    public Long part2( Stream<String> input ) {
         return null;
     }
 
@@ -32,45 +41,69 @@ public class Day21 extends Day<Integer> {
         return input.map( MathMonkey::new ).collect( Collectors.toMap( m -> m.name, Function.identity() ) );
     }
 
+    enum Operation {
+        PLUS, MINUS, MULTIPLY, DIVIDE, CONSTANT
+    }
+
     static class MathMonkey {
         String name;
 
-        String operation;
+        static Pattern OP_REGEX = Pattern.compile( "([a-z]{4}) (.) ([a-z]{4})" );
 
-        int constant;
+        String mathString;
 
-        MathMonkey lefty;
+        int constant = -1;
 
-        MathMonkey right;
+        String lefty;
+
+        String right;
+
+        Operation operation;
 
 
         MathMonkey( String line ) {
             String[] split = line.split( ":" );
             this.name = split[0].trim();
-            this.operation = split[1].trim();
+            this.mathString = split[1].trim();
+            try {
+                constant = Integer.parseInt( mathString );
+                operation = Operation.CONSTANT;
+            }
+            catch ( NumberFormatException e ) {
+                Matcher matcher = OP_REGEX.matcher( mathString );
+                if ( matcher.matches() ) {
+                    lefty = matcher.group( 1 );
+                    right = matcher.group( 3 );
+                    operation = switch ( matcher.group( 2 ) ) {
+                        case "+" -> PLUS;
+                        case "-" -> MINUS;
+                        case "*" -> MULTIPLY;
+                        case "/" -> DIVIDE;
+                        default -> null;
+                    };
+                }
+            }
         }
 
-        int doMath() {
+        long doMath( Map<String, MathMonkey> map ) {
             return switch ( operation ) {
-                case "+" -> lefty.doMath() + right.doMath();
-                case "-" -> lefty.doMath() - right.doMath();
-                case "*" -> lefty.doMath() * right.doMath();
-                case "/" -> lefty.doMath() / right.doMath();
-                default -> constant;
+                case PLUS -> map.get( lefty ).doMath( map ) + map.get( right ).doMath( map );
+                case MINUS -> map.get( lefty ).doMath( map ) - map.get( right ).doMath( map );
+                case MULTIPLY -> map.get( lefty ).doMath( map ) * map.get( right ).doMath( map );
+                case DIVIDE -> map.get( lefty ).doMath( map ) / map.get( right ).doMath( map );
+                case CONSTANT -> constant;
             };
         }
 
-        void finishParsing( Map<String, MathMonkey> map ) {
-            String[] split = this.operation.split( " " );
-            if ( split.length == 1 ) {
-                constant = Integer.parseInt( split[0] );
-            }
-            else {
-                lefty = map.get( split[0] );
-                right = map.get( split[2] );
-                operation = split[1];
-            }
-
+        String print( Map<String, MathMonkey> map ) {
+            return switch ( operation ) {
+                case PLUS -> String.format( "(%s+%s)", map.get( lefty ).print( map ), map.get( right ).print( map ) );
+                case MINUS -> String.format( "(%s-%s)", map.get( lefty ).print( map ), map.get( right ).print( map ) );
+                case MULTIPLY -> String.format( "(%s*%s)", map.get( lefty ).print( map ), map.get( right ).print( map ) );
+                case DIVIDE -> String.format( "(%s/%s)", map.get( lefty ).print( map ), map.get( right ).print( map ) );
+                case CONSTANT -> String.format( "%s", constant );
+            };
         }
     }
 }
+
