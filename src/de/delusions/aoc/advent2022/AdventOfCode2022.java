@@ -14,7 +14,7 @@ public class AdventOfCode2022 {
         Day<?> today = new Day20();
         today.run( false, true );
 
-        //part2Day20: too low 325733607
+        //part20325733607
     }
 
 }

@@ -16,7 +16,7 @@ public class Day20Test {
 
     int[] input = {1, 2, -3, 3, -2, 0, 4};
 
-    int BORDER = input.length + 1; //because we add an element each test
+    long BORDER = input.length + 1; //because we add an element each test
 
     Day20.CryptPair cp;
 
@@ -143,7 +143,7 @@ public class Day20Test {
 
     @Test
     public void testStepLeftMultiLoop() {
-        classUnderTest.numbers.add( 2, cp = Day20.newPair( -1 - 2 * BORDER ) );
-        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), 6 );
+        classUnderTest.numbers.add( 2, cp = Day20.newPair( -19 ) );
+        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), 4 );
     }
 }

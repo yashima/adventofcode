@@ -14,7 +14,7 @@ public class Day20 extends Day<Long> {
 
     LinkedList<CryptPair> numbers;
 
-    long key = 811589153;
+    long key = 811589153L;
 
     Integer ZERO = null;
 
@@ -49,6 +49,17 @@ public class Day20 extends Day<Long> {
         return getValueAtPosition( 1000 ) + getValueAtPosition( 2000 ) + getValueAtPosition( 3000 );
     }
 
+    @Override
+    public Long part2( Stream<String> input ) {
+        numbers = new LinkedList<>( parse( input, key ) );
+        for ( int mix = 0; mix < 10; mix++ ) {mixNumbers();}
+        long a1000 = getValueAtPosition( 1000 );
+        long a2000 = getValueAtPosition( 2000 );
+        long a3000 = getValueAtPosition( 3000 );
+        return a1000 + a2000 + a3000;
+
+    }
+
     void mixNumbers() {
         CryptPair nextPair = getNext();
         while ( nextPair != null ) {
@@ -69,26 +80,18 @@ public class Day20 extends Day<Long> {
         return newIndex;
     }
 
-    @Override
-    public Long part2( Stream<String> input ) {
-        numbers = new LinkedList<>( parse( input, key ) );
-        for ( int mix = 0; mix < 10; mix++ ) {mixNumbers();}
-        return getValueAtPosition( 1000 ) + getValueAtPosition( 2000 ) + getValueAtPosition( 3000 );
-
-    }
-
     CryptPair getById( int id ) {
         return numbers.stream().filter( cp -> cp.id == id ).findFirst().orElse( null );
     }
 
     int calculateNewIndex( CryptPair nextPair, int index ) {
         int numbersWitoutAlice = numbers.size() - 1;
-        long newIndex = ( index + nextPair.number ) % numbersWitoutAlice;
+        long newIndex = index + nextPair.number % numbersWitoutAlice;
         if ( newIndex < 0 ) {
             newIndex = numbersWitoutAlice + newIndex;
         }
-        else if ( newIndex > numbers.size() ) {
-            newIndex = newIndex + 1;
+        else if ( newIndex > numbersWitoutAlice ) {
+            newIndex = newIndex - numbersWitoutAlice;
         }
         else if ( newIndex == 0 && index != 0 ) {
             newIndex = numbersWitoutAlice;
