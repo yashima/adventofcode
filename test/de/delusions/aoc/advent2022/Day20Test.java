@@ -126,24 +126,24 @@ public class Day20Test {
     @Test
     public void testStepRightLoop() {
         classUnderTest.numbers.add( 2, cp = Day20.newPair( 1 + BORDER ) );
-        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), 3 );
+        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), 4 );
     }
 
     @Test
     public void testStepLeftLoop() {
         classUnderTest.numbers.add( 2, cp = Day20.newPair( -1 - BORDER ) );
-        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), 0 );
+        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), BORDER - 1 );
     }
 
     @Test
     public void testStepRightMultiLoop() {
         classUnderTest.numbers.add( 2, cp = Day20.newPair( 1 + 2 * BORDER ) );
-        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), 4 );
+        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), 5 );
     }
 
     @Test
     public void testStepLeftMultiLoop() {
         classUnderTest.numbers.add( 2, cp = Day20.newPair( -1 - 2 * BORDER ) );
-        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), 0 );
+        assertEquals( classUnderTest.calculateNewIndex( cp, 2 ), 6 );
     }
 }
