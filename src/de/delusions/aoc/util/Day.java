@@ -8,9 +8,9 @@ import java.util.stream.Stream;
 
 public abstract class Day<T> {
 
-    static String PATH = System.getProperty("user.dir"  )+"\\inputs\\day%s-input.txt";
+    public static String PATH = System.getProperty( "user.dir" ) + "\\inputs\\day%s-input.txt";
 
-    static String TEST_PATH =  System.getProperty("user.dir"  )+"\\inputs\\day%s-test.txt";
+    public static String TEST_PATH = System.getProperty( "user.dir" ) + "\\inputs\\day%s-test.txt";
 
     int day;
 
