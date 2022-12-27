@@ -18,11 +18,10 @@ public class Day21 extends Day<Long> {
         super( 21, "Monkey Math" );
     }
 
-    //two low: 945240480
     @Override
     public Long part1( Stream<String> input ) {
         mathMonkeys = parse( input );
-        mathMonkeys.values().stream().forEach( m -> m.fetchMonkeys( mathMonkeys ) );
+        mathMonkeys.values().forEach( m -> m.fetchMonkeys( mathMonkeys ) );
         return mathMonkeys.get( "root" ).doMath();
     }
 
@@ -31,16 +30,19 @@ public class Day21 extends Day<Long> {
         MathMonkey root = mathMonkeys.get( "root" );
         MathMonkey human = mathMonkeys.get( "humn" );
 
-        human.operation = null;
+        human.operation = null; //because I can
         try {root.doMath();}
         catch ( NullPointerException e ) {
-            long count = mathMonkeys.values().stream().filter( m -> m.humanBranch ).count();
-            System.out.println( "Found branch monkeys=" + count );
+            try {
+                root.doHumanMath( 0L );
+            }
+            catch ( HumanDetection hd ) {
+                return hd.result;
+            }
         }
-        root.doHumanMath( 0L );
+        //if we get here...
         return 0L;
     }
-
 
     Map<String, MathMonkey> parse( Stream<String> input ) {
         return input.map( MathMonkey::new ).collect( Collectors.toMap( m -> m.name, Function.identity() ) );
@@ -48,6 +50,15 @@ public class Day21 extends Day<Long> {
 
     enum Operation {
         PLUS, MINUS, MULTIPLY, DIVIDE, CONSTANT
+    }
+
+    static class HumanDetection extends RuntimeException {
+        long result;
+
+        HumanDetection( long result ) {
+            super();
+            this.result = result;
+        }
     }
 
     static class MathMonkey {
@@ -70,8 +81,6 @@ public class Day21 extends Day<Long> {
         MathMonkey mLeft;
 
         MathMonkey mRight;
-
-        MathMonkey caller;
 
         MathMonkey( String line ) {
             String[] split = line.split( ":" );
@@ -102,9 +111,10 @@ public class Day21 extends Day<Long> {
             mRight = map.get( righty );
         }
 
-        long doHumanMath( Long expectedFromCaller ) {
-            if ( operation == CONSTANT ) {
-                System.out.println( "Heureka? " + expectedFromCaller );
+
+        long doHumanMath( Long expected ) {
+            if ( name.equals( "humn" ) ) {
+                throw new HumanDetection( expected );
             }
             Long monkeyBranchResult;
             MathMonkey humanBranch;
@@ -120,13 +130,12 @@ public class Day21 extends Day<Long> {
                 humanBranch = mRight;
             }
             return switch ( operation ) {
-                case PLUS -> humanBranch.doHumanMath( expectedFromCaller - monkeyBranchResult );
-                case MINUS -> humanBranch.doHumanMath( expectedFromCaller + monkeyBranchResult );
-                case MULTIPLY -> humanBranch.doHumanMath( expectedFromCaller / monkeyBranchResult );
-                case DIVIDE -> humanBranch.doHumanMath( expectedFromCaller * monkeyBranchResult );
-                case CONSTANT -> 0L;
+                case PLUS -> humanBranch.doHumanMath( expected - monkeyBranchResult );
+                case MINUS -> humanBranch.doHumanMath( expected + monkeyBranchResult );
+                case MULTIPLY -> humanBranch.doHumanMath( expected / monkeyBranchResult );
+                case DIVIDE -> humanBranch.doHumanMath( expected * monkeyBranchResult );
+                case CONSTANT -> 0L; //never happens
             };
-
         }
 
         long doMath() {
@@ -148,18 +157,14 @@ public class Day21 extends Day<Long> {
 
         String print( Map<String, MathMonkey> map ) {
             return switch ( operation ) {
-                case PLUS -> String.format( "(%s+%s)", map.get( lefty ).print( map ), map.get( righty ).print( map ) );
-                case MINUS -> String.format( "(%s-%s)", map.get( lefty ).print( map ), map.get( righty ).print( map ) );
-                case MULTIPLY -> String.format( "(%s*%s)", map.get( lefty ).print( map ), map.get( righty ).print( map ) );
-                case DIVIDE -> String.format( "(%s/%s)", map.get( lefty ).print( map ), map.get( righty ).print( map ) );
+                case PLUS -> String.format( "(%s+%s)", mLeft.print( map ), mRight.print( map ) );
+                case MINUS -> String.format( "(%s-%s)", mLeft.print( map ), mRight.print( map ) );
+                case MULTIPLY -> String.format( "(%s*%s)", mLeft.print( map ), mRight.print( map ) );
+                case DIVIDE -> String.format( "(%s/%s)", mLeft.print( map ), mRight.print( map ) );
                 case CONSTANT -> String.format( "%s", constant );
             };
         }
 
-        @Override
-        public String toString() {
-            return this.name;
-        }
     }
 }
 
