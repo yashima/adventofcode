@@ -31,7 +31,7 @@ public class Day19Test {
         assertEquals( machine.getPile( ORE ), 3 );
         assertEquals( machine.getPile( CLAY ), 5 );
         machine.produce( 1 );
-        //assertTrue(build);
+        //assertTrue(beginBuild);
         assertEquals( machine.getPile( ORE ), 2 * 3 );
         assertEquals( machine.getPile( CLAY ), 2 * 5 );
 
@@ -39,7 +39,7 @@ public class Day19Test {
 
     @Test
     public void testIsReadyToBuild() {
-        //build clay
+        //beginBuild clay
         MachineState machine = new MachineState( blueprint );
         machine.robotToBuild = CLAY;
         machine.state[CLAY.ordinal()][ORE.ordinal()] = 3;
@@ -47,7 +47,7 @@ public class Day19Test {
         machine.state[ORE.ordinal()][PILE.ordinal()] = 4;
         assertTrue( machine.isReadyToBuild() );
 
-        //build obsidian
+        //beginBuild obsidian
         machine = new MachineState( blueprint );
         machine.robotToBuild = OBSIDIAN;
         machine.state[OBSIDIAN.ordinal()][ORE.ordinal()] = 3;
@@ -79,7 +79,46 @@ public class Day19Test {
         machine.state[ORE.ordinal()][PROD.ordinal()] = 1;
         machine.state[OBSIDIAN.ordinal()][PROD.ordinal()] = 3;
         assertEquals( machine.stepsUntilBuild(), 4 );
+    }
 
+    @Test
+    public void testPay() {
+        MachineState machine = new MachineState( blueprint, ORE );
+        machine.setPile( ORE, 10 );
+        machine.pay( ORE );
+        assertEquals( machine.getPile( ORE ), 10 - blueprint.oreRobotCostOre() );
+    }
+
+    @Test
+    public void testBuild() {
+        MachineState machine = new MachineState( blueprint, OBSIDIAN );
+        machine.setPile( ORE, blueprint.obsidianRobotOre() );
+        machine.setPile( CLAY, blueprint.obsidianRobotClay() );
+        assertTrue( machine.isReadyToBuild() );
+        assertTrue( machine.beginBuild() );
+        machine.finishBuild();
+        assertEquals( machine.getPile( ORE ), 0 );
+        assertEquals( machine.getPile( CLAY ), 0 );
+        assertEquals( machine.getProd( OBSIDIAN ), 1 );
+    }
+
+    @Test
+    public void testComparisons() {
+        MachineState machineA = new MachineState( blueprint );
+        MachineState machineB = new MachineState( blueprint );
+        assertTrue( machineA.isSameProduction( machineB ) );
+        assertFalse( machineA.isBetterProduction( machineB ) );
+        machineA.setProduction( CLAY, 1 );
+        assertFalse( machineA.isSameProduction( machineB ) );
+        assertTrue( machineA.isBetterProduction( machineB ) );
+
+        assertTrue( machineA.isSamePile( machineB ) );
+        assertFalse( machineA.isBetterPile( machineB ) );
+        machineA.setPile( ORE, 5 );
+        machineA.setPile( CLAY, 2 );
+        machineB.setPile( ORE, 6 );
+        assertFalse( machineA.isSamePile( machineB ) );
+        assertTrue( machineA.isBetterPile( machineB ) );
     }
 
 }
