@@ -2,12 +2,13 @@ package de.delusions.aoc.advent2022;
 
 import de.delusions.aoc.util.Day;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -28,14 +29,6 @@ public class Day19 extends Day<Integer> {
         return blueprints.stream().limit( 2 ).map( this::runBluePrint ).reduce( 0, Integer::sum );
     }
 
-    static int[][] copy( int[][] state ) {
-        int[][] copy = new int[4][6]; //because I can
-        for ( int x = 0; x < 4; x++ ) {
-            System.arraycopy( state[x], 0, copy[x], 0, 6 );
-        }
-        return copy;
-    }
-
     /**
      * Runs a search for the best run for the given blueprint. Choices are in each round which bot to build next (or keep processing until one was
      * built)
@@ -46,15 +39,27 @@ public class Day19 extends Day<Integer> {
     int runBluePrint( Blueprint blueprint ) {
         Stack<MachineState> opens = new Stack<>();
         Set<MachineState> candidates = new HashSet<>();
-        opens.addAll( initializeMachine( blueprint ) );
+        opens.addAll( List.of( new MachineState( blueprint, ORE ), new MachineState( blueprint, CLAY ) ) );
         for ( int time = TIME; time >= 0; time-- ) {
             System.out.println( time + ": opens " + opens.size() );
             while ( !opens.isEmpty() ) {
                 final int currentTimeLeft = time;
                 MachineState state = opens.pop();
                 if ( state.isValidChoice( currentTimeLeft ) ) {
-                    List<MachineState> machineStates = runNextStep( state, currentTimeLeft );
+                    state.produce( 1 );
+                    if ( state.isReadyToBuild() ) {
+                        state.build();
+                    }
+                    List<MachineState> machineStates = new ArrayList<>();
+                    if ( state.robotToBuild == null && !state.doneBuilding ) { //for the new states copy the matrix!
+                        machineStates.addAll( Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).map( next -> state.copyMachine( next ) )
+                                                  .filter( m1 -> m1.isValidChoice( currentTimeLeft ) ).toList() );
+                    }
+                    else {
+                        machineStates.add( state );
+                    }
                     machineStates.forEach( m -> m.checkDone( currentTimeLeft ) );
+                    //TODO: prune machineStates against candidates and remove as needed
                     candidates.addAll( machineStates );
                 }
             }
@@ -64,27 +69,10 @@ public class Day19 extends Day<Integer> {
             }
         }
         MachineState bestRun = candidates.stream().sorted().findFirst().orElse( null );
-        return bestRun != null ? bestRun.getGeodePile() * blueprint.blueprintId : 0;
-    }
 
-    /**
-     * Initializes the starting state for the machine from the blueprint. Because there is always 1 ore production it is always possible to build ORE
-     * or CLAY bots from the start. So there are two choices right in the first round.
-     *
-     * @param blueprint blueprint to simulate
-     * @return a list with 2 states: one waiting to build ORE bot, one with CLAY
-     */
-    List<MachineState> initializeMachine( Blueprint blueprint ) {
-        int[][] startState = new int[Material.values().length - 2][Material.values().length];
-        startState[ORE.ordinal()][ORE.ordinal()] = blueprint.oreRobotCostOre;
-        startState[ORE.ordinal()][PROD.ordinal()] = 1;
-        startState[CLAY.ordinal()][ORE.ordinal()] = blueprint.clayRobotCostOre;
-        startState[OBSIDIAN.ordinal()][ORE.ordinal()] = blueprint.obsidianRobotOre;
-        startState[OBSIDIAN.ordinal()][CLAY.ordinal()] = blueprint.obsidianRobotClay;
-        startState[GEODE.ordinal()][ORE.ordinal()] = blueprint.geodeRobotOre;
-        startState[GEODE.ordinal()][OBSIDIAN.ordinal()] = blueprint.geodeRobotObsidian;
-        return List.of( new MachineState( startState, ORE, new AtomicBoolean( false ) ),
-                        new MachineState( copy( startState ), CLAY, new AtomicBoolean( false ) ) );
+        int result = bestRun != null ? bestRun.getGeodePile() * blueprint.blueprintId : 0;
+        System.out.println( "-------> " + result + " " + bestRun );
+        return result;
     }
 
     public Day19() {
@@ -101,55 +89,6 @@ public class Day19 extends Day<Integer> {
         return null;
     }
 
-    /**
-     * Simulates a round of production for the given machine state and returns a list of choices what to do next. If a bot was built this step there
-     * will be new choices otherwise the previous choice will remain.
-     *
-     * @param machine the machine state to simulate from
-     * @return a list of possible next choices for
-     */
-    List<MachineState> runNextStep( MachineState machine, int timeleft ) {
-        // System.out.println("runNextStep:  "+machine.robotToBuild+" steps="+machine.stepsUntilBuild()+" done="+machine.doneBuilding.get());
-        boolean builtABot = runStep( machine );
-        if ( builtABot && !machine.doneBuilding.get() ) { //for the new states copy the matrix!
-            return Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).map( machine::newFromOld ).filter( m -> m.isValidChoice( timeleft ) ).toList();
-        }
-        return List.of( machine );
-    }
-
-
-    /**
-     * Simulate 1 step for the given machine state. Runs production and if it is ready to build the desired bot the costs will be removed from the
-     * piles and the production increased.
-     *
-     * @param machine the machine for the simulation
-     * @return true if this step a bot was build and new choices need to be made by the caller
-     */
-    boolean runStep( MachineState machine ) {
-        boolean build = !machine.doneBuilding.get() && isReadyToBuild( machine );
-        for ( Material material : List.of( ORE, CLAY, OBSIDIAN, GEODE ) ) { //run production
-            if ( build ) {
-                machine.pay( material );
-            }
-            machine.produce( material );
-        }
-        if ( build ) { //only add production at the end of the run.
-            machine.state[machine.robotToBuild.ordinal()][PROD.ordinal()]++;
-        }
-        return build;
-    }
-
-
-    /**
-     * Checks if for all materials the cost for the desired robot is "covered" by the existing stockpile
-     *
-     * @param state the machine state to check for readiness
-     * @return true if all costs can be covered, false if there is not enough of at least 1 material to pay for the bot (cost > pile)
-     */
-    boolean isReadyToBuild( MachineState state ) {
-        return Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).filter( material -> state.getCost( material ) > state.getPile( material ) ).findFirst()
-            .isEmpty();
-    }
 
     /**
      * Parse the input into Blueprint records using a regular expression
@@ -175,11 +114,47 @@ public class Day19 extends Day<Integer> {
     record Blueprint(int blueprintId, int oreRobotCostOre, int clayRobotCostOre, int obsidianRobotOre, int obsidianRobotClay, int geodeRobotOre,
                      int geodeRobotObsidian) {}
 
-    record MachineState(int[][] state, Material robotToBuild, AtomicBoolean doneBuilding) implements Comparable<MachineState> {
+    static class MachineState implements Comparable<MachineState> {
+        static final int CANNOT_BUILD = 1000;
 
-        static int steps( int cost, int pile, int prod ) {
+        boolean doneBuilding = false;
+
+        Material robotToBuild = ORE;
+
+        int[][] state;
+
+        MachineState( Blueprint blueprint ) {
+            this( initState( blueprint ), ORE, false );
+        }
+
+        MachineState( Blueprint blueprint, Material robotToBuild ) {
+            this( initState( blueprint ), robotToBuild, false );
+        }
+
+        MachineState( int[][] state, Material robotToBuild, boolean doneBuilding ) {
+            this.state = state;
+            this.robotToBuild = robotToBuild;
+            this.doneBuilding = doneBuilding;
+        }
+
+        private static int[][] initState( Blueprint blueprint ) {
+            int[][] initState = new int[Material.values().length - 2][Material.values().length];
+            initState[ORE.ordinal()][ORE.ordinal()] = blueprint.oreRobotCostOre;
+            initState[CLAY.ordinal()][ORE.ordinal()] = blueprint.clayRobotCostOre;
+            initState[OBSIDIAN.ordinal()][ORE.ordinal()] = blueprint.obsidianRobotOre;
+            initState[OBSIDIAN.ordinal()][CLAY.ordinal()] = blueprint.obsidianRobotClay;
+            initState[GEODE.ordinal()][ORE.ordinal()] = blueprint.geodeRobotOre;
+            initState[GEODE.ordinal()][OBSIDIAN.ordinal()] = blueprint.geodeRobotObsidian;
+            initState[ORE.ordinal()][PROD.ordinal()] = 1;
+            return initState;
+        }
+
+        int steps( int cost, int pile, int prod ) {
             int needed = cost - pile;
-            return prod == 0 ? -1 : needed / prod + ( needed % prod == 0 ? 0 : 1 );
+            if ( prod == 0 && cost > 0 ) {
+                return CANNOT_BUILD;
+            }
+            return prod == 0 || needed <= 0 ? 0 : needed / prod + ( needed % prod == 0 ? 0 : 1 );
         }
 
         int getGeodePile() {
@@ -194,41 +169,76 @@ public class Day19 extends Day<Integer> {
             return state[material.ordinal()][PILE.ordinal()];
         }
 
+        void setPile( Material material, int value ) {
+            state[material.ordinal()][PILE.ordinal()] = value;
+        }
+
         int getProd( Material material ) {
             return state[material.ordinal()][PROD.ordinal()];
         }
 
-        void produce( Material material ) {
-            state[material.ordinal()][PILE.ordinal()] = getPile( material ) + getProd( material );
+        void setProduction( Material material, int value ) {
+            state[material.ordinal()][PROD.ordinal()] = value;
         }
 
-        @Override
-        public int compareTo( MachineState o ) {
-            return Integer.compare( o.getGeodePile(), getGeodePile() );
+        void produce( Material material ) {
+            produce( material, 1 );
+        }
+
+        void produce( Material material, int steps ) {
+            state[material.ordinal()][PILE.ordinal()] = getPile( material ) + steps * getProd( material );
+        }
+
+        void produce( int steps ) {
+            for ( Material material : List.of( ORE, CLAY, OBSIDIAN, GEODE ) ) {
+                produce( material, steps );
+            }
+        }
+
+        /**
+         * Checks if for all materials the cost for the desired robot is "covered" by the existing stockpile
+         *
+         * @return true if all costs can be covered, false if there is not enough of at least 1 material to pay for the bot (cost > pile)
+         */
+        boolean isReadyToBuild() {
+            return Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).filter( material -> getCost( material ) > getPile( material ) ).findFirst().isEmpty();
         }
 
         void pay( Material material ) {
             state[material.ordinal()][PILE.ordinal()] = getPile( material ) - getCost( material );
         }
 
+        boolean build() {
+            if ( isReadyToBuild() && !doneBuilding ) {
+                for ( Material material : List.of( ORE, CLAY, OBSIDIAN, GEODE ) ) {
+                    pay( material );
+                }
+                setProduction( robotToBuild, getProd( robotToBuild ) + 1 );
+                this.robotToBuild = null;
+            }
+            return robotToBuild == null;
+        }
+
         int stepsUntilBuild() {
             return Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).map( m -> steps( getCost( m ), getPile( m ), getProd( m ) ) ).max( Integer::compareTo )
-                .orElse( 0 );
+                .orElse( -1 );
         }
 
         void checkDone( int timeLeft ) {
             if ( stepsUntilBuild() > timeLeft - 1 ) {
-                doneBuilding.set( true );
+                doneBuilding = true;
             }
         }
 
         boolean isValidChoice( int timeLeft ) {
             boolean result = false;
             if ( robotToBuild == ORE ) {
-                //TODO improve heuristic to include more costs for now this is fine
                 int oreCostOre = getCost( ORE );
-                int oreCostClay = state[CLAY.ordinal()][ORE.ordinal()];
-                result = oreCostOre < oreCostClay && getProd( ORE ) > oreCostClay / oreCostOre;
+                int[] oreCosts =
+                    {state[CLAY.ordinal()][ORE.ordinal()], state[OBSIDIAN.ordinal()][ORE.ordinal()], state[GEODE.ordinal()][ORE.ordinal()]};
+                int maxCost = Arrays.stream( oreCosts ).max().getAsInt();
+                boolean oreIsMostExpensive = oreCostOre > maxCost; //this makes it an invalid choice
+                result = !oreIsMostExpensive && ( getProd( ORE ) <= maxCost / oreCostOre );
             }
             else if ( robotToBuild == CLAY ) {
                 result = true;
@@ -248,10 +258,25 @@ public class Day19 extends Day<Integer> {
             return result;
         }
 
-        MachineState newFromOld( Material robotToBuild ) {
-            return new MachineState( copy( state ), robotToBuild, new AtomicBoolean( false ) );
+
+        MachineState copyMachine( Material robotToBuild ) {
+            int[][] copy = new int[4][6]; //because I can
+            for ( int x = 0; x < 4; x++ ) {
+                System.arraycopy( state[x], 0, copy[x], 0, 6 );
+            }
+            return new MachineState( copy, robotToBuild, doneBuilding );
         }
 
+        @Override
+        public int compareTo( MachineState o ) {
+            return Integer.compare( o.getGeodePile(), getGeodePile() );
+        }
+
+        @Override
+        public String toString() {
+            return String.format( "Machine oreBots=%s clayBots=%s obsBots=%s geoBots=%s | geodes=%s", getProd( ORE ), getProd( CLAY ),
+                                  getProd( OBSIDIAN ), getProd( GEODE ), getPile( GEODE ) );
+        }
     }
 
 }
