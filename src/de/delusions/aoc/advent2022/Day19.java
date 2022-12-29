@@ -125,6 +125,8 @@ public class Day19 extends Day<Integer> {
 
         int[][] state;
 
+        int totalValue;
+
         MachineState( Blueprint blueprint ) {
             this( initState( blueprint ), ORE, false );
         }
@@ -137,6 +139,7 @@ public class Day19 extends Day<Integer> {
             this.state = state;
             this.robotToBuild = robotToBuild;
             this.doneBuilding = doneBuilding;
+            this.totalValue = 0;
         }
 
         private static int[][] initState( Blueprint blueprint ) {
@@ -184,7 +187,13 @@ public class Day19 extends Day<Integer> {
         }
 
         void produce( Material material, int steps ) {
-            state[material.ordinal()][PILE.ordinal()] = getPile( material ) + steps * getProd( material );
+            int produced = steps * getProd( material );
+            state[material.ordinal()][PILE.ordinal()] = getPile( material ) + produced;
+            totalValue = totalValue + produced * getMaterialValue( material );
+        }
+
+        int getFutureProduction( int timeleft ) {
+            return Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).map( m -> getMaterialValue( m ) * getProd( m ) * timeleft ).reduce( 0, Integer::sum );
         }
 
         void produce( int steps ) {
@@ -209,6 +218,16 @@ public class Day19 extends Day<Integer> {
             int cost = getCost( material );
             if ( cost > pile ) {throw new IllegalStateException( "Not enough " + material );}
             state[material.ordinal()][PILE.ordinal()] = pile - cost;
+        }
+
+        int getMaterialValue( Material material ) {
+            //TODO consider making this a precomputed set of constants possibly stored in the array at init time
+            return switch ( material ) {
+                case ORE -> 1;
+                case CLAY -> state[CLAY.ordinal()][ORE.ordinal()];
+                case OBSIDIAN -> state[OBSIDIAN.ordinal()][ORE.ordinal()] + state[OBSIDIAN.ordinal()][CLAY.ordinal()] * getMaterialValue( CLAY );
+                case GEODE -> state[GEODE.ordinal()][ORE.ordinal()] + state[GEODE.ordinal()][OBSIDIAN.ordinal()] * getMaterialValue( OBSIDIAN );
+            };
         }
 
 
