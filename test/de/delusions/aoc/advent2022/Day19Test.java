@@ -102,23 +102,23 @@ public class Day19Test {
         assertEquals( machine.getProd( OBSIDIAN ), 1 );
     }
 
-    @Test
-    public void testComparisons() {
-        MachineState machineA = new MachineState( blueprint );
-        MachineState machineB = new MachineState( blueprint );
-        assertTrue( machineA.isSameProduction( machineB ) );
-        assertFalse( machineA.isBetterProduction( machineB ) );
-        machineA.setProduction( CLAY, 1 );
-        assertFalse( machineA.isSameProduction( machineB ) );
-        assertTrue( machineA.isBetterProduction( machineB ) );
-
-        assertTrue( machineA.isSamePile( machineB ) );
-        assertFalse( machineA.isBetterPile( machineB ) );
-        machineA.setPile( ORE, 5 );
-        machineA.setPile( CLAY, 2 );
-        machineB.setPile( ORE, 6 );
-        assertFalse( machineA.isSamePile( machineB ) );
-        assertTrue( machineA.isBetterPile( machineB ) );
-    }
+//    @Test
+//    public void testComparisons() {
+//        MachineState machineA = new MachineState( blueprint );
+//        MachineState machineB = new MachineState( blueprint );
+//        assertTrue( machineA.isSameProduction( machineB ) );
+//        assertFalse( machineA.isBetterProduction( machineB ) );
+//        machineA.setProduction( CLAY, 1 );
+//        assertFalse( machineA.isSameProduction( machineB ) );
+//        assertTrue( machineA.isBetterProduction( machineB ) );
+//
+//        assertTrue( machineA.isSamePile( machineB ) );
+//        assertFalse( machineA.isBetterPile( machineB ) );
+//        machineA.setPile( ORE, 5 );
+//        machineA.setPile( CLAY, 2 );
+//        machineB.setPile( ORE, 6 );
+//        assertFalse( machineA.isSamePile( machineB ) );
+//        assertTrue( machineA.isBetterPile( machineB ) );
+//    }
 
 }

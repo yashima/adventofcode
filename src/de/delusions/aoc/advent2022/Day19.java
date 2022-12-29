@@ -3,13 +3,12 @@ package de.delusions.aoc.advent2022;
 import de.delusions.aoc.util.Day;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.Stack;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -26,8 +25,7 @@ public class Day19 extends Day<Integer> {
     private static final Pattern PATTERN = Pattern.compile( INPUT_REGEX );
 
     Integer solve( List<Blueprint> blueprints ) {
-        //TODO I am using a limit, dont forget
-        return blueprints.stream().limit( 2 ).map( this::runBluePrint ).reduce( 0, Integer::sum );
+        return blueprints.stream().map( this::runBluePrint ).reduce( 0, Integer::sum );
     }
 
     /**
@@ -38,36 +36,51 @@ public class Day19 extends Day<Integer> {
      * @return the highest geode count that could be harvested with this blueprint
      */
     int runBluePrint( Blueprint blueprint ) {
+        //init the first round
         Stack<MachineState> opens = new Stack<>();
-        Set<MachineState> candidates = new HashSet<>();
-        List<MachineState> done = new ArrayList<>();
         opens.addAll( List.of( new MachineState( blueprint, ORE ), new MachineState( blueprint, CLAY ) ) );
+        //track various states
+        Map<String, MachineState> candidates = new HashMap<>();
+        List<MachineState> waiting = new ArrayList<>();
+        List<MachineState> done = new ArrayList<>();
+
+        //the time loop
         for ( int time = TIME; time >= 0; time-- ) {
-            System.out.println( time + ": opens " + opens.size() + " | done " + done.size() );
+            System.out.println( time + ": opens " + opens.size() + "| done " + done.size() );
+            final int currentTime = time;
+            //check all the states for this round
             while ( !opens.isEmpty() ) {
                 MachineState current = opens.pop();
                 List<MachineState> machineStates = current.run( time );
                 if ( machineStates.isEmpty() ) {
+                    //no followers, we're done
                     current.produce( time - 1 );
                     done.add( current );
                 }
+                else if ( machineStates.size() == 1 && machineStates.get( 0 ) == current ) {
+                    //only self: we're waiting to produce
+                    waiting.add( current );
+                }
                 else {
+                    //check the candidates against existing ones with the magic number
                     machineStates.forEach( candidate -> {
-                        List<MachineState> keepers = candidates.stream().filter( Predicate.not( candidate::isClearlyBetterThan ) ).toList();
-                        candidates.clear();
-                        if ( keepers.stream().filter( k -> k.isClearlyBetterThan( candidate ) ).findFirst().isEmpty() ) {
-                            candidates.add( candidate );
+                        String identifier = candidate.getIdentifier();
+                        if ( !candidates.containsKey( identifier ) ||
+                            ( candidates.get( identifier ).getMagicNumber( currentTime - 1 ) < candidate.getMagicNumber( currentTime - 1 ) ) ) {
+                            candidates.put( identifier, candidate );
                         }
-                        candidates.addAll( keepers );
-
                     } );
                 }
             }
+            //clean up and go again
             if ( time > 0 ) {
-                opens.addAll( candidates );
+                opens.addAll( waiting );
+                opens.addAll( candidates.values() );
+                waiting.clear();
                 candidates.clear();
             }
         }
+
         MachineState bestRun = done.stream().sorted().findFirst().orElse( null );
 
         int result;
@@ -192,8 +205,9 @@ public class Day19 extends Day<Integer> {
             totalValue = totalValue + produced * getMaterialValue( material );
         }
 
-        int getFutureProduction( int timeleft ) {
-            return Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).map( m -> getMaterialValue( m ) * getProd( m ) * timeleft ).reduce( 0, Integer::sum );
+        int getMagicNumber( int timeLeft ) {
+            return totalValue;
+            //  Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).map( m -> getMaterialValue( m ) * getProd( m ) * timeLeft ).reduce( 0, Integer::sum );
         }
 
         void produce( int steps ) {
@@ -221,12 +235,13 @@ public class Day19 extends Day<Integer> {
         }
 
         int getMaterialValue( Material material ) {
-            //TODO consider making this a precomputed set of constants possibly stored in the array at init time
             return switch ( material ) {
                 case ORE -> 1;
                 case CLAY -> state[CLAY.ordinal()][ORE.ordinal()];
                 case OBSIDIAN -> state[OBSIDIAN.ordinal()][ORE.ordinal()] + state[OBSIDIAN.ordinal()][CLAY.ordinal()] * getMaterialValue( CLAY );
                 case GEODE -> state[GEODE.ordinal()][ORE.ordinal()] + state[GEODE.ordinal()][OBSIDIAN.ordinal()] * getMaterialValue( OBSIDIAN );
+                case PILE -> 0;
+                case PROD -> 0;
             };
         }
 
@@ -260,7 +275,7 @@ public class Day19 extends Day<Integer> {
         }
 
         boolean isValid( Material bot, int timeLeft ) {
-            return true; //TODO possibly eliminate some choices here
+            return true; //TODO find heuristics that limit choices.
         }
 
         List<Material> getNextChoices( int timeLeft ) {
@@ -299,39 +314,9 @@ public class Day19 extends Day<Integer> {
             return next;
         }
 
-        boolean isSameProduction( MachineState other ) {
-            //all productions are equal level
-            return getProd( ORE ) == other.getProd( ORE ) && getProd( CLAY ) == other.getProd( CLAY ) &&
-                getProd( OBSIDIAN ) == other.getProd( OBSIDIAN ) && getProd( GEODE ) == other.getProd( GEODE );
-        }
 
-        int getProductionNumber() {
-            return getProd( ORE ) * 17 + getProd( CLAY ) * 19 + getProd( OBSIDIAN ) * 23 + getProd( GEODE ) * 29;
-        }
-
-        boolean isBetterProduction( MachineState other ) {
-            return getProductionNumber() > other.getProductionNumber();
-        }
-
-        boolean isSamePile( MachineState other ) {
-            //all productions are equal level
-            return getPile( ORE ) == other.getPile( ORE ) && getPile( CLAY ) == other.getPile( CLAY ) &&
-                getPile( OBSIDIAN ) == other.getPile( OBSIDIAN ) && getPile( GEODE ) == other.getPile( GEODE );
-        }
-
-        boolean isBetterPile( MachineState other ) {
-            //no production is less than the other one and at least 1 is bigger
-            return getPileNumber() > other.getPileNumber();
-        }
-
-        int getPileNumber() {
-            return getPile( ORE ) * state[ORE.ordinal()][ORE.ordinal()] + getPile( CLAY ) * state[CLAY.ordinal()][ORE.ordinal()] +
-                getPile( OBSIDIAN ) * state[OBSIDIAN.ordinal()][CLAY.ordinal()] + getPile( GEODE ) * state[GEODE.ordinal()][OBSIDIAN.ordinal()];
-        }
-
-
-        boolean isClearlyBetterThan( MachineState o ) {
-            return isSameProduction( o ) && isBetterPile( o ) || isSamePile( o ) && isBetterProduction( o );
+        String getIdentifier() {
+            return String.format( "%s|%s|%s|%s|%s", robotToBuild, getProd( ORE ), getProd( CLAY ), getProd( OBSIDIAN ), getProd( GEODE ) );
         }
 
         @Override
