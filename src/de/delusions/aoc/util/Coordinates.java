@@ -56,6 +56,19 @@ public class Coordinates {
         return moveTo( move, 1, value );
     }
 
+    public Coordinates moveDay22( Direction move ) {
+        int row = x;
+        int col = y;
+        Coordinates result = switch ( move ) {
+            case west -> new Coordinates( row, col - 1, 3, this );
+            case east -> new Coordinates( row, col + 1, 3, this );
+            case south -> new Coordinates( row + 1, col, 3, this );
+            case north -> new Coordinates( row - 1, col, 3, this );
+            default -> throw new IllegalStateException( "Unexpected value: " + move );
+        };
+        return result;
+    }
+
     public Coordinates moveTo( Direction move, int distance, int value ) {
         return switch ( move ) {
             case west -> new Coordinates( this.x - distance, this.y, value, this );

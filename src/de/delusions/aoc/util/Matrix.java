@@ -1,8 +1,10 @@
 package de.delusions.aoc.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Matrix {
     //y = cols , -1 = more west, +1 more east
@@ -27,6 +29,29 @@ public class Matrix {
 
     public Matrix( int xDim, int yDim, int xOffset, int yOffset ) {
         this( new int[xDim][yDim], xOffset, yOffset );
+    }
+
+    public void setPrintMap( Map<Integer, String> printMap ) {
+        this.printMap = printMap;
+    }
+
+    public void cleanup() {
+        AtomicInteger max = new AtomicInteger( 0 );
+        if ( Arrays.stream( matrix ).map( row -> row.length ).peek( l -> max.set( Math.max( max.get(), l ) ) ).distinct().count() > 1 ) {
+            for ( int x = 0; x < getXLength(); x++ ) {
+                int[] row = getRow( x );
+                if ( row.length < max.get() ) {
+                    matrix[x] = new int[max.get()];
+                    for ( int y = 0; y < row.length; y++ ) {
+                        matrix[x][y] = row[y];
+                    }
+                }
+            }
+        }
+    }
+
+    public int[] getRow( int x ) {
+        return matrix[x];
     }
 
     public void setValue( Coordinates coordinates ) {
@@ -97,8 +122,8 @@ public class Matrix {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for ( int y = 0; y < getYLength(); y++ ) {
-            for ( int x = 0; x < getXLength(); x++ ) {
+        for ( int x = 0; x < getXLength(); x++ ) {
+            for ( int y = 0; y < getYLength(); y++ ) {
                 builder.append( printMap.get( getValue( createCoords( x, y ) ) ) );
             }
             builder.append( "\n" );
