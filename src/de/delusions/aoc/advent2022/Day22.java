@@ -31,7 +31,7 @@ public class Day22 extends Day<Integer> {
 
     static final Map<Character, Integer> characterMapping = Map.of( '#', WALL, '.', FLOOR, ' ', VOID, '\n', VOID );
 
-    static final Pattern COMMAND_REGEX = Pattern.compile( "([0-9]+)(R|L)" );
+    static final Pattern COMMAND_REGEX = Pattern.compile( "([0-9]+)(R|L)?" );
 
     static final String mapRegex = "[#\\. ]*";
 
@@ -62,7 +62,7 @@ public class Day22 extends Day<Integer> {
     }
 
     int solve() {
-        System.out.println( commands.get() + " start:" + currentPosition );
+        System.out.println( " start:" + currentPosition );
         Matcher matcher = COMMAND_REGEX.matcher( commands.get() );
         while ( matcher.find() ) {
             executeMoveAndTurn( Integer.parseInt( matcher.group( 1 ) ), matcher.group( 2 ) );
@@ -86,10 +86,9 @@ public class Day22 extends Day<Integer> {
     void executeMoveAndTurn( int move, String turn ) {
         System.out.println( "move " + move + " then turn " + turn );
         for ( int step = 0; step < move; step++ ) {
-            if ( map.getValue( currentPosition ) == FLOOR ) {
-                currentPosition.setValue( getFaceValue() + 3 );
-                map.setValue( currentPosition );
-            }
+            //for pretty printing purposes:
+            currentPosition.setValue( getFaceValue() + 3 );
+            map.setValue( currentPosition );
 
             Coordinates nextPosition = currentPosition.moveDay22( facing );
             int nextValue = map.isInTheMatrix( nextPosition ) ? map.getValue( nextPosition ) : VOID;
@@ -97,23 +96,30 @@ public class Day22 extends Day<Integer> {
                 currentPosition = nextPosition;
             }
             else if ( nextValue == WALL ) {
-                System.out.println( "Stopped by wall after " + step );
                 break;
             }
             else if ( nextValue == VOID ) {
-                System.out.println( "Ran into void after " + step );
                 //look opposite and move as far as you can until you reach the void again then turn back around
                 Direction tempFacing = facing.turnRight( 180 );
                 Coordinates tempCoordinates = currentPosition;
-                while ( map.isInTheMatrix( tempCoordinates ) &&
-                    List.of( WALL, FLOOR, SOUTH, WEST, EAST, NORTH ).contains( map.getValue( tempCoordinates ) ) ) {
+                Coordinates tempMove = currentPosition;
+                while ( map.isInTheMatrix( tempMove ) && List.of( WALL, FLOOR, SOUTH, WEST, EAST, NORTH ).contains( map.getValue( tempMove ) ) ) {
+                    tempCoordinates = tempMove;
+                    tempMove = tempCoordinates.moveDay22( tempFacing );
+                }
+                if ( map.getValue( tempCoordinates ) == WALL ) {
+                    System.out.println( "Wall on the other side" );
+                    break;
+                }
+                else {
+                    System.out.println( "Wrapped to " + tempCoordinates );
                     currentPosition = tempCoordinates;
-                    tempCoordinates = tempCoordinates.moveDay22( tempFacing );
                 }
             }
         }
-
-        facing = turn.equals( "L" ) ? facing.turnLeft() : facing.turnRight();
+        if ( turn != null ) {
+            facing = turn.equals( "L" ) ? facing.turnLeft() : facing.turnRight();
+        }
         System.out.println( facing + " " + currentPosition );
     }
 
