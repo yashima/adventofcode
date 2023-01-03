@@ -35,7 +35,7 @@ public class Matrix {
         this.printMap = printMap;
     }
 
-    public void cleanup() {
+    public int cleanup() {
         AtomicInteger max = new AtomicInteger( 0 );
         if ( Arrays.stream( matrix ).map( row -> row.length ).peek( l -> max.set( Math.max( max.get(), l ) ) ).distinct().count() > 1 ) {
             for ( int x = 0; x < getXLength(); x++ ) {
@@ -48,6 +48,7 @@ public class Matrix {
                 }
             }
         }
+        return max.get();
     }
 
     public int[] getRow( int x ) {
