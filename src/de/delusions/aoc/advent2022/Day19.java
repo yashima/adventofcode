@@ -7,13 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import static de.delusions.aoc.advent2022.Day19.Material.*;
 
 public class Day19 extends Day<Integer> {
 
@@ -28,6 +25,10 @@ public class Day19 extends Day<Integer> {
         return blueprints.stream().map( this::runBluePrint ).reduce( 0, Integer::sum );
     }
 
+    public Day19() { //2153 was too low
+        super( 19, "Not Enough Minerals" );
+    }
+
     /**
      * Runs a search for the best run for the given blueprint. Choices are in each round which bot to beginBuild next (or keep processing until one
      * was built)
@@ -38,60 +39,36 @@ public class Day19 extends Day<Integer> {
     int runBluePrint( Blueprint blueprint ) {
         //init the first round
         Stack<MachineState> opens = new Stack<>();
-        opens.addAll( List.of( new MachineState( blueprint, ORE ), new MachineState( blueprint, CLAY ) ) );
+        opens.add( new MachineState( 0, 1, 0, 0, 0, 0, 0, 0, 0 ) );
         //track various states
         Map<String, MachineState> candidates = new HashMap<>();
-        List<MachineState> waiting = new ArrayList<>();
         List<MachineState> done = new ArrayList<>();
 
         //the time loop
-        for ( int time = TIME; time >= 0; time-- ) {
-            System.out.println( time + ": opens " + opens.size() + "| done " + done.size() );
-            final int currentTime = time;
-            //check all the states for this round
-            while ( !opens.isEmpty() ) {
-                MachineState current = opens.pop();
-                List<MachineState> machineStates = current.run( time );
-                if ( machineStates.isEmpty() ) {
-                    //no followers, we're done
-                    current.produce( time - 1 );
-                    done.add( current );
-                }
-                else if ( machineStates.size() == 1 && machineStates.get( 0 ) == current ) {
-                    //only self: we're waiting to produce
-                    waiting.add( current );
-                }
-                else {
-                    //check the candidates against existing ones with the magic number
-                    machineStates.forEach( candidate -> {
-                        String identifier = candidate.getIdentifier();
-                        if ( !candidates.containsKey( identifier ) ||
-                            ( candidates.get( identifier ).getMagicNumber( currentTime - 1 ) < candidate.getMagicNumber( currentTime - 1 ) ) ) {
-                            candidates.put( identifier, candidate );
-                        }
-                    } );
-                }
+        while ( !opens.isEmpty() ) {
+            MachineState current = opens.pop();
+            if ( current.time == TIME ) {
+                done.add( current ); //weed out those that are worse
             }
-            //clean up and go again
-            if ( time > 0 ) {
-                opens.addAll( waiting );
-                opens.addAll( candidates.values() );
-                waiting.clear();
-                candidates.clear();
+            else {
+                List<MachineState> next = current.getNext( blueprint );
+                next.forEach( state -> {
+                    if ( !candidates.containsKey( state.key() ) ||
+                        candidates.get( state.key() ).totalValue( blueprint ) < state.totalValue( blueprint ) ) {
+                        candidates.put( state.key(), state );
+                        opens.add( state );
+                    }
+                } );
             }
+
         }
 
         MachineState bestRun = done.stream().sorted().findFirst().orElse( null );
-
+        //done.stream().map(m -> m.geoPile).max( Integer::compareTo ).get();
         int result;
-        result = bestRun != null ? bestRun.getPile( GEODE ) * blueprint.blueprintId : 0;
+        result = bestRun != null ? bestRun.geoPile * blueprint.blueprintId : 0;
         System.out.println( "-------> " + result + " " + bestRun );
         return result;
-    }
-
-
-    public Day19() {
-        super( 19, "Not Enough Minerals" );
     }
 
     @Override
@@ -126,209 +103,83 @@ public class Day19 extends Day<Integer> {
 
     enum Material {GEODE, OBSIDIAN, CLAY, ORE, PROD, PILE}
 
-    record Blueprint(int blueprintId, int oreRobotCostOre, int clayRobotCostOre, int obsidianRobotOre, int obsidianRobotClay, int geodeRobotOre,
-                     int geodeRobotObsidian) {}
+    record Blueprint(int blueprintId, int oreCOre, int clayCOre, int obsCOre, int obsCClay, int geoCOre, int geoCObs) {}
 
-    static class MachineState implements Comparable<MachineState> {
-        static final int CANNOT_BUILD = 1000;
-
-        boolean doneBuilding;
-
-        Material robotToBuild;
-
-        int[][] state;
-
-        int totalValue;
-
-        MachineState( Blueprint blueprint ) {
-            this( initState( blueprint ), ORE, false );
+    record MachineState(int time, int oreProd, int clayProd, int obsProd, int geoProd, int orePile, int clayPile, int obsPile, int geoPile)
+        implements Comparable<MachineState> {
+        MachineState doNothing() {
+            return new MachineState( time + 1, oreProd, clayProd, obsProd, geoProd, orePile + oreProd, clayPile + clayProd, obsPile + obsProd,
+                                     geoPile + geoProd );
         }
 
-        MachineState( Blueprint blueprint, Material robotToBuild ) {
-            this( initState( blueprint ), robotToBuild, false );
+        MachineState buildOre( Blueprint blueprint ) {
+            return new MachineState( time + 1, oreProd + 1, clayProd, obsProd, geoProd, orePile + oreProd - blueprint.oreCOre, clayPile + clayProd,
+                                     obsPile + obsProd, geoPile + geoProd );
         }
 
-        MachineState( int[][] state, Material robotToBuild, boolean doneBuilding ) {
-            this.state = state;
-            this.robotToBuild = robotToBuild;
-            this.doneBuilding = doneBuilding;
-            this.totalValue = 0;
+        MachineState buildClay( Blueprint blueprint ) {
+            return new MachineState( time + 1, oreProd, clayProd + 1, obsProd, geoProd, orePile + oreProd - blueprint.clayCOre, clayPile + clayProd,
+                                     obsPile + obsProd, geoPile + geoProd );
         }
 
-        private static int[][] initState( Blueprint blueprint ) {
-            int[][] initState = new int[Material.values().length - 2][Material.values().length];
-            initState[ORE.ordinal()][ORE.ordinal()] = blueprint.oreRobotCostOre;
-            initState[CLAY.ordinal()][ORE.ordinal()] = blueprint.clayRobotCostOre;
-            initState[OBSIDIAN.ordinal()][ORE.ordinal()] = blueprint.obsidianRobotOre;
-            initState[OBSIDIAN.ordinal()][CLAY.ordinal()] = blueprint.obsidianRobotClay;
-            initState[GEODE.ordinal()][ORE.ordinal()] = blueprint.geodeRobotOre;
-            initState[GEODE.ordinal()][OBSIDIAN.ordinal()] = blueprint.geodeRobotObsidian;
-            initState[ORE.ordinal()][PROD.ordinal()] = 1;
-            return initState;
+        MachineState buildObsidian( Blueprint blueprint ) {
+            return new MachineState( time + 1, oreProd, clayProd, obsProd + 1, geoProd, orePile + oreProd - blueprint.obsCOre,
+                                     clayPile + clayProd - blueprint.obsCClay, obsPile + obsProd, geoPile + geoProd );
         }
 
-        int steps( int cost, int pile, int prod ) {
-            int needed = cost - pile;
-            if ( prod == 0 && cost > 0 ) {
-                return CANNOT_BUILD;
+        MachineState buildGeode( Blueprint blueprint ) {
+            return new MachineState( time + 1, oreProd, clayProd, obsProd, geoProd + 1, orePile + oreProd - blueprint.geoCOre, clayPile + clayProd,
+                                     obsPile + obsProd - blueprint.geoCObs, geoPile + geoProd );
+        }
+
+        boolean canBuildOre( Blueprint blueprint ) {
+            return orePile >= blueprint.oreCOre;
+        }
+
+        boolean canBuildClay( Blueprint blueprint ) {
+            return orePile >= blueprint.clayCOre;
+        }
+
+        boolean canBuildObsidian( Blueprint blueprint ) {
+            return orePile >= blueprint.obsCOre && clayPile >= blueprint.obsCClay;
+        }
+
+        boolean canBuildGeode( Blueprint blueprint ) {
+            return orePile >= blueprint.geoCOre && obsPile >= blueprint.geoCObs;
+        }
+
+        String key() {return String.format( "%s,%s,%s,%s,%s", time, oreProd, clayProd, obsProd, geoProd );}
+
+        int totalValue( Blueprint blueprint ) {
+            return ( orePile + oreProd ) * blueprint.oreCOre  //
+                + ( clayPile + clayProd ) * blueprint.clayCOre   //
+                + ( obsPile + obsProd ) * ( blueprint.obsCOre + blueprint.obsCClay * blueprint.clayCOre ) //
+                + ( geoPile + geoProd ) * ( blueprint.geoCOre + blueprint.geoCObs * blueprint.obsCClay * blueprint.clayCOre ); //
+        }
+
+        List<MachineState> getNext( Blueprint blueprint ) {
+            List<MachineState> machineStates = new ArrayList<>();
+            if ( canBuildGeode( blueprint ) ) {
+                machineStates.add( buildGeode( blueprint ) );
             }
-            return prod == 0 || needed <= 0 ? 0 : needed / prod + ( needed % prod == 0 ? 0 : 1 );
-        }
-
-        int steps( int cost, Material material ) {
-            return steps( cost, getPile( material ), getProd( material ) );
-        }
-
-        int getCost( Material material ) {
-            return state[robotToBuild.ordinal()][material.ordinal()];
-        }
-
-        int getPile( Material material ) {
-            return state[material.ordinal()][PILE.ordinal()];
-        }
-
-        int getProd( Material material ) {
-            return state[material.ordinal()][PROD.ordinal()];
-        }
-
-        void setPile( Material material, int value ) {
-            state[material.ordinal()][PILE.ordinal()] = value;
-        }
-
-        void setProduction( Material material, int value ) {
-            state[material.ordinal()][PROD.ordinal()] = value;
-        }
-
-        void produce( Material material, int steps ) {
-            int produced = steps * getProd( material );
-            state[material.ordinal()][PILE.ordinal()] = getPile( material ) + produced;
-            totalValue = totalValue + produced * getMaterialValue( material );
-        }
-
-        int getMagicNumber( int timeLeft ) {
-            return totalValue;
-            //  Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).map( m -> getMaterialValue( m ) * getProd( m ) * timeLeft ).reduce( 0, Integer::sum );
-        }
-
-        void produce( int steps ) {
-            for ( Material material : List.of( ORE, CLAY, OBSIDIAN, GEODE ) ) {
-                produce( material, steps );
+            if ( canBuildObsidian( blueprint ) ) {
+                machineStates.add( buildObsidian( blueprint ) );
             }
-        }
-
-        /**
-         * Checks if for all materials the cost for the desired robot is "covered" by the existing stockpile
-         *
-         * @return true if all costs can be covered, false if there is not enough of at least 1 material to pay for the bot (cost > pile)
-         */
-        boolean isReadyToBuild() {
-            Optional<Material> costNotCovered =
-                Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).filter( material -> getCost( material ) > getPile( material ) ).findFirst();
-            return costNotCovered.isEmpty();
-        }
-
-        void pay( Material material ) {
-            int pile = getPile( material );
-            int cost = getCost( material );
-            if ( cost > pile ) {throw new IllegalStateException( "Not enough " + material );}
-            state[material.ordinal()][PILE.ordinal()] = pile - cost;
-        }
-
-        int getMaterialValue( Material material ) {
-            return switch ( material ) {
-                case ORE -> 1;
-                case CLAY -> state[CLAY.ordinal()][ORE.ordinal()];
-                case OBSIDIAN -> state[OBSIDIAN.ordinal()][ORE.ordinal()] + state[OBSIDIAN.ordinal()][CLAY.ordinal()] * getMaterialValue( CLAY );
-                case GEODE -> state[GEODE.ordinal()][ORE.ordinal()] + state[GEODE.ordinal()][OBSIDIAN.ordinal()] * getMaterialValue( OBSIDIAN );
-                case PILE -> 0;
-                case PROD -> 0;
-            };
-        }
-
-
-        boolean beginBuild() {
-            if ( isReadyToBuild() ) {
-                for ( Material material : List.of( ORE, CLAY, OBSIDIAN, GEODE ) ) {
-                    pay( material );
-                }
-                return true;
+            if ( canBuildClay( blueprint ) ) {
+                machineStates.add( buildClay( blueprint ) );
             }
-            return false;
-        }
-
-        void finishBuild() {
-            setProduction( robotToBuild, getProd( robotToBuild ) + 1 );
-            this.robotToBuild = null;
-        }
-
-        int stepsUntilBuild() {
-            return Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).map( m -> steps( getCost( m ), m ) ).max( Integer::compareTo ).orElse( -1 );
-        }
-
-        int stepsUntilBuild( Material bot ) {
-            return Stream.of( ORE, CLAY, OBSIDIAN, GEODE ).map( m -> steps( state[bot.ordinal()][m.ordinal()], m ) ).max( Integer::compareTo )
-                .orElse( -1 );
-        }
-
-        boolean isInTime( Material bot, int timeLeft ) {
-            return stepsUntilBuild( bot ) < timeLeft - 1; //this includes prerequisite production check
-        }
-
-        boolean isValid( Material bot, int timeLeft ) {
-            return true; //TODO find heuristics that limit choices.
-        }
-
-        List<Material> getNextChoices( int timeLeft ) {
-            List<Material> materials = Stream.of( ORE, CLAY, OBSIDIAN, GEODE )//
-                .filter( bot -> isInTime( bot, timeLeft ) )//
-                .filter( bot -> isValid( bot, timeLeft ) )//
-                .toList();
-            if ( materials.isEmpty() ) {
-                doneBuilding = true;
+            if ( canBuildOre( blueprint ) ) {
+                machineStates.add( buildOre( blueprint ) );
             }
-            return materials;
-        }
-
-        MachineState copyMachine( Material robotToBuild ) {
-            int[][] copy = new int[4][6]; //because I can
-            for ( int x = 0; x < 4; x++ ) {
-                System.arraycopy( state[x], 0, copy[x], 0, 6 );
-            }
-            return new MachineState( copy, robotToBuild, doneBuilding );
-        }
-
-        List<MachineState> run( int timeLeft ) {
-            List<MachineState> next = new ArrayList<>();
-            boolean build = isReadyToBuild();
-            if ( build ) {
-                beginBuild();
-            }
-            produce( 1 );
-            if ( build ) {
-                finishBuild();
-                next.addAll( getNextChoices( timeLeft ).stream().map( this::copyMachine ).toList() );
-            }
-            else {
-                next.add( this );
-            }
-            return next;
-        }
-
-
-        String getIdentifier() {
-            return String.format( "%s|%s|%s|%s|%s", robotToBuild, getProd( ORE ), getProd( CLAY ), getProd( OBSIDIAN ), getProd( GEODE ) );
+            machineStates.add( doNothing() );
+            return machineStates;
         }
 
         @Override
         public int compareTo( MachineState o ) {
-            return Integer.compare( o.getPile( GEODE ), getPile( GEODE ) );
-        }
-
-        @Override
-        public String toString() {
-            return String.format( "Machine oreBots=%s clayBots=%s obsBots=%s geoBots=%s | geodes=%s", getProd( ORE ), getProd( CLAY ),
-                                  getProd( OBSIDIAN ), getProd( GEODE ), getPile( GEODE ) );
+            return Integer.compare( o.geoPile, this.geoPile );
         }
     }
+
 
 }
