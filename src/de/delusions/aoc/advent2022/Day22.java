@@ -14,85 +14,81 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static de.delusions.aoc.advent2022.Day22.Square.*;
+import static de.delusions.aoc.util.Direction.*;
+
 public class Day22 extends Day<Integer> {
 
-    static final int WALL = 2;
+    static final int WALL = 1;
 
-    static final int FLOOR = 1;
+    static final int FLOOR = 2;
 
     static final int VOID = 0;
 
-    static final int SOUTH = 1 + 3;
-
-    static final int NORTH = 3 + 3;
-
-    static final int EAST = 0 + 3;
-
-    static final int WEST = 2 + 3;
-
     static final Map<Character, Integer> characterMapping = Map.of( '#', WALL, '.', FLOOR, ' ', VOID, '\n', VOID );
 
-    static final Pattern COMMAND_REGEX = Pattern.compile( "([0-9]+)(R|L)?" );
+    static final Pattern COMMAND_REGEX = Pattern.compile( "([0-9]+)([RL])?" );
 
-    static final String mapRegex = "[#\\. ]*";
+    static final String mapRegex = "[#. ]*";
+
+    static List<Edge> edges = List.of( new Edge( ONE, north, TWO, south, false, true ), new Edge( ONE, west, THREE, south, true, false ),
+                                       new Edge( ONE, east, SIX, west, false, true ), new Edge( TWO, north, ONE, south, false, true ),
+                                       new Edge( TWO, west, SIX, north, true, true ), new Edge( TWO, south, FIVE, north, false, true ),
+                                       new Edge( THREE, north, ONE, east, true, false ), new Edge( THREE, south, FIVE, east, true, true ),
+                                       new Edge( FOUR, east, SIX, south, true, true ), new Edge( FIVE, west, THREE, north, true, true ),
+                                       new Edge( FIVE, south, TWO, north, false, true ), new Edge( SIX, north, FOUR, west, true, true ),
+                                       new Edge( SIX, east, ONE, west, false, true ), new Edge( SIX, south, TWO, east, true, true ) );
 
     AtomicReference<String> commands = new AtomicReference<>();
-
-    public Day22() {
-        super( 22, "Monkey Map" );
-    }
 
     Matrix map;
 
     Coordinates currentPosition;
 
-    Direction facing = Direction.east; //Direction was implemented for another day where I had coordinate trouble
+    Direction facing = east;
 
-    static List<EdgePair> pairs = List.of( new EdgePair( Square.ONE, Direction.north, Square.TWO, Direction.south, false ),
-                                           new EdgePair( Square.ONE, Direction.west, Square.THREE, Direction.south, true ),
-                                           new EdgePair( Square.ONE, Direction.east, Square.SIX, Direction.west, false ),
-                                           new EdgePair( Square.TWO, Direction.north, Square.ONE, Direction.south, false ),
-                                           new EdgePair( Square.TWO, Direction.west, Square.SIX, Direction.north, true ),
-                                           new EdgePair( Square.TWO, Direction.south, Square.FIVE, Direction.north, false ),
-                                           new EdgePair( Square.THREE, Direction.north, Square.ONE, Direction.east, true ),
-                                           new EdgePair( Square.THREE, Direction.south, Square.FIVE, Direction.east, true ),
-                                           new EdgePair( Square.FOUR, Direction.east, Square.SIX, Direction.south, true ),
-                                           new EdgePair( Square.FIVE, Direction.west, Square.THREE, Direction.north, true ),
-                                           new EdgePair( Square.FIVE, Direction.south, Square.TWO, Direction.north, false ),
-                                           new EdgePair( Square.SIX, Direction.north, Square.FOUR, Direction.west, true ),
-                                           new EdgePair( Square.SIX, Direction.east, Square.ONE, Direction.west, false ),
-                                           new EdgePair( Square.SIX, Direction.south, Square.TWO, Direction.east, true ) );
+    int edgeSize = 0;
 
-    int diceLength = 0;
+    public Day22() {
+        super( 22, "Monkey Map" );
+    }
+
+    static int getFaceValue( Direction direction ) {
+        return switch ( direction ) {
+            case south -> 1;
+            case west -> 2;
+            case north -> 3;
+            case east -> 0;
+            default -> throw new IllegalStateException( "Unexpected value: " + direction );
+        };
+    }
 
     @Override
     public Integer part1( Stream<String> input ) {
-        map = parse( input );
-        map.setPrintMap( Map.of( WALL, "#", FLOOR, ".", VOID, " ", SOUTH, "v", NORTH, "^", EAST, ">", WEST, "<" ) );
-        diceLength = map.cleanup() / 4;
-        currentPosition = findStart();
+        readInput( input );
         return solve( this::adjustPosition );
     }
 
     @Override
     public Integer part2( Stream<String> input ) {
-        map = parse( input );
-        map.setPrintMap( Map.of( WALL, "#", FLOOR, ".", VOID, " ", SOUTH, "v", NORTH, "^", EAST, ">", WEST, "<" ) );
-        diceLength = map.cleanup() / 4;
-        currentPosition = findStart();
-        return solve( this::adjustPositionByEdge );
+        readInput( input );
+        try {
+            return solve( this::adjustPositionByEdge );
+        }
+        catch ( RuntimeException e ) {
+            System.err.println( map );
+            System.err.println( "Exception: " + e.getMessage() );
+            throw e;
+        }
     }
 
-
-    private int getFaceValue() {
-        int faceValue = switch ( facing ) {
-            case south -> 1;
-            case west -> 2;
-            case north -> 3;
-            case east -> 0;
-            default -> throw new IllegalStateException( "Unexpected value: " + facing );
-        };
-        return faceValue;
+    void readInput( Stream<String> input ) {
+        map = parse( input );
+        map.setPrintMap(
+            Map.of( WALL, "#", FLOOR, ".", VOID, " ", getFaceValue( south ) + FLOOR + 1, south.getSymbol(), getFaceValue( north ) + FLOOR + 1,
+                    north.getSymbol(), getFaceValue( east ) + FLOOR + 1, east.getSymbol(), getFaceValue( west ) + FLOOR + 1, west.getSymbol() ) );
+        edgeSize = map.cleanup() / 4;
+        currentPosition = findStart();
     }
 
     int solve( Supplier<Boolean> supplier ) {
@@ -101,33 +97,31 @@ public class Day22 extends Day<Integer> {
         while ( matcher.find() ) {
             executeMoveAndTurn( Integer.parseInt( matcher.group( 1 ) ), matcher.group( 2 ), supplier );
         }
-        System.out.println( map + " " + currentPosition );
-        return 1000 * ( 1 + currentPosition.getX() ) + 4 * ( 1 + currentPosition.getY() ) + getFaceValue();
+        System.out.println( map + "Final Coordinates=" + currentPosition );
+        return 1000 * ( 1 + currentPosition.getX() ) + 4 * ( 1 + currentPosition.getY() ) + getFaceValue( facing );
     }
 
-    void executeMoveAndTurn( int move, String turn, Supplier<Boolean> supplier ) {
-        System.out.println( "move " + move + " then turn " + turn );
+    void executeMoveAndTurn( int move, String turn, Supplier<Boolean> wrapAroundFunction ) {
         for ( int step = 0; step < move; step++ ) {
             //for pretty printing purposes:
-            currentPosition.setValue( getFaceValue() + 3 );
+            currentPosition.setValue( getFaceValue( facing ) + 3 );
             map.setValue( currentPosition );
 
             Coordinates nextPosition = currentPosition.moveDay22( facing );
             int nextValue = map.isInTheMatrix( nextPosition ) ? map.getValue( nextPosition ) : VOID;
-            if ( List.of( FLOOR, SOUTH, NORTH, WEST, EAST ).contains( nextValue ) ) {
+            if ( nextValue > WALL ) {
                 currentPosition = nextPosition;
             }
             else if ( nextValue == WALL ) {
                 break;
             }
-            else if ( nextValue == VOID ) {
-                if ( supplier.get() ) {break;}
+            else if ( wrapAroundFunction.get() ) {
+                break;
             }
         }
         if ( turn != null ) {
             facing = turn.equals( "L" ) ? facing.turnLeft() : facing.turnRight();
         }
-        System.out.println( facing + " " + currentPosition );
     }
 
     boolean adjustPosition() {
@@ -135,7 +129,7 @@ public class Day22 extends Day<Integer> {
         Direction tempFacing = facing.turnRight( 180 );
         Coordinates tempCoordinates = currentPosition;
         Coordinates tempMove = currentPosition;
-        while ( map.isInTheMatrix( tempMove ) && List.of( WALL, FLOOR, SOUTH, WEST, EAST, NORTH ).contains( map.getValue( tempMove ) ) ) {
+        while ( map.isInTheMatrix( tempMove ) && WALL <= map.getValue( tempMove ) ) { //not void
             tempCoordinates = tempMove;
             tempMove = tempCoordinates.moveDay22( tempFacing );
         }
@@ -148,11 +142,11 @@ public class Day22 extends Day<Integer> {
         return false;
     }
 
-    private boolean adjustPositionByEdge() {
-        EdgePair edge = null;
+    boolean adjustPositionByEdge() {
+        Edge edge = null;
         for ( Square square : Square.values() ) {
-            if ( square.mX == currentPosition.x / diceLength && square.mY == currentPosition.y / diceLength ) {
-                for ( EdgePair e : pairs ) {
+            if ( square.squareX == currentPosition.x / edgeSize && square.squareY == currentPosition.y / edgeSize ) {
+                for ( Edge e : edges ) {
                     if ( e.fromSquare == square && e.fromEdge == facing ) {
                         edge = e;
                         break;
@@ -161,11 +155,22 @@ public class Day22 extends Day<Integer> {
                 break;
             }
         }
-        int x = currentPosition.x % diceLength;
-        int y = currentPosition.y % diceLength;
-        int newX = edge.switchXY ? edge.toSquare.mX * diceLength + y : ( edge.toSquare.mX + 1 ) * diceLength - x;
-        int newY = edge.switchXY ? edge.toSquare.mY * diceLength + x : ( edge.toSquare.mY + 1 ) * diceLength - y;
-        Coordinates nextPosition = map.createCoords( newX, newY );
+        if ( edge == null ) {
+            throw new IllegalStateException( "Pos=" + currentPosition + " facing=" + facing );
+        }
+        int x = currentPosition.x % edgeSize;
+        int y = currentPosition.y % edgeSize;
+        int newX = edge.toSquare.squareY * edgeSize;
+        ;
+        int newY = edge.toSquare.squareX * edgeSize;
+        ;
+        if ( List.of( north, south ).contains( edge.newFacing ) ) {
+            newX = newX + ( edge.switch0N ? edgeSize - x - 1 : x );
+        }
+        else {
+            newY = newY + ( edge.switch0N ? edgeSize - y - 1 : y );
+        }
+        Coordinates nextPosition = map.createCoords( edge.switchXY ? newY : newX, edge.switchXY ? newX : newY );
         if ( map.getValue( nextPosition ) == WALL ) {
             return true;
         }
@@ -174,26 +179,22 @@ public class Day22 extends Day<Integer> {
         return false;
     }
 
-    ;
-
-
-    enum Square {
-        ONE( 2, 0 ), TWO( 0, 1 ), THREE( 1, 1 ), FOUR( 2, 1 ), FIVE( 2, 2 ), SIX( 3, 2 );
-
-        final int mX;
-
-        final int mY;
-
-        Square( int my, int mx ) {
-            this.mX = mx;
-            this.mY = my;
-        }
+    Matrix parse( Stream<String> input ) {
+        return new Matrix( input.map( this::mapLine ).filter( Objects::nonNull ).toArray( int[][]::new ) );
     }
 
-    record EdgePair(Square fromSquare, Direction fromEdge, Square toSquare, Direction newFacing, boolean switchXY) {}
+    enum Square {//coordinates are all wrongly implemented so what...
+        ONE( 2, 0 ), TWO( 0, 1 ), THREE( 1, 1 ), FOUR( 2, 1 ), FIVE( 2, 2 ), SIX( 3, 2 );
 
-    Matrix parse( Stream<String> input ) {
-        return new Matrix( input.map( line -> mapLine( line ) ).filter( Objects::nonNull ).toArray( int[][]::new ) );
+        final int squareX;
+
+        final int squareY;
+
+        Square( int squareY, int squareX ) {
+            this.squareX = squareX;
+            this.squareY = squareY;
+        }
+
     }
 
     Coordinates findStart() {
@@ -213,4 +214,6 @@ public class Day22 extends Day<Integer> {
         }
         return null;
     }
+
+    record Edge(Square fromSquare, Direction fromEdge, Square toSquare, Direction newFacing, boolean switchXY, boolean switch0N) {}
 }
