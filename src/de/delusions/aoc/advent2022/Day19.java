@@ -67,7 +67,7 @@ public class Day19 extends Day<Integer> {
         //done.stream().map(m -> m.geoPile).max( Integer::compareTo ).get();
         int result;
         result = bestRun != null ? bestRun.geoPile * blueprint.blueprintId : 0;
-        System.out.println( "-------> " + result + " " + bestRun );
+        System.out.println( "-------> " + result + " " + bestRun + " " + blueprint );
         return result;
     }
 
