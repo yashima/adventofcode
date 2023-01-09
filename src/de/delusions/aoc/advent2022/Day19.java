@@ -22,7 +22,7 @@ public class Day19 extends Day<Integer> {
     private static final Pattern PATTERN = Pattern.compile( INPUT_REGEX );
 
     Integer solve( List<Blueprint> blueprints ) {
-        return blueprints.stream().map( this::runBluePrint ).reduce( 0, Integer::sum );
+        return blueprints.stream().limit( 35 ).map( this::runBluePrint ).reduce( 0, Integer::sum );
     }
 
     public Day19() { //2153 was too low
@@ -42,28 +42,31 @@ public class Day19 extends Day<Integer> {
         opens.add( new MachineState( 0, 1, 0, 0, 0, 0, 0, 0, 0 ) );
         //track various states
         Map<String, MachineState> candidates = new HashMap<>();
-        List<MachineState> done = new ArrayList<>();
+        Map<String, MachineState> done = new HashMap<>();
 
         //the time loop
         while ( !opens.isEmpty() ) {
             MachineState current = opens.pop();
             if ( current.time == TIME ) {
-                done.add( current ); //weed out those that are worse
+                if ( !done.containsKey( current.key() ) || done.get( current.key() ).geoPile < current.geoPile ) {
+                    done.put( current.key(), current ); //weed out those that are worse
+                }
             }
             else {
                 List<MachineState> next = current.getNext( blueprint );
                 next.forEach( state -> {
-                    if ( !candidates.containsKey( state.key() ) ||
-                        candidates.get( state.key() ).totalValue( blueprint ) < state.totalValue( blueprint ) ) {
-                        candidates.put( state.key(), state );
-                        opens.add( state );
+                    String key = state.key() + state.piles();
+                    if ( !candidates.containsKey( key ) || candidates.get( key ).totalValue( blueprint ) < state.totalValue( blueprint ) ) {
+
+                        candidates.put( key, state );
+                        opens.push( state );
                     }
                 } );
             }
 
         }
 
-        MachineState bestRun = done.stream().sorted().findFirst().orElse( null );
+        MachineState bestRun = done.values().stream().sorted().findFirst().orElse( null );
         //done.stream().map(m -> m.geoPile).max( Integer::compareTo ).get();
         int result;
         result = bestRun != null ? bestRun.geoPile * blueprint.blueprintId : 0;
@@ -103,7 +106,13 @@ public class Day19 extends Day<Integer> {
 
     enum Material {GEODE, OBSIDIAN, CLAY, ORE, PROD, PILE}
 
-    record Blueprint(int blueprintId, int oreCOre, int clayCOre, int obsCOre, int obsCClay, int geoCOre, int geoCObs) {}
+    record Blueprint(int blueprintId, int oreCOre, int clayCOre, int obsCOre, int obsCClay, int geoCOre, int geoCObs) {
+
+        int oreMax() {
+            return Math.max( oreCOre, Math.max( clayCOre, Math.max( obsCOre, geoCOre ) ) );
+        }
+
+    }
 
     record MachineState(int time, int oreProd, int clayProd, int obsProd, int geoProd, int orePile, int clayPile, int obsPile, int geoPile)
         implements Comparable<MachineState> {
@@ -133,15 +142,15 @@ public class Day19 extends Day<Integer> {
         }
 
         boolean canBuildOre( Blueprint blueprint ) {
-            return orePile >= blueprint.oreCOre;
+            return orePile >= blueprint.oreCOre && oreProd < blueprint.oreMax();
         }
 
         boolean canBuildClay( Blueprint blueprint ) {
-            return orePile >= blueprint.clayCOre;
+            return orePile >= blueprint.clayCOre && clayProd < blueprint.obsCClay;
         }
 
         boolean canBuildObsidian( Blueprint blueprint ) {
-            return orePile >= blueprint.obsCOre && clayPile >= blueprint.obsCClay;
+            return orePile >= blueprint.obsCOre && clayPile >= blueprint.obsCClay && obsProd < blueprint.geoCObs;
         }
 
         boolean canBuildGeode( Blueprint blueprint ) {
@@ -149,6 +158,8 @@ public class Day19 extends Day<Integer> {
         }
 
         String key() {return String.format( "%s,%s,%s,%s,%s", time, oreProd, clayProd, obsProd, geoProd );}
+
+        String piles() {return String.format( "%s,%s,%s,%s,%s", time, orePile, clayPile, obsPile, geoPile );}
 
         int totalValue( Blueprint blueprint ) {
             return ( orePile + oreProd ) * blueprint.oreCOre  //
@@ -161,6 +172,7 @@ public class Day19 extends Day<Integer> {
             List<MachineState> machineStates = new ArrayList<>();
             if ( canBuildGeode( blueprint ) ) {
                 machineStates.add( buildGeode( blueprint ) );
+                return machineStates; //todo check if this is really the best option
             }
             if ( canBuildObsidian( blueprint ) ) {
                 machineStates.add( buildObsidian( blueprint ) );
