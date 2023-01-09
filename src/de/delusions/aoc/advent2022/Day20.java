@@ -66,6 +66,7 @@ public class Day20 extends Day<Long> {
             movePair( nextPair );
             nextPair = getNext();
         }
+        numbers = new LinkedList<>( numbers.stream().map( CryptPair::reset ).toList() );
     }
 
     private CryptPair getNext() {
@@ -107,6 +108,10 @@ public class Day20 extends Day<Long> {
         @Override
         public String toString() {
             return number + "";
+        }
+
+        CryptPair reset() {
+            return new CryptPair( id, number, false );
         }
     }
 }
