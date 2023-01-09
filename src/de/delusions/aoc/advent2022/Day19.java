@@ -21,10 +21,6 @@ public class Day19 extends Day<Integer> {
 
     private static final Pattern PATTERN = Pattern.compile( INPUT_REGEX );
 
-    Integer solve( List<Blueprint> blueprints ) {
-        return blueprints.stream().limit( 35 ).map( this::runBluePrint ).reduce( 0, Integer::sum );
-    }
-
     public Day19() { //2153 was too low
         super( 19, "Not Enough Minerals" );
     }
@@ -36,7 +32,7 @@ public class Day19 extends Day<Integer> {
      * @param blueprint the blueprint to start with
      * @return the highest geode count that could be harvested with this blueprint
      */
-    int runBluePrint( Blueprint blueprint ) {
+    int runBluePrint( Blueprint blueprint, int timer ) {
         //init the first round
         Stack<MachineState> opens = new Stack<>();
         opens.add( new MachineState( 0, 1, 0, 0, 0, 0, 0, 0, 0 ) );
@@ -47,7 +43,7 @@ public class Day19 extends Day<Integer> {
         //the time loop
         while ( !opens.isEmpty() ) {
             MachineState current = opens.pop();
-            if ( current.time == TIME ) {
+            if ( current.time == timer ) {
                 if ( !done.containsKey( current.key() ) || done.get( current.key() ).geoPile < current.geoPile ) {
                     done.put( current.key(), current ); //weed out those that are worse
                 }
@@ -55,7 +51,7 @@ public class Day19 extends Day<Integer> {
             else {
                 List<MachineState> next = current.getNext( blueprint );
                 next.forEach( state -> {
-                    String key = state.key() + state.piles();
+                    String key = state.key(); //blueprint 7 does not work without the state.piles();
                     if ( !candidates.containsKey( key ) || candidates.get( key ).totalValue( blueprint ) < state.totalValue( blueprint ) ) {
 
                         candidates.put( key, state );
@@ -69,19 +65,20 @@ public class Day19 extends Day<Integer> {
         MachineState bestRun = done.values().stream().sorted().findFirst().orElse( null );
         //done.stream().map(m -> m.geoPile).max( Integer::compareTo ).get();
         int result;
-        result = bestRun != null ? bestRun.geoPile * blueprint.blueprintId : 0;
+        result = bestRun != null ? bestRun.geoPile : 0;
         System.out.println( "-------> " + result + " " + bestRun + " " + blueprint );
         return result;
     }
 
     @Override
     public Integer part1( Stream<String> input ) {
-        return solve( parse( input ) );
+        return parse( input ).stream().limit( 35 ).map( blueprint -> runBluePrint( blueprint, 24 ) * blueprint.blueprintId )
+            .reduce( 0, Integer::sum );
     }
 
     @Override
     public Integer part2( Stream<String> input ) {
-        return null;
+        return parse( input ).stream().limit( 3 ).map( blueprint -> runBluePrint( blueprint, 32 ) ).reduce( 1, ( a, b ) -> a * b );
     }
 
 
@@ -101,7 +98,7 @@ public class Day19 extends Day<Integer> {
                                       Integer.parseInt( matcher.group( 7 ) ) );
             }
             return null;
-        } ).filter( Objects::nonNull ).peek( System.out::println ).toList();
+        } ).filter( Objects::nonNull ).toList();
     }
 
     enum Material {GEODE, OBSIDIAN, CLAY, ORE, PROD, PILE}
