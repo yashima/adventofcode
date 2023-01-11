@@ -16,6 +16,8 @@ public abstract class Day<T> {
 
     String tag;
 
+    boolean testMode = false;
+
     public abstract T part1( Stream<String> input );
 
     public abstract T part2( Stream<String> input );
@@ -27,13 +29,18 @@ public abstract class Day<T> {
     }
 
     public void run( boolean test, boolean time ) {
-        System.out.println(System.getProperty("user.dir"  ));
+        this.testMode = test;
+        System.out.println( System.getProperty( "user.dir" ) );
         long timer = System.currentTimeMillis();
         System.out.println( "Day " + day + ", part1: " + tag + "=" + part1( getInput( test ) ) );
         System.out.println( "Day " + day + ", part2: " + tag + "=" + part2( getInput( test ) ) );
         if ( time ) {
             System.out.println( "Took " + ( System.currentTimeMillis() - timer ) + "ms" );
         }
+    }
+
+    public boolean isTestMode() {
+        return testMode;
     }
 
     public Stream<String> getInput( boolean test ) {
