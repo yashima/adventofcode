@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-public class Day7 extends Day<Integer> {
+public class Day07 extends Day<Integer> {
 
-    public Day7() {
+    public Day07() {
         super( 7, "No Space Left On Device" );
     }
 

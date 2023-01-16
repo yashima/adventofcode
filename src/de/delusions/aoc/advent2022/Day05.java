@@ -9,12 +9,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public class Day5 extends Day<String> {
+public class Day05 extends Day<String> {
     final static Pattern day5MovePattern = Pattern.compile( "move ([0-9]+) from ([0-9]+) to ([0-9]+)" );
 
     final static Pattern day5StackPattern = Pattern.compile( ".(.)...(.)...(.)...(.)...(.)...(.)...(.)...(.)...(.)." );
 
-    Day5() {
+    Day05() {
         super( 5, "Supply Stacks" );
     }
 

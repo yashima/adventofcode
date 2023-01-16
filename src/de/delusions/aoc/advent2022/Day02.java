@@ -5,8 +5,8 @@ import de.delusions.aoc.util.Day;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class Day2 extends Day<Integer> {
-    Day2() {
+public class Day02 extends Day<Integer> {
+    Day02() {
         super( 2, "Rock Paper Scissors" );
     }
 

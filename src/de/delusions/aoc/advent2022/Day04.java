@@ -8,11 +8,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public class Day4 extends Day<Long> {
+public class Day04 extends Day<Long> {
 
     static Pattern day4Pattern = Pattern.compile( "([0-9]+)-([0-9]+),([0-9]+)-([0-9]+)" );
 
-    Day4() {
+    Day04() {
         super( 4, "Camp Cleanup" );
     }
 

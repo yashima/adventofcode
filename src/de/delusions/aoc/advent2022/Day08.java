@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class Day8 extends Day<Integer> {
+public class Day08 extends Day<Integer> {
 
-    Day8() {
+    Day08() {
         super( 8, "Treetop Tree House" );
     }
 

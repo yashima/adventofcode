@@ -7,9 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day1 extends Day<Integer> {
+public class Day01 extends Day<Integer> {
 
-    Day1() {
+    Day01() {
         super( 1, "Calorie Counting" );
     }
 

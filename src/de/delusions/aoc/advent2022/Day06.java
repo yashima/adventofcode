@@ -4,9 +4,9 @@ import de.delusions.aoc.util.Day;
 
 import java.util.stream.Stream;
 
-public class Day6 extends Day<Integer> {
+public class Day06 extends Day<Integer> {
 
-    Day6() {
+    Day06() {
         super( 6, "uning Trouble" );
     }
 

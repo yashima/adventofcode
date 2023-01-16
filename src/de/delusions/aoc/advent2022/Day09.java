@@ -9,9 +9,9 @@ import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class Day9 extends Day<Integer> {
+public class Day09 extends Day<Integer> {
 
-    public Day9() {
+    public Day09() {
         super( 9, "Rope Bridge" );
     }
 
