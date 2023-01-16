@@ -12,8 +12,8 @@ public class AdventOfCode2022 {
                      new Day11(), new Day12(), new Day13(), new Day14(), new Day15(), new Day16(), new Day17(), new Day18(), new Day19(),
                      new Day21() );
         System.out.println( "Days solved: " + daysOfAdvent.size() );
-        Day<?> today = new Day22();
-        today.run( true, true );
+        Day<?> today = new Day20();
+        today.run( false, true );
 
         //part20325733607
         //    15307383014733
