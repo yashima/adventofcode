@@ -13,6 +13,8 @@ public class Coordinates {
 
     int value = 0;
 
+    Direction facing;
+
     public Coordinates( String coordString, String divider, int value ) {
         this( coordString.split( divider ), value );
     }
@@ -70,7 +72,7 @@ public class Coordinates {
     }
 
     public Coordinates moveTo( Direction move, int distance, int value ) {
-        return switch ( move ) {
+        Coordinates result = switch ( move ) {
             case west -> new Coordinates( this.x - distance, this.y, value, this );
             case east -> new Coordinates( this.x + distance, this.y, value, this );
             case south -> new Coordinates( this.x, this.y + distance, value, this );
@@ -80,8 +82,13 @@ public class Coordinates {
             case northwest -> new Coordinates( this.x - distance, this.y - distance, value, this );
             case northeast -> new Coordinates( this.x + distance, this.y - distance, value, this );
         };
+        result.facing = move;
+        return result;
     }
 
+    public Direction getFacing() {
+        return facing;
+    }
 
     public Direction lookingTowards( Coordinates other ) {
         Direction result = null;
