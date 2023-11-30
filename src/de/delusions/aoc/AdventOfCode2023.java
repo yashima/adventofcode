@@ -11,6 +11,6 @@ public class AdventOfCode2023
         List<Day<?>> daysOfAdvent = List.of(new Day01());
         System.out.println( "Days solved: " + daysOfAdvent.size() );
         Day<?> today = new Day01();
-        today.run( true, true );
+        today.run( false, true );
     }
 }

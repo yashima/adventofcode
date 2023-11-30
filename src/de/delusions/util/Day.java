@@ -8,10 +8,6 @@ import java.util.stream.Stream;
 
 public abstract class Day<T> {
 
-    public static String PATH = System.getProperty( "user.dir" ) + "\\inputs\\day%s-input.txt";
-
-    public static String TEST_PATH = System.getProperty( "user.dir" ) + "\\inputs\\day%s-test.txt";
-
     int day;
 
     String tag;
@@ -46,11 +42,11 @@ public abstract class Day<T> {
     public Stream<String> getInput( boolean test ) {
         try {
 
-            return Files.lines( Paths.get( String.format( test ? TEST_PATH : PATH, day ) ) );
+            return new Input( day, test ).getStream();
 
         }
         catch ( IOException e ) {
-            System.out.println( "File not found: " + e.getMessage() );
+            System.err.println( "Input could not be retrieved: " + e.getMessage() );
             return new ArrayList<String>().stream();
         }
     }
