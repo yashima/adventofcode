@@ -25,21 +25,22 @@ public class Input {
 
     Stream<String> getStream()
         throws IOException {
-        Path path = Paths.get(System.getProperty( "user.dir" ) +  String.format("\\inputs\\%s\\day-%02d%s.txt", test ? "test" : "prod", day, test? "-"+part : "" ) );
+        Path path = Paths.get(
+            System.getProperty( "user.dir" ) + String.format( "\\inputs\\%s\\day-%02d%s.txt", test ? "test" : "prod", day, test ? "-" + part : "" ) );
         if ( test ) {
             if ( !fileExists( path ) ) {
                 Files.createFile( path );
             }
             if ( Files.size( path ) == 0 ) {
-                throw new RuntimeException( "Please copy test input into " + path.toString() );
+                throw new RuntimeException( "Please copy test input into " + path );
             }
         }
         else {
             if ( !fileExists( path ) && !fileExists( DOWNLOAD ) ) {
-                throw new RuntimeException( "Please download today's input into " +path.toString() );
+                throw new RuntimeException( "Please download today's input into " + path );
             }
             if ( fileExists( DOWNLOAD ) ) {
-                Files.move( DOWNLOAD, path, StandardCopyOption.REPLACE_EXISTING);
+                Files.move( DOWNLOAD, path, StandardCopyOption.REPLACE_EXISTING );
             }
         }
 
