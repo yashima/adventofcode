@@ -15,14 +15,18 @@ public class Input {
 
     private final boolean test;
 
-    Input( int day, boolean test ) {
+    private final int part;
+
+    Input( int day, boolean test, int part ) {
         this.day = day;
         this.test = test;
+        this.part = part;
     }
 
     Stream<String> getStream()
         throws IOException {
-        Path path = Paths.get(System.getProperty( "user.dir" ) +  String.format("\\inputs\\%s\\day-%02d.txt", test ? "test" : "prod", day ) );
+        Path path = Paths.get(System.getProperty( "user.dir" ) +  String.format("\\inputs\\%s\\day-%02d%s.txt", test ? "test" : "prod", day, test? "-"+part : "" ) );
+        System.out.println(path.toString());
         if ( test ) {
             if ( !fileExists( path ) ) {
                 Files.createFile( path );
