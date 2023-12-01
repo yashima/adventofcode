@@ -29,17 +29,12 @@ public abstract class Day<T> {
         this.expected = expected;
     }
 
-    public void run( boolean test, boolean time, int part ) {
-        this.testMode = test;
-        System.out.println( System.getProperty( "user.dir" ) );
-        System.out.println( "Testmode: "+ ( testMode ? "test" : "prod"));
+    public void run( boolean test, int part ) {
+        this.testMode = test; //keep this
         long timer = System.currentTimeMillis();
-        T part0Result = part==0 ? part0( getInput( test,part ) ) : part1( getInput( test,part ) );
-
-        System.out.println( "Day " + day + ", part0: " + tag + "=" + part0Result + " Success: "+verify( part0Result, part,testMode ));
-        if ( time ) {
-            System.out.println( "Took " + ( System.currentTimeMillis() - timer ) + "ms" );
-        }
+        T result = part==0 ? part0( getInput( test,part ) ) : part1( getInput( test,part ) );
+        timer = System.currentTimeMillis()-timer;
+        System.out.printf( "Day %01d '%s' Part %d: result=%s success=%s time=%dms%n", day , tag, part , result , verify( result, part, test ), timer);
     }
 
     public boolean verify(T result, int part, boolean test){

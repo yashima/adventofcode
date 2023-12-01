@@ -26,7 +26,6 @@ public class Input {
     Stream<String> getStream()
         throws IOException {
         Path path = Paths.get(System.getProperty( "user.dir" ) +  String.format("\\inputs\\%s\\day-%02d%s.txt", test ? "test" : "prod", day, test? "-"+part : "" ) );
-        System.out.println(path.toString());
         if ( test ) {
             if ( !fileExists( path ) ) {
                 Files.createFile( path );

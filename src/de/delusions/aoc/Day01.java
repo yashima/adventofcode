@@ -18,8 +18,8 @@ public class Day01 extends Day<Long>
     }
 
     private static final Long DIGIT_OFFSET=48L;
-    private static final Map<String,Integer>
-        NUMBERS = Map.of( "one", 1, "two", 2, "three", 3, "four", 4, "five", 5, "six", 6, "seven", 7, "eight", 8, "nine", 9);
+    private static final Map<String,String>
+        NUMBERS = Map.of( "one", "1", "two", "2", "three", "3", "four", "4", "five", "5", "six", "6", "seven", "7", "eight", "8", "nine", "9");
     private static final Pattern P = Pattern.compile( "(\\d|one|two|three|four|five|six|seven|eight|nine)" );
 
     static long findNumber( String line){
@@ -32,13 +32,7 @@ public class Day01 extends Day<Long>
         List<Long> digitsFound = new ArrayList<>();
         while( matcher.find() ){
             String match = matcher.group( 0 );
-            Long digit;
-            if(NUMBERS.containsKey( match )){
-                digit = Long.valueOf( NUMBERS.get( match ));
-            } else {
-                digit = Long.valueOf( match );
-            }
-            digitsFound.add( digit );
+            digitsFound.add( Long.valueOf( NUMBERS.getOrDefault(match,match) ) );
         }
         return digitsFound.get( 0 )*10 + digitsFound.get( digitsFound.size()-1 );
     }
