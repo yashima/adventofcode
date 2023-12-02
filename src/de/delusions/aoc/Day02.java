@@ -2,10 +2,7 @@ package de.delusions.aoc;
 
 import de.delusions.util.Day;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +10,7 @@ import java.util.stream.Stream;
 
 public class Day02 extends Day<Long> {
 
-    Pattern T = Pattern.compile( "(\\d+) (green|blue|red)" );
+    Pattern R = Pattern.compile( "(\\d+) (green|blue|red)" );
 
     public Day02( Long... expected ) {
         super( 2, "Cube Conundrum", expected );
@@ -22,20 +19,11 @@ public class Day02 extends Day<Long> {
     Game parseGame( String line ) {
         int id = Integer.parseInt( line.substring( 5, line.indexOf( ":" ) ) );
         Game game = new Game( id );
-        String[] turns = line.substring( line.indexOf( ":" ) ).split( ";" );
-        for ( String turn : turns ) {
-            game.add( parseTurn( turn ) );
+        Matcher matcher = R.matcher( line );
+        while ( matcher.find() ) {
+            game.put( Color.valueOf( matcher.group( 2 ).toUpperCase() ), Integer.parseInt( matcher.group( 1 ) ) );
         }
         return game;
-    }
-
-    Turn parseTurn( String turn ) {
-        Map<Color, Integer> stones = new HashMap<>();
-        Matcher matcher = T.matcher( turn );
-        while ( matcher.find() ) {
-            stones.put( Color.valueOf( matcher.group( 2 ).toUpperCase() ), Integer.parseInt( matcher.group( 1 ) ) );
-        }
-        return new Turn( stones );
     }
 
     @Override
@@ -51,22 +39,17 @@ public class Day02 extends Day<Long> {
     enum Color {
         RED( 12 ), GREEN( 13 ), BLUE( 14 );
 
-        final int number;
+        final int stones;
 
-        Color( int number ) {this.number = number;}
+        Color( int stones ) {this.stones = stones;}
 
     }
 
-    record Turn(Map<Color, Integer> stones) {
-        boolean isPossible() {
-            return stones.entrySet().stream().allMatch( entry -> entry.getValue() <= entry.getKey().number );
-        }
-    }
 
     static class Game {
         int id;
 
-        List<Turn> turns = new ArrayList<>();
+        Map<Color, Integer> maxStones = new HashMap<>();
 
         Game( int id ) {
             this.id = id;
@@ -74,17 +57,18 @@ public class Day02 extends Day<Long> {
 
         int getId() {return this.id;}
 
-        void add( Turn turn ) {turns.add( turn );}
+        void put( Color c, int stones ) {
+            if ( !maxStones.containsKey( c ) || maxStones.get( c ) < stones ) {
+                maxStones.put( c, stones );
+            }
+        }
 
         boolean isPossible() {
-            return turns.stream().allMatch( Turn::isPossible );
+            return maxStones.entrySet().stream().allMatch( e -> e.getValue() <= e.getKey().stones );
         }
 
         int power() {
-            //for each color find the maximum drawn on any turn, then multiply those numbers
-            return Arrays.stream( Color.values() )
-                .mapToInt( color -> turns.stream().mapToInt( t -> t.stones().getOrDefault( color, 0 ) ).max().orElse( 0 ) )
-                .reduce( ( a, b ) -> a * b ).orElse( 0 );
+            return maxStones.values().stream().reduce( ( a, b ) -> a * b ).orElse( 0 );
         }
     }
 }
