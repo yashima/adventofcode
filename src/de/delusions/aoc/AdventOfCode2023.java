@@ -7,7 +7,10 @@ import java.util.List;
 public class AdventOfCode2023 {
     public static void main( String[] args ) {
 
-        List<Day<?>> daysOfAdvent = List.of( new Day01( 142L, 281L, 54561L, 54076L ), new Day02( 8L, 2286L, 2600L, 86036L ) );
+        List<Day<?>> daysOfAdvent = List.of( //
+                                             new Day01( 142L, 281L, 54561L, 54076L ), //
+                                             new Day02( 8L, 2286L, 2600L, 86036L ), //
+                                             new Day03( 4361, 556057, 467835, 0 ) );
         System.out.println( "Days solved: " + daysOfAdvent.size() );
         runAllVariants( daysOfAdvent.get( daysOfAdvent.size() - 1 ) );
 
@@ -17,6 +20,6 @@ public class AdventOfCode2023 {
         today.run( true, 0 );
         today.run( false, 0 );
         today.run( true, 1 );
-        today.run( false, 1 );
+//        today.run( false, 1 );
     }
 }
