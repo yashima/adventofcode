@@ -1,5 +1,7 @@
 package de.delusions.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Coordinates {
@@ -83,6 +85,14 @@ public class Coordinates {
             case northeast -> new Coordinates( this.x + distance, this.y - distance, value, this );
         };
         result.facing = move;
+        return result;
+    }
+
+    public List<Coordinates> getAdjacent() {
+        List<Coordinates> result = new ArrayList<>();
+        for ( Direction d : Direction.values() ) {
+            result.add( this.moveTo( d, 1 ) );
+        }
         return result;
     }
 
