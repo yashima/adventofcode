@@ -10,8 +10,9 @@ public class AdventOfCode2023 {
         List<Day<?>> daysOfAdvent = List.of( //
                                              new Day01( 142L, 281L, 54561L, 54076L ), //
                                              new Day02( 8L, 2286L, 2600L, 86036L ), //
-                                             new Day03( 4361, 467835, 556057, 0 ) );
-        System.out.println( "Days solved: " + daysOfAdvent.size() );
+                                             new Day03( 4361, 467835, 556057, 82824352 ),//
+                                             new Day04( 0, 0, 0, 0 ) );
+        System.out.println( "Days: " + daysOfAdvent.size() );
         runAllVariants( daysOfAdvent.get( daysOfAdvent.size() - 1 ) );
 
     }

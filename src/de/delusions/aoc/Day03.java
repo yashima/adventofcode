@@ -49,9 +49,6 @@ public class Day03 extends Day<Integer> {
             if ( numbersFound.size() == 2 ) {
                 ratios.add( convertCoordinatesToNumber( numbersFound.get( 0 ) ) * convertCoordinatesToNumber( numbersFound.get( 1 ) ) );
             }
-            else {
-                System.out.println( "Wrong number of adjacent: " + numbersFound );
-            }
         }
         return ratios.stream().mapToInt( i -> i ).sum();
     }
