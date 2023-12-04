@@ -2,8 +2,11 @@ package de.delusions.aoc;
 
 import de.delusions.util.Day;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Day04 extends Day<Integer> {
@@ -29,6 +32,17 @@ public class Day04 extends Day<Integer> {
 
     @Override
     public Integer part1( Stream<String> input ) {
-        return null;
+        List<Integer> matchingNumbers = input.map( this::countWinningNumbers ).toList();
+        int[] scratchCardCounts = new int[matchingNumbers.size()];
+        Arrays.fill( scratchCardCounts, 1 );
+        IntStream.range( 0, matchingNumbers.size() - 1 ).forEach( currentGame -> {
+            int following = matchingNumbers.get( currentGame );
+            if ( following > 0 ) {
+                IntStream.range( currentGame + 1, Math.min( scratchCardCounts.length, currentGame + following + 1 ) ) //
+                    .forEach( game -> scratchCardCounts[game] = scratchCardCounts[game] + scratchCardCounts[currentGame] );
+            }
+
+        } );
+        return Arrays.stream( scratchCardCounts ).sum();
     }
 }
