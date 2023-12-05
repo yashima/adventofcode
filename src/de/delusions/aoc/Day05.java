@@ -18,20 +18,7 @@ public class Day05 extends Day<Long> {
     List<Category> almanach = new ArrayList<>();
 
     public Day05( Long... expected ) {
-        super( 5, "", expected );
-    }
-
-    String printAlmanach() {
-        StringBuilder result = new StringBuilder();
-        result.append( "\n--- The Almanach ---\n\n" );
-        for ( Category category : almanach ) {
-            result.append( category.header ).append( "\n" );
-            for ( Rule rule : category.rules ) {
-                result.append( rule ).append( "\n" );
-            }
-            result.append( "\n" );
-        }
-        return result.toString();
+        super( 5, "If You Give A Seed A Fertilizer", expected );
     }
 
     private void readAlmanach( Stream<String> input ) {
