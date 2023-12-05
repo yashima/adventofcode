@@ -21,13 +21,13 @@ public class Day05 extends Day<Long> {
         super( 5, "", expected );
     }
 
-    private String printAlmanach() {
+    String printAlmanach() {
         StringBuilder result = new StringBuilder();
         result.append( "\n--- The Almanach ---\n\n" );
         for ( Category category : almanach ) {
             result.append( category.header ).append( "\n" );
-            for ( Rule mapline : category.rules ) {
-                result.append( mapline ).append( "\n" );
+            for ( Rule rule : category.rules ) {
+                result.append( rule ).append( "\n" );
             }
             result.append( "\n" );
         }
@@ -82,9 +82,7 @@ public class Day05 extends Day<Long> {
         List<Long> source = new ArrayList<>( startingSeeds );
         List<Long> destinations = new ArrayList<>();
 
-        long start = System.currentTimeMillis();
         for ( Category category : almanach ) {
-            //System.out.println( category.header() + "\t" + source + "\t " + ( System.currentTimeMillis() - start ) + "ms" );
             for ( long value : source ) {
                 for ( Rule rule : category.rules() ) {
                     if ( rule.matches( value ) ) {
@@ -125,7 +123,6 @@ public class Day05 extends Day<Long> {
                             //Mach Drei Stücke Obelix:
                             next.add( rule.translate( rule.source().intersect( seedChunk ) ) );
                             if ( seedChunk.getLower() < rule.source().getLower() ) {
-                                //head
                                 stash.push( new Interval( seedChunk.getLower(), rule.source().getLower() - 1 ) );
                             }
                             if ( seedChunk.getUpper() > rule.source().getUpper() ) {
@@ -140,7 +137,7 @@ public class Day05 extends Day<Long> {
             stash.addAll( next );
             next.clear();
         }
-        return stash.stream().mapToLong( i -> i.getLower() ).min().orElse( -1 );
+        return stash.stream().mapToLong( Interval::getLower ).min().orElse( -1 );
     }
 
     record Rule(Interval source, Interval destination) {
