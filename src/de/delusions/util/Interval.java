@@ -1,17 +1,21 @@
 package de.delusions.util;
 
 public class Interval implements Comparable<Interval> {
-    int lower;
+    long lower;
 
-    int upper;
+    long upper;
 
     public Interval( String lower, String upper ) {
-        this( Integer.parseInt( lower ), Integer.parseInt( upper ) );
+        this( Long.parseLong( lower ), Long.parseLong( upper ) );
     }
 
-    public Interval( int lower, int upper ) {
+    public Interval( long lower, long upper ) {
         this.lower = lower;
         this.upper = upper;
+    }
+
+    public boolean contains( long value ) {
+        return this.lower <= value && this.upper >= value;
     }
 
     public boolean contains( Interval bar ) {
@@ -26,18 +30,22 @@ public class Interval implements Comparable<Interval> {
         return new Interval( Math.min( this.lower, bar.lower ), Math.max( bar.upper, this.upper ) );
     }
 
-    public int length() {
+    public long length() {
         return Math.abs( upper - lower );
     }
 
-    public int getUpper() {
+    public long getUpper() {
         return upper;
+    }
+
+    public long getLower() {
+        return lower;
     }
 
     @Override
     public int compareTo( Interval other ) {
-        int lowerCompare = Integer.compare( lower, other.lower );
-        return lowerCompare == 0 ? Integer.compare( upper, other.upper ) : lowerCompare;
+        int lowerCompare = Long.compare( lower, other.lower );
+        return lowerCompare == 0 ? Long.compare( upper, other.upper ) : lowerCompare;
     }
 
     @Override
