@@ -1,9 +1,11 @@
 package de.delusions.util;
 
-public class Interval implements Comparable<Interval> {
-    long lower;
+import java.util.Objects;
 
-    long upper;
+public class Interval implements Comparable<Interval> {
+    final long lower;
+
+    final long upper;
 
     public Interval( String lower, String upper ) {
         this( Long.parseLong( lower ), Long.parseLong( upper ) );
@@ -23,15 +25,29 @@ public class Interval implements Comparable<Interval> {
     }
 
     public boolean overlap( Interval bar ) {
-        return this.lower <= bar.lower && bar.lower <= this.upper;
+        return this.lower <= bar.lower && bar.lower <= this.upper || this.lower > bar.lower && this.lower <= bar.upper;
+    }
+
+    public Interval intersect( Interval bar ) {
+        if ( !overlap( bar ) ) {throw new IllegalStateException( "Can only make intersection of overlapping Intervals" );}
+        return new Interval( Math.max( this.lower, bar.lower ), Math.min( this.upper, bar.upper ) );
+    }
+
+    public Interval translate( int value ) {
+        return new Interval( lower + value, upper + value );
+    }
+
+    public Interval subtract( Interval bar ) {
+        return lower < bar.lower ? new Interval( lower, Math.min( bar.lower, upper ) - 1 ) : new Interval( Math.max( lower, bar.upper ) + 1, upper );
     }
 
     public Interval union( Interval bar ) {
+        if ( !overlap( bar ) ) {throw new IllegalStateException( "Can only make union of overlapping Interval" );}
         return new Interval( Math.min( this.lower, bar.lower ), Math.max( bar.upper, this.upper ) );
     }
 
     public long length() {
-        return Math.abs( upper - lower );
+        return Math.abs( upper - lower ) + 1;
     }
 
     public long getUpper() {
@@ -46,6 +62,18 @@ public class Interval implements Comparable<Interval> {
     public int compareTo( Interval other ) {
         int lowerCompare = Long.compare( lower, other.lower );
         return lowerCompare == 0 ? Long.compare( upper, other.upper ) : lowerCompare;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash( getLower(), getUpper() );
+    }
+
+    @Override
+    public boolean equals( Object o ) {
+        if ( this == o ) {return true;}
+        if ( !( o instanceof Interval interval ) ) {return false;}
+        return getLower() == interval.getLower() && getUpper() == interval.getUpper();
     }
 
     @Override

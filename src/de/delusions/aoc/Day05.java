@@ -5,6 +5,8 @@ import de.delusions.util.Interval;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -24,7 +26,7 @@ public class Day05 extends Day<Long> {
         result.append( "\n--- The Almanach ---\n\n" );
         for ( Category category : almanach ) {
             result.append( category.header ).append( "\n" );
-            for ( MapLine mapline : category.mapLines ) {
+            for ( Rule mapline : category.rules ) {
                 result.append( mapline ).append( "\n" );
             }
             result.append( "\n" );
@@ -35,7 +37,7 @@ public class Day05 extends Day<Long> {
     private void readAlmanach( Stream<String> input ) {
         startingSeeds = new ArrayList<>();
         almanach = new ArrayList<>();
-        List<MapLine> current = new ArrayList<>();
+        List<Rule> current = new ArrayList<>();
         AtomicReference<String> header = new AtomicReference<>();
         input.forEach( line -> {
             //first line contains the seeds
@@ -44,13 +46,8 @@ public class Day05 extends Day<Long> {
                 startingSeeds.addAll( Arrays.stream( seeds ).map( Long::parseLong ).toList() );
             }
             else if ( line.contains( ":" ) ) {
-
                 if ( !current.isEmpty() ) {
-                    //catch-all that maps values to themselves
-                    current.add( new MapLine( null, null ) );
-                    almanach.add( new Category( header.get(), new ArrayList<>( current ) ) );
-                    current.clear();
-
+                    almanach.add( createCategory( current, header ) );
                 }
                 header.set( line );
             }
@@ -59,15 +56,24 @@ public class Day05 extends Day<Long> {
                 long destinationLower = Long.parseLong( parts[0] );
                 long sourceLower = Long.parseLong( parts[1] );
                 long length = Long.parseLong( parts[2] );
-                current.add(
-                    new MapLine( new Interval( sourceLower, sourceLower + length ), new Interval( destinationLower, destinationLower + length ) ) );
+                current.add( new Rule( new Interval( sourceLower, sourceLower + length - 1 ),
+                                       new Interval( destinationLower, destinationLower + length - 1 ) ) );
             }
             else {
                 //ignore empty lines in input
             }
         } );
-        current.add( new MapLine( null, null ) );
-        almanach.add( new Category( header.get(), new ArrayList<>( current ) ) );
+        almanach.add( createCategory( current, header ) );
+
+
+    }
+
+    private Category createCategory( List<Rule> current, AtomicReference<String> header ) {
+        List<Rule> sorted = new ArrayList<>( current.stream().sorted( Comparator.comparing( Rule::source ) ).toList() );
+        //catch-all that maps values to themselves
+        sorted.add( new Rule( null, null ) );
+        current.clear();
+        return new Category( header.get(), new ArrayList<>( sorted ) );
     }
 
     @Override
@@ -78,11 +84,11 @@ public class Day05 extends Day<Long> {
 
         long start = System.currentTimeMillis();
         for ( Category category : almanach ) {
-            System.out.println( category.header() + "\t" + source + "\t " + ( System.currentTimeMillis() - start ) + "ms" );
+            //System.out.println( category.header() + "\t" + source + "\t " + ( System.currentTimeMillis() - start ) + "ms" );
             for ( long value : source ) {
-                for ( MapLine map : category.mapLines() ) {
-                    if ( map.isMapped( value ) ) {
-                        destinations.add( map.translate( value ) );
+                for ( Rule rule : category.rules() ) {
+                    if ( rule.matches( value ) ) {
+                        destinations.add( rule.translate( value ) );
                         break;
                     }
                 }
@@ -95,12 +101,59 @@ public class Day05 extends Day<Long> {
 
     @Override
     public Long part1( Stream<String> input ) {
-        return null;
+        readAlmanach( input );
+        LinkedList<Interval> stash = new LinkedList<>();
+        LinkedList<Interval> next = new LinkedList<>();
+        for ( int i = 0; i < startingSeeds.size(); i = i + 2 ) {
+            Long lower = startingSeeds.get( i );
+            long upper = lower + startingSeeds.get( i + 1 ) - 1;
+            stash.push( new Interval( lower, upper ) );
+        }
+        System.out.println( stash );
+        for ( Category category : almanach ) {
+            while ( !stash.isEmpty() ) {
+                Interval seedChunk = stash.pop();
+                for ( Rule rule : category.rules() ) {
+                    if ( rule.matches( seedChunk ) ) {
+                        if ( rule.source() == null ) {
+                            next.add( seedChunk );
+                        }
+                        else if ( rule.source().contains( seedChunk ) ) {
+                            next.add( rule.translate( seedChunk ) );
+                        }
+                        else {
+                            //Mach Drei Stücke Obelix:
+                            next.add( rule.translate( rule.source().intersect( seedChunk ) ) );
+                            if ( seedChunk.getLower() < rule.source().getLower() ) {
+                                //head
+                                stash.push( new Interval( seedChunk.getLower(), rule.source().getLower() - 1 ) );
+                            }
+                            if ( seedChunk.getUpper() > rule.source().getUpper() ) {
+                                stash.push( new Interval( rule.source().getUpper() + 1, seedChunk.getUpper() ) );
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            stash.addAll( next );
+            next.clear();
+        }
+        return stash.stream().mapToLong( i -> i.getLower() ).min().orElse( -1 );
     }
 
-    record MapLine(Interval source, Interval destination) {
-        boolean isMapped( long value ) {
+    record Rule(Interval source, Interval destination) {
+        boolean matches( long value ) {
             return source == null || source.contains( value );
+        }
+
+        boolean matches( Interval interval ) {
+            return source == null || source.overlap( interval );
+        }
+
+        Interval translate( Interval chunk ) {
+            return new Interval( translate( chunk.getLower() ), translate( chunk.getUpper() ) );
         }
 
         long translate( long value ) {
@@ -117,5 +170,5 @@ public class Day05 extends Day<Long> {
         }
     }
 
-    record Category(String header, List<MapLine> mapLines) {}
+    record Category(String header, List<Rule> rules) {}
 }
