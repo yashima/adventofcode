@@ -46,9 +46,6 @@ public class Day05 extends Day<Long> {
                 current.add( new Rule( new Interval( sourceLower, sourceLower + length - 1 ),
                                        new Interval( destinationLower, destinationLower + length - 1 ) ) );
             }
-            else {
-                //ignore empty lines in input
-            }
         } );
         almanach.add( createCategory( current, header ) );
 

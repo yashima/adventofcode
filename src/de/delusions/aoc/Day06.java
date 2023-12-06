@@ -48,20 +48,20 @@ public class Day06 extends Day<Long> {
     record Race(long time, long distance, long speed) {
         long calculateWinningMoves() {
             long press = 0;
-            while ( !wins( press ) ) {
+            while ( loses( press ) ) {
                 press++;
             }
             long lower = press;
             press = time;
-            while ( !wins( press ) ) {
+            while ( loses( press ) ) {
                 press--;
             }
             long upper = press;
             return upper - lower + 1;
         }
 
-        boolean wins( long press ) {
-            return distance < ( time - press ) * ( press * speed );
+        boolean loses( long press ) {
+            return distance >= ( time - press ) * ( press * speed );
         }
     }
 }
