@@ -13,7 +13,7 @@ public class AdventOfCode2023 {
                                              new Day03( 4361, 467835, 556057, 82824352 ),//
                                              new Day04( 13, 30, 22488, 7013204 ), //
                                              new Day05( 35L, 46L, 265018614L, 63179500L ),//
-                                             new Day06() );
+                                             new Day06( 288L, 71503L, 2374848L, 39132886L ) );
         System.out.println( "Days: " + daysOfAdvent.size() );
         runAllVariants( daysOfAdvent.get( daysOfAdvent.size() - 1 ) );
 
