@@ -1,6 +1,7 @@
 package de.delusions.aoc;
 
 import de.delusions.util.Day;
+import de.delusions.util.MathUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,12 +15,12 @@ import java.util.stream.Stream;
 import static de.delusions.aoc.Day08.Command.LEFT;
 import static de.delusions.aoc.Day08.Command.RIGHT;
 
-public class Day08 extends Day<Integer> {
+public class Day08 extends Day<String> {
     private static final String START = "AAA";
 
     private final Pattern pNode = Pattern.compile( "^([\\dA-Z]{3}) = .([\\dA-Z]{3}), ([\\dA-Z]{3}).$" );
 
-    public Day08( Integer... expected ) {
+    public Day08( String... expected ) {
         super( 8, "Haunted Wasteland", expected );
     }
 
@@ -37,11 +38,11 @@ public class Day08 extends Day<Integer> {
         return line.chars().mapToObj( Day08::getByChar ).toList();
     }
 
-    private TreeNode readTreeNode( String line ) {
+    private Node readTreeNode( String line ) {
         Matcher matcher = pNode.matcher( line );
         if ( matcher.matches() ) {
             String id = matcher.group( 1 );
-            return new TreeNode( id, matcher.group( 2 ), matcher.group( 3 ) );
+            return new Node( id, matcher.group( 2 ), matcher.group( 3 ) );
         }
         else {
             return null;
@@ -49,42 +50,54 @@ public class Day08 extends Day<Integer> {
     }
 
     @Override
-    public Integer part0( Stream<String> input ) {
-        Map<String, TreeNode> map = new HashMap<>();
+    public String part0( Stream<String> input ) {
+        Map<String, Node> map = new HashMap<>();
         List<Command> commandSequence = new ArrayList<>();
         readInput( input, commandSequence, map );
-        return calculateSteps( commandSequence, List.of( map.get( START ) ), map, "ZZZ" );
+        return calculateSteps( commandSequence, List.of( map.get( START ) ), map, "ZZZ" ).get( 0 ).toString();
     }
 
     @Override
-    public Integer part1( Stream<String> input ) {
-        Map<String, TreeNode> map = new HashMap<>();
+    public String part1( Stream<String> input ) {
+        Map<String, Node> map = new HashMap<>();
         List<Command> commandSequence = new ArrayList<>();
         readInput( input, commandSequence, map );
-        return calculateSteps( commandSequence, getStartingNodes( map ), map, "Z" );
+        List<Integer> periods = calculateSteps( commandSequence, getStartingNodes( map ), map, "Z" );
+        List<List<Integer>> primeFactors = periods.stream()//
+            .peek( System.out::print )//
+            .map( MathUtil::calculatePrimeFactors )//
+            .peek( System.out::println )//
+            .toList();
+        return MathUtil.calculateSmallestCommonMultiple( primeFactors ).toString();
     }
 
-    private int calculateSteps( List<Command> commandSequence, List<TreeNode> currentNodes, Map<String, TreeNode> map, String end ) {
+    //wrong: to lower 1136263101
+    private List<Integer> calculateSteps( List<Command> commandSequence, List<Node> currentNodes, Map<String, Node> map, String end ) {
         LinkedList<Command> commands = new LinkedList<>( commandSequence );
-        int steps = 0;
-        while ( enRoute( currentNodes, end ) ) {
-            steps++;
-            Command command = commands.pop();
-            currentNodes = currentNodes.stream().map( node -> node.follow( command, map ) ).toList();
-            if ( commands.isEmpty() ) {
-                commands.addAll( commandSequence );
+        List<Integer> periods = new ArrayList<>();
+        for ( Node currentNode : currentNodes ) {
+            int steps = 0;
+            Node node = currentNode;
+            while ( enRoute( List.of( node ), end ) ) {
+                steps++;
+                Command command = commands.pop();
+                node = node.follow( command, map );
+                if ( commands.isEmpty() ) {
+                    commands.addAll( commandSequence );
+                }
             }
+            periods.add( steps );
         }
-        return steps;
+        return periods;
     }
 
-    private void readInput( Stream<String> input, List<Command> commandSequence, Map<String, TreeNode> map ) {
+    private void readInput( Stream<String> input, List<Command> commandSequence, Map<String, Node> map ) {
         input.forEach( line -> {
             if ( commandSequence.isEmpty() ) {
                 commandSequence.addAll( readCommands( line ) );
             }
             else if ( !line.isBlank() ) {
-                TreeNode node = readTreeNode( line );
+                Node node = readTreeNode( line );
                 if ( node != null ) {
                     map.put( node.id(), node );
                 }
@@ -92,18 +105,18 @@ public class Day08 extends Day<Integer> {
         } );
     }
 
-    private boolean enRoute( List<TreeNode> current, String end ) {
+    private boolean enRoute( List<Node> current, String end ) {
         return !current.stream().allMatch( n -> n.id().endsWith( end ) );
     }
 
-    private List<TreeNode> getStartingNodes( Map<String, TreeNode> map ) {
+    private List<Node> getStartingNodes( Map<String, Node> map ) {
         return map.values().stream().filter( n -> n.id().endsWith( "A" ) ).toList();
     }
 
     enum Command {LEFT, RIGHT}
 
-    record TreeNode(String id, String left, String right) {
-        TreeNode follow( Command command, Map<String, TreeNode> map ) {
+    record Node(String id, String left, String right) {
+        Node follow( Command command, Map<String, Node> map ) {
             String nextNodeId = ( command == LEFT ) ? this.left() : this.right();
             return nextNodeId == null ? this : map.get( nextNodeId );
         }
