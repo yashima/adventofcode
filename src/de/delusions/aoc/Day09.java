@@ -17,7 +17,7 @@ public class Day09 extends Day<Integer> {
         return new ArrayList<>( Arrays.stream( line.split( " " ) ).map( p -> Integer.parseInt( p.trim() ) ).toList() );
     }
 
-    List<Integer> calculateNext( List<Integer> sequence, boolean last ) {
+    List<Integer> calculateNext( List<Integer> sequence ) {
         if ( sequence.stream().allMatch( n -> n == 0 ) ) {
             sequence.add( 0 );
             return sequence;
@@ -28,14 +28,10 @@ public class Day09 extends Day<Integer> {
             previous.set( n );
             return n - p;
         } ).toList();
-        diffs = new ArrayList<>( diffs );
-        List<Integer> nextSequence = calculateNext( diffs, last );
-        if ( last ) {
-            diffs.add( sequence.getLast() + nextSequence.getLast() );
-        }
-        else {
-            diffs.addFirst( sequence.getFirst() - nextSequence.getFirst() );
-        }
+        diffs = new ArrayList<>( diffs ); //results  from streams are immutable
+        List<Integer> nextSequence = calculateNext( diffs );
+        diffs.add( sequence.getLast() + nextSequence.getLast() );
+        diffs.addFirst( sequence.getFirst() - nextSequence.getFirst() );
         return diffs;
     }
 
@@ -43,12 +39,12 @@ public class Day09 extends Day<Integer> {
     @Override
     public Integer part0( Stream<String> input ) {
         List<List<Integer>> readings = input.map( this::readLine ).toList();
-        return readings.stream().map( s -> calculateNext( s, true ) ).mapToInt( List::getLast ).sum();
+        return readings.stream().map( this::calculateNext ).mapToInt( List::getLast ).sum();
     }
 
     @Override
     public Integer part1( Stream<String> input ) {
         List<List<Integer>> readings = input.map( this::readLine ).toList();
-        return readings.stream().map( s -> calculateNext( s, false ) ).mapToInt( List::getFirst ).sum();
+        return readings.stream().map( this::calculateNext ).mapToInt( List::getFirst ).sum();
     }
 }
