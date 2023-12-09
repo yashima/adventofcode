@@ -71,7 +71,6 @@ public class Day08 extends Day<String> {
         return MathUtil.calculateSmallestCommonMultiple( primeFactors ).toString();
     }
 
-    //wrong: to lower 1136263101
     private List<Integer> calculateSteps( List<Command> commandSequence, List<Node> currentNodes, Map<String, Node> map, String end ) {
         LinkedList<Command> commands = new LinkedList<>( commandSequence );
         List<Integer> periods = new ArrayList<>();
