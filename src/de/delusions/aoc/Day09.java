@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 public class Day09 extends Day<Integer> {
     public Day09( Integer... expected ) {
-        super( 9, "", expected );
+        super( 9, "Mirage Maintenance", expected );
     }
 
     List<Integer> readLine( String line ) {
