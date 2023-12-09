@@ -13,38 +13,42 @@ public class Day09 extends Day<Integer> {
         super( 9, "", expected );
     }
 
-    static int getLast( List<Integer> list ) {
-        return list.get( list.size() - 1 );
-    }
-
     List<Integer> readLine( String line ) {
         return new ArrayList<>( Arrays.stream( line.split( " " ) ).map( p -> Integer.parseInt( p.trim() ) ).toList() );
     }
 
-    List<Integer> calculateNext( List<Integer> sequence ) {
+    List<Integer> calculateNext( List<Integer> sequence, boolean last ) {
         if ( sequence.stream().allMatch( n -> n == 0 ) ) {
             sequence.add( 0 );
             return sequence;
         }
-        AtomicInteger previous = new AtomicInteger( sequence.get( 0 ) );
+        AtomicInteger previous = new AtomicInteger( sequence.getFirst() );
         List<Integer> diffs = sequence.stream().skip( 1 ).map( n -> {
             int p = previous.get();
             previous.set( n );
             return n - p;
         } ).toList();
         diffs = new ArrayList<>( diffs );
-        diffs.add( previous.get() + getLast( calculateNext( diffs ) ) );
+        List<Integer> nextSequence = calculateNext( diffs, last );
+        if ( last ) {
+            diffs.add( sequence.getLast() + nextSequence.getLast() );
+        }
+        else {
+            diffs.addFirst( sequence.getFirst() - nextSequence.getFirst() );
+        }
         return diffs;
     }
+
 
     @Override
     public Integer part0( Stream<String> input ) {
         List<List<Integer>> readings = input.map( this::readLine ).toList();
-        return readings.stream().map( this::calculateNext ).mapToInt( Day09::getLast ).sum();
+        return readings.stream().map( s -> calculateNext( s, true ) ).mapToInt( List::getLast ).sum();
     }
 
     @Override
     public Integer part1( Stream<String> input ) {
-        return null;
+        List<List<Integer>> readings = input.map( this::readLine ).toList();
+        return readings.stream().map( s -> calculateNext( s, false ) ).mapToInt( List::getFirst ).sum();
     }
 }
