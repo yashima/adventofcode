@@ -1,4 +1,5 @@
 # adventofcode2023
+
 My attempts at solving Advent of Code 2023 Puzzles
 
 * Day 1 "Trebuchet" involved recognizing digits in the input--for part two some written out in words.
@@ -21,17 +22,18 @@ My attempts at solving Advent of Code 2023 Puzzles
 * Day 6 "Wait For It" a race game that involved some simple maths with the quadratic formula--because I am bad at simple maths I brute forced
   half of it. I should go back and improve my solution
 * Day 7 "Camel Cards" another game, this time poker adjacent. I solved this mostly with object oriented programming. The trick was to figure out how
-  to
-  efficiently determine what kind of hand you were holding. A map with counts of card types was very useful. Then write a Comparator to help with
+  to efficiently determine what kind of hand you were holding. A map with counts of card types was very useful. Then write a Comparator to help with
   sorting. Part 2 made Jacks into Jokers. So jokers could improve a hand and it was easy to find a mapping which hands can be improved in what way.
   Easy to overlook however: Jacks value went way down to 0 and changed the sorting. Very much fun to program this one.
 * Day 8 "Haunted Wasteland" the most tricky so far. For part 1 one had to simply follow a command sequence of left/right choices through a directed
-  graph
-  which was simple enough to just need a Map. Part 2 made it an optimization problem by demanding to synchronize several paths. The trick was to look
-  at
-  the input and play around with it to find that it was cyclic with a cycle that was easily detectable. Also involved prime factoring unless you
+  graph which was simple enough to just need a Map. Part 2 made it an optimization problem by demanding to synchronize several paths. The trick was to
+  look
+  at the input and play around with it to find that it was cyclic with a cycle that was easily detectable. Needed the smallest common multiple (scm)
+  Also involved prime factoring unless you
   had a hunch after studying the input.
 * Day 9 "Mirage Maintenance" a first recursion that was quite thoroughly described in the puzzle description and so could be easily implemented.  
   Helped me discover some new Java21 features.
 * Day 10 "Pipe Maze" another matrix input this time moving along a path. Once again I mixed up X and Y. Part 1 was easily solved once the directions
-  were fixed. Just count the steps (and divide by 2)
+  were fixed. Just count the steps (and divide by 2). Part 2 was greatly helped by visualising the loop with ASCII characters. Then it is possible to
+  iterate row by row and simply check if we inside or outside the loop by comparing the character set associated with clockwise or counterclockwise
+  movement which is determined by the starting facing. No flood fill needed. 

@@ -33,7 +33,7 @@ public enum Direction {
     }
 
     public static List<Direction> getBasic() {
-        return List.of( north, south, west, east );
+        return List.of( north, east, south, west );
     }
 
     public Direction opposite() {
