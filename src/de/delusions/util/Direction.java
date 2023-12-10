@@ -1,5 +1,7 @@
 package de.delusions.util;
 
+import java.util.List;
+
 public enum Direction {
 
     north( "^" ), northeast( null ), east( ">" ), southeast( null ), south( "v" ), southwest( null ), west( "<" ), northwest( null );
@@ -28,5 +30,13 @@ public enum Direction {
 
     public Direction turnLeft( int degree ) {
         return values()[( ordinal() + ( ( 360 - degree ) / 45 ) ) % values().length];
+    }
+
+    public static List<Direction> getBasic() {
+        return List.of( north, south, west, east );
+    }
+
+    public Direction opposite() {
+        return turnRight( 180 );
     }
 }

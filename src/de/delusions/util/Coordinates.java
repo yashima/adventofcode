@@ -5,10 +5,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class Coordinates {
-    //TODO make accessors
     public int x;
 
-    //TODO make accessors
     public int y;
 
     Coordinates previous;
@@ -56,8 +54,16 @@ public class Coordinates {
         this.value = value;
     }
 
+    public void setFacing( Direction facing ) {
+        this.facing = facing;
+    }
+
     public Coordinates moveTo( Direction move, int value ) {
         return moveTo( move, 1, value );
+    }
+
+    public Coordinates moveToNext() {
+        return moveTo( facing, 1, 1 );
     }
 
     public Coordinates moveDay22( Direction move ) {
@@ -75,10 +81,10 @@ public class Coordinates {
 
     public Coordinates moveTo( Direction move, int distance, int value ) {
         Coordinates result = switch ( move ) {
-            case west -> new Coordinates( this.x - distance, this.y, value, this );
-            case east -> new Coordinates( this.x + distance, this.y, value, this );
-            case south -> new Coordinates( this.x, this.y + distance, value, this );
-            case north -> new Coordinates( this.x, this.y - distance, value, this );
+            case north -> new Coordinates( this.x - distance, this.y, value, this );
+            case south -> new Coordinates( this.x + distance, this.y, value, this );
+            case east -> new Coordinates( this.x, this.y + distance, value, this );
+            case west -> new Coordinates( this.x, this.y - distance, value, this );
             case southwest -> new Coordinates( this.x - distance, this.y + distance, value, this );
             case southeast -> new Coordinates( this.x + distance, this.y + distance, value, this );
             case northwest -> new Coordinates( this.x - distance, this.y - distance, value, this );
