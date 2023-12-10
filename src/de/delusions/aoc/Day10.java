@@ -72,6 +72,17 @@ public class Day10 extends Day<Integer> {
 
     @Override
     public Integer part1( Stream<String> input ) {
-        return null;
+        Matrix maze = new Matrix( input.map( line -> line.chars().toArray() ).toArray( int[][]::new ) );
+        Matrix spare = new Matrix( new int[maze.getXLength()][maze.getYLength()] );
+        spare.setAllValues( '.' );
+        Coordinates starting = maze.findValues( START, true ).getFirst();
+        Coordinates current = starting.moveTo( getInitialFacing( starting, maze ), 1 );
+        while ( !current.equals( starting ) ) {
+            spare.setValue( current, 'X' );
+            current = current.moveTo( getPipeFor( current, maze ).adjustFacing( current ), 1 );
+            current.setValue( 'X' );
+        }
+        System.out.println( spare );
+        return 0;
     }
 }

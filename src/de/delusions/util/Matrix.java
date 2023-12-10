@@ -56,9 +56,13 @@ public class Matrix {
     }
 
     public void setValue( Coordinates coordinates ) {
+        setValue( coordinates, coordinates.getValue() );
+    }
+
+    public void setValue( Coordinates coordinates, int value ) {
         int x = coordinates.x - xOffset;
         int y = coordinates.y - yOffset;
-        matrix[x][y] = coordinates.value;
+        matrix[x][y] = value;
     }
 
     public int getValue( Coordinates coordinates ) {
@@ -70,6 +74,12 @@ public class Matrix {
     public void setAllValuesRow( int y, int value ) {
         for ( int i = 0; i < matrix.length; i++ ) {
             matrix[i][y] = value;
+        }
+    }
+
+    public void setAllValues( int value ) {
+        for ( int[] ints : matrix ) {
+            Arrays.fill( ints, value );
         }
     }
 

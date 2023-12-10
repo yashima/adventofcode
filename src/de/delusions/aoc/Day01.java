@@ -26,6 +26,13 @@ public class Day01 extends Day<Long> {
         return ( array[0] - DIGIT_OFFSET ) * 10 + array[array.length - 1] - DIGIT_OFFSET;
     }
 
+    /**
+     * Checks the input against a regex that matches for actual digits and numbers written as words and takes the first and last match. The regex will
+     * have overlapping matches and so remove the annoying problem with "eightwo"
+     *
+     * @param line one line of the input
+     * @return a number consisting of the first digit found and the last digit found in the input
+     */
     static long findNumberWithWords( String line ) {
         Matcher matcher = P.matcher( line );
         List<Long> digitsFound = new ArrayList<>();
