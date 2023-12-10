@@ -74,7 +74,7 @@ public class Day10 extends Day<Integer> {
                     if ( inside ) {count++;}
                 }
                 else {
-                    inside = ( clockwise ? clock : counter ).contains( value );
+                    inside = clock.contains( value );
                 }
 
             }
@@ -83,7 +83,9 @@ public class Day10 extends Day<Integer> {
     }
 
     /**
-     * This was not necessary, one can which value the starting coordinates have easily. But I wanted to calculate this anyway
+     * This was not necessary, one can see easily which value the starting coordinates have. But I wanted to calculate this anyway.
+     * In theory it should be possible to also calculate if we're moving clockwise or counterclockwise but I didn't manage.
+     * I determined that both my input and the example for part 2 move clockwise. So that's that.
      *
      * @param starting coordinates of the start point of the loop
      * @param maze     the pipe maze
@@ -119,10 +121,13 @@ public class Day10 extends Day<Integer> {
         //rewriting spare with pretty visualization ascii characters for the actual loop parts:
         while ( !current.equals( starting ) ) {
             Pipe pipe = getPipeFor( current, maze );
-            current.setValue( pipe.getValue( current ) );
+            current.setValue( pipe.getAsciiMapping( current ) );
             spare.setValue( current );
             current = current.moveTo( pipe.adjustFacing( current ), 1 );
         }
+        //resetting the starting value to S is important so it doesn't toggle the "inside" marker at least for my input
+        //since I never quite figured out how to deal with the starting pipe or how to find out automatically if
+        //we're moving clockwise or not... this works for my input and the examples but may not work for other people
         spare.setValue( starting, 'S' );
         int count = processSpare( spare, List.of( Direction.north, Direction.west ).contains( initialFacing ) );
         System.out.println( spare );
@@ -133,15 +138,28 @@ public class Day10 extends Day<Integer> {
     /*
     A record to help with the Pipes
      */
-    record Pipe(char symbol, boolean straight, char face1, char face2, Direction... turn) {
+    record Pipe(char symbol, boolean straight, char ascii1, char ascii2, Direction... turn) {
         Direction adjustFacing( Coordinates current ) {
             return current.getFacing().opposite() == turn[0] ? turn[1] : turn[0];
         }
 
-        char getValue( Coordinates current ) {
-            return current.getFacing().opposite() == turn[0] ? face1 : face2;
+        /**
+         * The ascii characters visualize the pipe better than the original input. They differ depending on which end of the pipe the move entered,
+         * therefore allowing later calculation which side is facing outside the loop and which not.
+         *
+         * @param current coordinates with current facing
+         * @return depending on facing returns an ascii character for better visualization
+         */
+        char getAsciiMapping( Coordinates current ) {
+            return current.getFacing().opposite() == turn[0] ? ascii1 : ascii2;
         }
 
+        /**
+         * Checks if this piece of pipe connects to the given direction, needed
+         * for figuring the initial facing for the start of the run through the pipe
+         * @param direction direction to check
+         * @return true if direction connects to pipe
+         */
         boolean connectsTo( Direction direction ) {
             return turn.length == 2 && ( direction == turn[0] || direction == turn[1] );
         }
