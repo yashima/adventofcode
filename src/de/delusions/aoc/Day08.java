@@ -33,12 +33,23 @@ public class Day08 extends Day<String> {
     }
 
 
+    /**
+     * Parses the command sequence from the first line of the input
+     *
+     * @param line the first line of the input
+     * @return a list of commands (to be repeated as necessary)
+     */
     private List<Command> readCommands( String line ) {
-
         return line.chars().mapToObj( Day08::getByChar ).toList();
     }
 
-    private Node readTreeNode( String line ) {
+    /**
+     * Read a single node from the input
+     *
+     * @param line a line containing the description for a node
+     * @return
+     */
+    private Node readNode( String line ) {
         Matcher matcher = pNode.matcher( line );
         if ( matcher.matches() ) {
             String id = matcher.group( 1 );
@@ -54,7 +65,7 @@ public class Day08 extends Day<String> {
         Map<String, Node> map = new HashMap<>();
         List<Command> commandSequence = new ArrayList<>();
         readInput( input, commandSequence, map );
-        return calculateSteps( commandSequence, List.of( map.get( START ) ), map, "ZZZ" ).get( 0 ).toString();
+        return calculateSteps( commandSequence, List.of( map.get( START ) ), map, "ZZZ" ).getFirst().toString();
     }
 
     @Override
@@ -71,13 +82,21 @@ public class Day08 extends Day<String> {
         return MathUtil.calculateSmallestCommonMultiple( primeFactors ).toString();
     }
 
+    /**
+     * Calculates a path through the graph for each starting node until it has reached an end node.
+     * @param commandSequence the command sequence from the input
+     * @param currentNodes the list of starting nodes
+     * @param map the map containing the graph
+     * @param end the "end" condition
+     * @return a list of steps per starting node that were taken
+     */
     private List<Integer> calculateSteps( List<Command> commandSequence, List<Node> currentNodes, Map<String, Node> map, String end ) {
         LinkedList<Command> commands = new LinkedList<>( commandSequence );
         List<Integer> periods = new ArrayList<>();
         for ( Node currentNode : currentNodes ) {
             int steps = 0;
             Node node = currentNode;
-            while ( enRoute( List.of( node ), end ) ) {
+            while ( enRoute( node, end ) ) {
                 steps++;
                 Command command = commands.pop();
                 node = node.follow( command, map );
@@ -96,7 +115,7 @@ public class Day08 extends Day<String> {
                 commandSequence.addAll( readCommands( line ) );
             }
             else if ( !line.isBlank() ) {
-                Node node = readTreeNode( line );
+                Node node = readNode( line );
                 if ( node != null ) {
                     map.put( node.id(), node );
                 }
@@ -104,17 +123,42 @@ public class Day08 extends Day<String> {
         } );
     }
 
-    private boolean enRoute( List<Node> current, String end ) {
-        return !current.stream().allMatch( n -> n.id().endsWith( end ) );
+    /**
+     * @param current the current node of the graph
+     * @param end     the end condition
+     * @return true if the current node does not (yet) match the end condition
+     */
+    private boolean enRoute( Node current, String end ) {
+        return current.id.endsWith( end );
     }
 
+    /**
+     * Finds all the starting nodes ending with an 'A' for part 2
+     * @param map
+     * @return
+     */
     private List<Node> getStartingNodes( Map<String, Node> map ) {
         return map.values().stream().filter( n -> n.id().endsWith( "A" ) ).toList();
     }
 
+    /**
+     * The types of commands that determine which node will be chosen next
+     */
     enum Command {LEFT, RIGHT}
 
+    /**
+     * A node in the graphs
+     * @param id the name of the node
+     * @param left the name of the next node for the "LEFT" command
+     * @param right the name of the next node for the "RIGHT" command
+     */
     record Node(String id, String left, String right) {
+        /**
+         * Given a command returns the next node
+         * @param command the command to follow
+         * @param map the graph
+         * @return node following this one on the graph with the given command
+         */
         Node follow( Command command, Map<String, Node> map ) {
             String nextNodeId = ( command == LEFT ) ? this.left() : this.right();
             return nextNodeId == null ? this : map.get( nextNodeId );
