@@ -22,17 +22,26 @@ public class Day11 extends Day<Long> {
 
     @Override
     public Long part0( Stream<String> input ) {
-        int expansionFactor = 2;
-        return calculateDistancesBetweenStars( input, expansionFactor );
+        int expansionRate = 2;
+        return calculateDistancesBetweenStars( input, expansionRate );
     }
 
     @Override
     public Long part1( Stream<String> input ) {
-        long expansionFactor = isTestMode() ? 100 : 1000000;
-        return calculateDistancesBetweenStars( input, expansionFactor );
+        long expansionRate = isTestMode() ? 100 : 1000000;
+        return calculateDistancesBetweenStars( input, expansionRate );
     }
 
-    private Long calculateDistancesBetweenStars( Stream<String> input, long expansionFactor ) {
+    /**
+     * First time this year I can recycle the whole thing with just 1 added input parameter. Note the expansionRate is for the amount of rows or
+     * columns the empty space gets replaced with so 1 row becomes 2 rows for expansion rate 2. But the added distance is just 1. So for an expansion
+     * rate of 100, the added distance per empty row/column is 99.
+     *
+     * @param input         the test or production input as a stream of strings aka lines
+     * @param expansionRate the expansion rate for this run, differs between parts and test/prod
+     * @return the distance between all pairs of stars taking expansionRate into account
+     */
+    private Long calculateDistancesBetweenStars( Stream<String> input, long expansionRate ) {
         Matrix cosmos = new Matrix( input.map( line -> line.chars().toArray() ).toArray( int[][]::new ) );
         List<Coordinates> stars = cosmos.findValues( STAR, false );
         List<Integer> emptyRows = getEmptySpace( cosmos.rows() );
@@ -43,21 +52,28 @@ public class Day11 extends Day<Long> {
             Coordinates star = starStack.pop();
             for ( Coordinates other : starStack ) {
                 distance += star.manhattanDistance( other );
-                distance += emptyRows.stream().filter( r -> isBetween( r, star.x, other.x ) ).count() * ( expansionFactor - 1 );
-                distance += emptyColumns.stream().filter( r -> isBetween( r, star.y, other.y ) ).count() * ( expansionFactor - 1 );
-
+                distance += emptyRows.stream().filter( r -> isBetween( r, star.x, other.x ) ).count() * ( expansionRate - 1 );
+                distance += emptyColumns.stream().filter( r -> isBetween( r, star.y, other.y ) ).count() * ( expansionRate - 1 );
             }
         }
         return distance;
     }
 
-    private static List<Integer> getEmptySpace( Stream<int[]> cosmos ) {
+    /**
+     * Calculates the empty space for either rows or columns and returns a list of indices where the cosmos contains such empty space.
+     *
+     * @param cosmosStream a stream of either rows or columns
+     * @return a list of indices for rows or columns that have no stars on them
+     */
+    private static List<Integer> getEmptySpace( Stream<int[]> cosmosStream ) {
         AtomicInteger time = new AtomicInteger( 0 );
         List<Integer> emptySpace = new ArrayList<>();
-        cosmos.forEach( space -> {
+        cosmosStream.forEach( space -> {
             boolean empty = Arrays.stream( space ).noneMatch( s -> s == STAR );
             int t = time.getAndIncrement();
-            if ( empty ) {emptySpace.add( t );}
+            if ( empty ) {
+                emptySpace.add( t );
+            }
         } );
         return emptySpace;
     }
