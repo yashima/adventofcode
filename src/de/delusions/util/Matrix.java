@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Matrix {
     //y = cols , -1 = more west, +1 more east
@@ -53,6 +55,10 @@ public class Matrix {
 
     public int[] getRow( int x ) {
         return matrix[x];
+    }
+
+    public IntStream rowAsStream( int x ) {
+        return Arrays.stream( getRow( x ) );
     }
 
     public void setValue( Coordinates coordinates ) {
@@ -146,5 +152,29 @@ public class Matrix {
             builder.append( "\n" );
         }
         return builder.toString();
+    }
+
+    public IntStream colAsStream( int y ) {
+        return Arrays.stream( getColumn( y ) );
+    }
+
+    public int[] getColumn( int y ) {
+        int[] column = new int[getYLength()];
+        for ( int x = 0; x < getXLength(); x++ ) {
+            column[x] = matrix[x][y];
+        }
+        return column;
+    }
+
+    public Stream<int[]> rows() {
+        return Arrays.stream( matrix );
+    }
+
+    public Stream<int[]> columns() {
+        List<int[]> columns = new ArrayList<>();
+        for ( int y = 0; y < getYLength(); y++ ) {
+            columns.add( getColumn( y ) );
+        }
+        return columns.stream();
     }
 }

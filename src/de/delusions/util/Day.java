@@ -13,6 +13,10 @@ public abstract class Day<T> {
 
     boolean testMode = false;
 
+    public boolean isTestMode() {
+        return testMode;
+    }
+
     public abstract T part0( Stream<String> input );
 
     public abstract T part1( Stream<String> input );

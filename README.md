@@ -36,4 +36,8 @@ My attempts at solving Advent of Code 2023 Puzzles
 * Day 10 "Pipe Maze" another matrix input this time moving along a path. Once again I mixed up X and Y. Part 1 was easily solved once the directions
   were fixed. Just count the steps (and divide by 2). Part 2 was greatly helped by visualising the loop with ASCII characters. Then it is possible to
   iterate row by row and simply check if we inside or outside the loop by comparing the character set associated with clockwise or counterclockwise
-  movement which is determined by the starting facing. No flood fill needed. 
+  movement which is determined by the starting facing. No flood fill needed.
+* Day 11 "Cosmic Expansion" and more 2D riddles. This one was pretty easy as my matrix could instantly give me all the stars and I already had a
+  Manhattan distance function in place. Figuring out where empty space was and how to add it to the distance was the only challenge here and realizing
+  that I had to subtract one from the expansion rate or that for part 1 the expansion rate was actually 2 not 1--because 1 row gets replaced by 2 or
+  by 100 but that first one is already there so -1. 
