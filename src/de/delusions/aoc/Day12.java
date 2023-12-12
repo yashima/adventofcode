@@ -30,28 +30,31 @@ public class Day12 extends Day<Integer> {
         List<SpringRow> rows = input.map( SpringRow::create ).toList();
         int configurations = 0;
         for ( SpringRow row : rows ) {
-            System.out.println( "\n----\n" + row );
-            String regexFormat = row.convertGroupsToString();
-            System.out.println( row.convertGroupsToString() );
-            if ( regexFormat == null ) {
-                System.out.println( "oops" );
-                configurations++;
-                break;
-            }
+            configurations += getConfigurations( row );
+        }
+        return configurations;
+    }
+
+    static int getConfigurations( SpringRow row ) {
+        String regexFormat = row.convertGroupsToString();
+        if ( regexFormat == null ) {
+            return 1;
+        }
+        else {
+            int configurations = 0;
             for ( int i = row.minDigits(); i < row.maxDigits(); i++ ) {
                 Integer[] digits = digits( i, row.brokenGroups().size() );
                 if ( row.validDigits( digits ) ) {
-                    System.out.print( i + " " );
                     String regex = String.format( regexFormat, (Object[]) digits );
                     Matcher m = Pattern.compile( regex ).matcher( row.original );
                     if ( m.find() ) {
-                        System.out.println( i + " " + row.original + " -> " + row.variant( digits ) );
+                        System.out.println( regex );
                         configurations++;
                     }
                 }
             }
+            return configurations;
         }
-        return configurations;
     }
 
     @Override
@@ -97,8 +100,26 @@ public class Day12 extends Day<Integer> {
             return Arrays.stream( digits ).skip( 1 ).noneMatch( i -> i == 0 ) && Arrays.stream( digits ).mapToInt( i -> i ).sum() == notBroken();
         }
 
-        int notBroken() {
-            return original.length() - brokenGroups.stream().mapToInt( i -> i ).sum();
+        String variant( Integer[] dividers ) {
+            StringBuilder b = new StringBuilder();
+            for ( Integer brokenGroup : brokenGroups ) {
+                b.append( springs( '.', dividers[0] ) );
+                b.append( springs( '#', brokenGroup ) );
+            }
+            return b.toString();
+        }
+
+        String convertGroupsToString() {
+            if ( notBroken() <= brokenGroups().size() ||
+                broken() == groups().stream().mapToInt( String::length ).sum() ) { //this means there can be only exactly 1 position
+                return null;
+            }
+            StringBuilder builder = new StringBuilder();
+            for ( int group : brokenGroups ) {
+                builder.append( DIVIDER );
+                builder.append( String.format( BROKEN_SEQUENCE, group ) );
+            }
+            return builder.toString();
         }
 
         int maxDigits() {
@@ -109,13 +130,8 @@ public class Day12 extends Day<Integer> {
             return (int) Math.pow( 10, brokenGroups.size() - 1 );
         }
 
-        String variant( Integer[] dividers ) {
-            StringBuilder b = new StringBuilder();
-            for ( int i = 0; i < brokenGroups.size(); i++ ) {
-                b.append( springs( '.', dividers[0] ) );
-                b.append( springs( '#', brokenGroups.get( i ) ) );
-            }
-            return b.toString();
+        int notBroken() {
+            return original.length() - broken();
         }
 
         String springs( char type, int length ) {
@@ -124,19 +140,8 @@ public class Day12 extends Day<Integer> {
             return Arrays.stream( springs ).mapToObj( i -> ( (char) i ) + "" ).collect( Collectors.joining() );
         }
 
-
-        String convertGroupsToString() {
-            int max = notBroken() + brokenGroups().size() - 1;
-            if ( original.length() == max ) { //this means there can be only exactly 1 position
-                return null;
-            }
-            StringBuilder builder = new StringBuilder();
-            //builder.append("^");
-            for ( int group : brokenGroups ) {
-                builder.append( DIVIDER );
-                builder.append( String.format( BROKEN_SEQUENCE, group ) );
-            }
-            return builder.toString();
+        int broken() {
+            return brokenGroups.stream().mapToInt( i -> i ).sum();
         }
     }
 
