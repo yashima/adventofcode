@@ -17,10 +17,6 @@ public class Day12 extends Day<Integer> {
 
     static Pattern NUMBER_REG = Pattern.compile( "(\\d+)" );
 
-    static String DIVIDER = "[\\.\\?]{%d}";
-
-    static String BROKEN_SEQUENCE = "[#\\?]{%d}";
-
     public Day12( Integer... expected ) {
         super( 12, "Hot Springs", expected );
     }
@@ -36,25 +32,32 @@ public class Day12 extends Day<Integer> {
     }
 
     static int getConfigurations( SpringRow row ) {
-        String regexFormat = row.convertGroupsToString();
-        if ( regexFormat == null ) {
+        if ( row.isSingleMatch() ) {
             return 1;
         }
         else {
             int configurations = 0;
             for ( int i = row.minDigits(); i < row.maxDigits(); i++ ) {
-                Integer[] digits = digits( i, row.brokenGroups().size() );
-                if ( row.validDigits( digits ) ) {
-                    String regex = String.format( regexFormat, (Object[]) digits );
-                    Matcher m = Pattern.compile( regex ).matcher( row.original );
-                    if ( m.find() ) {
-                        System.out.println( regex );
-                        configurations++;
-                    }
+                Integer[] digits = digits( i, row.brokenGroups().size() + 1 );
+                if ( row.validDigits( digits ) && isMatch( row.original(), row.variant( digits ) ) ) {
+                    configurations++;
                 }
             }
             return configurations;
         }
+    }
+
+    static boolean isMatch( String original, String variant ) {
+        boolean match = true;
+        for ( int c = 0; c < variant.length(); c++ ) {
+            char v = variant.charAt( c );
+            char o = original.charAt( c );
+            if ( v == '.' && o == '#' || v == '#' && o == '.' ) {
+                match = false;
+                break;
+            }
+        }
+        return match;
     }
 
     @Override
@@ -102,24 +105,16 @@ public class Day12 extends Day<Integer> {
 
         String variant( Integer[] dividers ) {
             StringBuilder b = new StringBuilder();
-            for ( Integer brokenGroup : brokenGroups ) {
-                b.append( springs( '.', dividers[0] ) );
-                b.append( springs( '#', brokenGroup ) );
+            for ( int i = 0; i < brokenGroups().size(); i++ ) {
+                b.append( springs( '.', dividers[i] ) );
+                b.append( springs( '#', brokenGroups.get( i ) ) );
             }
+            b.append( springs( '.', dividers[dividers.length - 1] ) );
             return b.toString();
         }
 
-        String convertGroupsToString() {
-            if ( notBroken() <= brokenGroups().size() ||
-                broken() == groups().stream().mapToInt( String::length ).sum() ) { //this means there can be only exactly 1 position
-                return null;
-            }
-            StringBuilder builder = new StringBuilder();
-            for ( int group : brokenGroups ) {
-                builder.append( DIVIDER );
-                builder.append( String.format( BROKEN_SEQUENCE, group ) );
-            }
-            return builder.toString();
+        boolean isSingleMatch() {
+            return notBroken() <= brokenGroups().size() || broken() == groups().stream().mapToInt( String::length ).sum();
         }
 
         int maxDigits() {

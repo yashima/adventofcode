@@ -20,7 +20,7 @@ public class Day12Test {
         assertThat( row.broken() ).isEqualTo( 5 );
         assertThat( row.notBroken() ).isEqualTo( 2 );
         assertThat( row.brokenGroups() ).containsExactly( 1, 1, 3 );
-        assertThat( row.convertGroupsToString() ).isNull();
+        assertThat( row.isSingleMatch() ).isTrue();
         assertThat( row.groups() ).containsExactly( "???", "###" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 1 );
 
@@ -28,7 +28,7 @@ public class Day12Test {
         assertThat( row.broken() ).isEqualTo( 11 );
         assertThat( row.notBroken() ).isEqualTo( 4 );
         assertThat( row.brokenGroups() ).containsExactly( 1, 3, 1, 6 );
-        assertThat( row.convertGroupsToString() ).isNull();
+        assertThat( row.isSingleMatch() ).isTrue();
         assertThat( row.groups() ).containsExactly( "?#?#?#?#?#?#?#?" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 1 );
 
@@ -36,21 +36,34 @@ public class Day12Test {
         assertThat( row.broken() ).isEqualTo( 6 );
         assertThat( row.notBroken() ).isEqualTo( 7 );
         assertThat( row.brokenGroups() ).containsExactly( 4, 1, 1 );
-        assertThat( row.convertGroupsToString() ).isNull();
+        assertThat( row.isSingleMatch() ).isTrue();
         assertThat( row.groups() ).containsExactly( "????", "#", "#" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 1 );
+    }
+
+    @Test
+    public void testMatch() {
+        assertThat( Day12.isMatch( ".??..??...?##.", "..#..#....###." ) ).isTrue();
+        assertThat( Day12.isMatch( ".??..??...?##.", "#....#....###." ) ).isFalse();
     }
 
     @Test
     public void multipleMatches() {
 
         Day12.SpringRow row = Day12.SpringRow.create( ".??..??...?##. 1,1,3" );
+        assertThat( row.variant( new Integer[]{2, 2, 4, 1} ) ).isEqualTo( "..#..#....###." );
+        assertThat( row.variant( new Integer[]{0, 4, 4, 1} ) ).isEqualTo( "#....#....###." );
+        assertThat( row.variant( new Integer[]{1, 3, 1, 4} ) ).isEqualTo( ".#...#.###...." );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 4 );
 
         row = Day12.SpringRow.create( "????.######..#####. 1,6,5" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 4 );
 
-        row = Day12.SpringRow.create( "?###???????? 3,2,1" );
+    }
+
+    @Test
+    public void multipleMatchesSpecial() {
+        Day12.SpringRow row = Day12.SpringRow.create( "?###???????? 3,2,1" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 10 );
     }
 
