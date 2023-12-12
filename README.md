@@ -41,3 +41,4 @@ My attempts at solving Advent of Code 2023 Puzzles
   Manhattan distance function in place. Figuring out where empty space was and how to add it to the distance was the only challenge here and realizing
   that I had to subtract one from the expansion rate or that for part 1 the expansion rate was actually 2 not 1--because 1 row gets replaced by 2 or
   by 100 but that first one is already there so -1. 
+* Day 12 "Hot Springs" starts of not so hot. I have no idea what I am doing.
