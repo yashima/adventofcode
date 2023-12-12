@@ -21,14 +21,15 @@ public class Day12 extends Day<Integer> {
         super( 12, "Hot Springs", expected );
     }
 
-    @Override
-    public Integer part0( Stream<String> input ) {
-        List<SpringRow> rows = input.map( SpringRow::create ).toList();
-        int configurations = 0;
-        for ( SpringRow row : rows ) {
-            configurations += getConfigurations( row );
+    static boolean isMatch( String original, String variant ) {
+        for ( int c = 0; c < variant.length(); c++ ) {
+            char v = variant.charAt( c );
+            char o = original.charAt( c );
+            if ( v == '.' && o == '#' || v == '#' && o == '.' ) {
+                return false;
+            }
         }
-        return configurations;
+        return true;
     }
 
     static int getConfigurations( SpringRow row ) {
@@ -47,17 +48,17 @@ public class Day12 extends Day<Integer> {
         }
     }
 
-    static boolean isMatch( String original, String variant ) {
-        boolean match = true;
-        for ( int c = 0; c < variant.length(); c++ ) {
-            char v = variant.charAt( c );
-            char o = original.charAt( c );
-            if ( v == '.' && o == '#' || v == '#' && o == '.' ) {
-                match = false;
-                break;
-            }
+    @Override
+    public Integer part0( Stream<String> input ) {
+        List<SpringRow> rows = input.map( SpringRow::create ).toList();
+        int configurations = 0;
+        for ( SpringRow row : rows ) {
+
+            int rowConfigs = getConfigurations( row );
+            configurations += rowConfigs;
+            System.out.println( row + "configurations=" + rowConfigs );
         }
-        return match;
+        return configurations;
     }
 
     @Override
@@ -100,7 +101,9 @@ public class Day12 extends Day<Integer> {
         }
 
         boolean validDigits( Integer[] digits ) {
-            return Arrays.stream( digits ).skip( 1 ).noneMatch( i -> i == 0 ) && Arrays.stream( digits ).mapToInt( i -> i ).sum() == notBroken();
+            //first and last divider may be 0
+            return Arrays.stream( digits ).skip( 1 ).limit( digits.length - 2 ).noneMatch( i -> i == 0 ) &&
+                Arrays.stream( digits ).mapToInt( i -> i ).sum() == notBroken();
         }
 
         String variant( Integer[] dividers ) {

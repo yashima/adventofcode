@@ -63,8 +63,27 @@ public class Day12Test {
 
     @Test
     public void multipleMatchesSpecial() {
+
+        assertThat( Day12.isMatch( "?###????????", ".###.##.#..." ) ).isTrue();
+        assertThat( Day12.isMatch( "?###????????", ".###.##..#.." ) ).isTrue();
+        assertThat( Day12.isMatch( "?###????????", ".###.##...#." ) ).isTrue();
+        assertThat( Day12.isMatch( "?###????????", ".###.##....#" ) ).isTrue();
+        assertThat( Day12.isMatch( "?###????????", ".###..##.#.." ) ).isTrue();
+        assertThat( Day12.isMatch( "?###????????", ".###..##..#." ) ).isTrue();
+        assertThat( Day12.isMatch( "?###????????", ".###..##...#" ) ).isTrue();
+        assertThat( Day12.isMatch( "?###????????", ".###...##.#." ) ).isTrue();
+        assertThat( Day12.isMatch( "?###????????", ".###...##..#" ) ).isTrue();
+        assertThat( Day12.isMatch( "?###????????", ".###....##.#" ) ).isTrue();
+
+
         Day12.SpringRow row = Day12.SpringRow.create( "?###???????? 3,2,1" );
+        assertThat( row.validDigits( new Integer[]{1, 1, 1, 3} ) ).isTrue();
+        assertThat( row.validDigits( new Integer[]{1, 1, 2, 2} ) ).isTrue();
+        assertThat( row.validDigits( new Integer[]{1, 1, 3, 1} ) ).isTrue();
+        assertThat( row.validDigits( new Integer[]{1, 1, 4, 0} ) ).isTrue();
+
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 10 );
+
     }
 
 }
