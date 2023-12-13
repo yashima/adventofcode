@@ -66,6 +66,14 @@ public class Matrix {
         return toCharString( getRow( idx ) );
     }
 
+    public int rowToBinary( int idx, Map<Character, Integer> mapping ) {
+        String rowToString = rowToString( idx );
+        if ( rowToString == null ) {
+            return -1;
+        }
+        return Integer.parseUnsignedInt( rowToString.chars().mapToObj( c -> mapping.get( (char) c ) + "" ).collect( Collectors.joining() ), 2 );
+    }
+
     public IntStream rowAsStream( int x ) {
         return Arrays.stream( getRow( x ) );
     }

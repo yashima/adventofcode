@@ -40,5 +40,8 @@ My attempts at solving Advent of Code 2023 Puzzles
 * Day 11 "Cosmic Expansion" and more 2D riddles. This one was pretty easy as my matrix could instantly give me all the stars and I already had a
   Manhattan distance function in place. Figuring out where empty space was and how to add it to the distance was the only challenge here and realizing
   that I had to subtract one from the expansion rate or that for part 1 the expansion rate was actually 2 not 1--because 1 row gets replaced by 2 or
-  by 100 but that first one is already there so -1. 
+  by 100 but that first one is already there so -1.
 * Day 12 "Hot Springs" starts of not so hot. I have no idea what I am doing.
+* Day 13 "Point of Incidence" had to add some new functions to my Matrix class because I needed the transpose() thing to properly work the mirror
+  finding for columns. For the "smudges" in part two, I am doing some bit operator shenanigans because nothing is quite as nice comparing if two
+  columns/rows are the same or differ by a single bit? And it would all work instantly if not for the literal edge-cases
