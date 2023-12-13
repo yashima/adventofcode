@@ -45,4 +45,4 @@ My attempts at solving Advent of Code 2023 Puzzles
 * Day 13 "Point of Incidence" had to add some new functions to my Matrix class because I needed the transpose() thing to properly work the mirror
   finding for columns. For the "smudges" in part two, I am doing some bit operator shenanigans because nothing is quite as nice comparing if two
   columns/rows are the same or differ by a single bit? And it would all work instantly if not for the literal edge-cases... and then I simplified
-  instead of optimizing. Thanks @pillbox
+  instead of optimizing. Thanks @pillbox!
