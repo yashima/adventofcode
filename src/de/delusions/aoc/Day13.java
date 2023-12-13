@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Day13 extends Day<Integer> {
@@ -16,7 +17,7 @@ public class Day13 extends Day<Integer> {
 
     @Override
     public Integer part0( Stream<String> input ) {
-        return findMirrorPositions( input, false );
+        return findMirrorPositions( input, 0 );
     }
 
 
@@ -27,18 +28,18 @@ public class Day13 extends Day<Integer> {
 
     @Override
     public Integer part1( Stream<String> input ) {
-        return findMirrorPositions( input, true );
+        return findMirrorPositions( input, 1 );
     }
 
-    static int findMirrorPositions( Stream<String> input, boolean withSmudge ) {
+    static int findMirrorPositions( Stream<String> input, int maxDiff ) {
         List<Matrix> patterns = parseInput( input );
         AtomicInteger result = new AtomicInteger( 0 );
-        patterns.forEach( m -> {
-            int mirrorPosition = findMirrorPosition( m, withSmudge );
+        patterns.forEach( pattern -> {
+            int mirrorPosition = findByDiff( pattern, maxDiff );
             if ( mirrorPosition < 0 ) {
-                mirrorPosition = findMirrorPosition( m.transpose(), withSmudge );
+                mirrorPosition = findByDiff( pattern.transpose(), maxDiff );
                 if ( mirrorPosition < 0 ) {
-                    System.err.println( m );
+                    System.err.println( pattern );
                     throw new IllegalStateException( "Bug Alarm: Every matrix is mirrored" );
                 }
                 result.addAndGet( mirrorPosition );
@@ -73,61 +74,8 @@ public class Day13 extends Day<Integer> {
         return all.stream().map( list -> Matrix.createFromStream( list.stream() ) ).toList();
     }
 
-    /**
-     * Calculates the position of the mirror in this pattern either with a smudge or not. First checks to find candidate row indices, then filters for
-     * the first one (only one according to the puzzle) that is a "full mirror" match.
-     *
-     * @param pattern    the pattern to find the mirror in
-     * @param withSmudge is the mirror smudged--exactly 1 bit has flipped from a perfect mirror
-     * @return the index of the row before which the mirror is found or -1 if none is found
-     */
-    static int findMirrorPosition( Matrix pattern, boolean withSmudge ) {
-        return getCandidates( pattern, withSmudge ).stream().filter( row -> isFullMirror( pattern, row, withSmudge ) ).findFirst().orElse( -1 );
-    }
-
-    /**
-     * Collects pairs of equal successive rows in the matrix, returns a list of the indeces of rows where the row before this one is equal
-     *
-     * @param matrix
-     * @return
-     */
-    static List<Integer> getCandidates( Matrix matrix, boolean withSmudge ) {
-        List<Integer> candidates = new ArrayList<>();
-        int smudgesAllowed = withSmudge ? 1 : 0;
-        for ( int i = 1; i < matrix.getXLength(); i++ ) {
-            int diff = diff( matrix, i, i - 1 );
-            if ( diff <= smudgesAllowed ) {
-                candidates.add( i );
-            }
-        }
-        return candidates;
-    }
-
-    /**
-     * Checks if for a given index that has a mirror line preceding it, all the lines around the pair are also equal until the edge of the matrix is
-     * reached.
-     *
-     * @param matrix     the matrix to perform the check on
-     * @param candidate  the index of the 2nd row of the pair--so the index is never 0
-     * @param withSmudge in smudge mode 1 bit of 1 pair of surrounding lines has flipped, only if this is the case th index is match
-     * @return true if the candidate represents a full match (until the edge) for a mirror location
-     */
-    static boolean isFullMirror( Matrix matrix, int candidate, boolean withSmudge ) {
-        if ( candidate == 1 || candidate == matrix.getXLength() - 1 ) {
-            return true;
-        }
-        int smudgesAllowed = withSmudge && diff( matrix, candidate, candidate - 1 ) == 0 ? 1 : 0;
-
-        for ( int j = 1; j + candidate < matrix.getXLength(); j++ ) {
-            int diff = diff( matrix, candidate + j, candidate - j - 1 );
-            if ( diff > smudgesAllowed ) {
-                return false;
-            }
-            if ( diff == 1 ) {
-                smudgesAllowed = 0;
-            }
-        }
-        return !withSmudge || smudgesAllowed == 0;
+    static int findByDiff( Matrix matrix, int maxDiff ) {
+        return IntStream.range( 1, matrix.getXLength() ).filter( row -> fullDiff( matrix, row ) == maxDiff ).boxed().findFirst().orElse( -1 );
     }
 
     /**
@@ -142,6 +90,18 @@ public class Day13 extends Day<Integer> {
         int m2 = matrix.rowToBinary( other, BINARY );
         return ( m1 < 0 || m2 < 0 ) ? 0 : Integer.bitCount( m1 ^ m2 );
     }
+
+    static int fullDiff( Matrix matrix, int row ) {
+        //row >=1
+        int diff = 0;
+        int max = Math.min( row, matrix.getXLength() );
+        for ( int i = 0; i <= max; i++ ) {
+            diff = diff + diff( matrix, row + i, row - i - 1 );
+        }
+        return diff;
+    }
+
+
 
 
 }
