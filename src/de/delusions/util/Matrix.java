@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -20,6 +21,14 @@ public class Matrix {
 
     Map<Integer, String> printMap = new HashMap<>();
     //Map.of( 0, ".", 1, "#", 2, "o", 3, "S", 4, "B" );
+
+    public static Matrix createFromString( String input, String divider ) {
+        return new Matrix( Arrays.stream( input.split( divider ) ).map( line -> line.chars().toArray() ).toArray( int[][]::new ) );
+    }
+
+    public static Matrix createFromStream( Stream<String> input ) {
+        return new Matrix( input.map( line -> line.chars().toArray() ).toArray( int[][]::new ) );
+    }
 
     public Matrix( int[][] initialized ) {
         this( initialized, 0, 0 );
@@ -53,8 +62,8 @@ public class Matrix {
         return max.get();
     }
 
-    public int[] getRow( int x ) {
-        return matrix[x];
+    public String rowToString( int idx ) {
+        return toCharString( getRow( idx ) );
     }
 
     public IntStream rowAsStream( int x ) {
@@ -136,6 +145,31 @@ public class Matrix {
         return matrix;
     }
 
+    public static String toCharString( int[] array ) {
+        if ( array == null ) {
+            return null;
+        }
+        return Arrays.stream( array ).mapToObj( c -> (char) c + "" ).collect( Collectors.joining() );
+    }
+
+    public int[] getRow( int x ) {
+        if ( x < 0 || x > matrix.length - 1 ) {
+            return null;
+        }
+        return matrix[x];
+    }
+
+    public String colToString( int idx ) {
+        return toCharString( getColumn( idx ) );
+    }
+
+    public int[] getColumn( int y ) {
+        int[] column = new int[matrix.length];
+        for ( int x = 0; x < getXLength(); x++ ) {
+            column[x] = matrix[x][y];
+        }
+        return column;
+    }
 
     @Override
     public String toString() {
@@ -158,12 +192,8 @@ public class Matrix {
         return Arrays.stream( getColumn( y ) );
     }
 
-    public int[] getColumn( int y ) {
-        int[] column = new int[getYLength()];
-        for ( int x = 0; x < getXLength(); x++ ) {
-            column[x] = matrix[x][y];
-        }
-        return column;
+    public Matrix transpose() {
+        return new Matrix( this.columns().toList().toArray( new int[0][0] ) );
     }
 
     public Stream<int[]> rows() {
