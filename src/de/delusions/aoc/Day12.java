@@ -22,6 +22,32 @@ public class Day12 extends Day<Integer> {
     }
 
 
+    static int folding = 1;
+
+    @Override
+    public Integer part0( Stream<String> input ) {
+        folding = 1;
+        List<SpringRow> rows = input.map( SpringRow::create ).toList();
+        return countAllRowConfigurations( rows );
+    }
+
+    @Override
+    public Integer part1( Stream<String> input ) {
+        folding = 5;
+        List<SpringRow> rows = input.map( SpringRow::create ).toList();
+        return countAllRowConfigurations( rows );
+    }
+
+    static int countAllRowConfigurations( List<SpringRow> rows ) {
+        int configurations = 0;
+        for ( SpringRow row : rows ) {
+            int rowConfigs = getConfigurations( row );
+            configurations += rowConfigs;
+            System.out.println( row + "configurations=" + rowConfigs );
+        }
+        return configurations;
+    }
+
     static int getConfigurations( SpringRow row ) {
         Stack<String> opens = new Stack<>();
         opens.push( row.original() );
@@ -41,24 +67,6 @@ public class Day12 extends Day<Integer> {
         return candidates.size();
     }
 
-
-    @Override
-    public Integer part0( Stream<String> input ) {
-        List<SpringRow> rows = input.map( SpringRow::create ).toList();
-        int configurations = 0;
-        for ( SpringRow row : rows ) {
-            int rowConfigs = getConfigurations( row );
-            configurations += rowConfigs;
-            System.out.println( row + "configurations=" + rowConfigs );
-        }
-        return configurations;
-    }
-
-    @Override
-    public Integer part1( Stream<String> input ) {
-        return null;
-    }
-
     private static List<String> createGroups( String line ) {
         Matcher matcher = SPRING_REG.matcher( line );
         List<String> groups = new ArrayList<>();
@@ -76,7 +84,14 @@ public class Day12 extends Day<Integer> {
             while ( matcher.find() ) {
                 broken.add( Integer.parseInt( matcher.group( 1 ) ) );
             }
-            return new SpringRow( line.split( " " )[0], groups, broken );
+            String original = line.split( " " )[0];
+            List<Integer> foldedBroken = new ArrayList<>();
+            StringBuilder foldedOriginal = new StringBuilder();
+            for ( int i = 0; i < folding; i++ ) {
+                foldedOriginal.append( original );
+                foldedBroken.addAll( broken );
+            }
+            return new SpringRow( foldedOriginal.toString(), groups, foldedBroken );
         }
 
         boolean matches( String candidate ) {
