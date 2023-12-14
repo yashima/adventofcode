@@ -3,9 +3,7 @@ package de.delusions.aoc;
 import de.delusions.util.Day;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,23 +47,65 @@ public class Day12 extends Day<Integer> {
     }
 
     static int getConfigurations( SpringRow row ) {
-        Stack<String> opens = new Stack<>();
-        opens.push( row.original() );
-        Set<String> candidates = new HashSet<>();
+        Stack<List<String>> opens = new Stack<>();
+        opens.push( row.groups() );
+        int configurations = 0;
         while ( !opens.isEmpty() ) {
-            String next = opens.pop();
-            if ( next.indexOf( '?' ) < 0 ) {
-                if ( row.matches( next ) ) {
-                    candidates.add( next );
+            List<String> next = opens.pop();
+            if ( next != null ) {
+                if ( next.stream().noneMatch( g -> g.contains( "?" ) ) ) {
+                    if ( row.matches( next ) ) {
+                        configurations++;
+                    }
+                }
+                else {
+                    opens.push( generateCandidate( next, '#', row ) );
+                    opens.push( generateCandidate( next, '.', row ) );
+                }
+            }
+        }
+        return configurations;
+    }
+
+    private static List<String> generateCandidate( List<String> next, char replace, SpringRow row ) {
+        List<String> candidate = new ArrayList<>();
+        boolean foundUnknown = false;
+        for ( int i = 0; i < next.size(); i++ ) {
+            String group = next.get( i );
+            if ( foundUnknown ) {
+                candidate.add( group );
+            }
+            else if ( group.contains( "?" ) ) {
+                foundUnknown = true;
+                if ( replace == '.' ) {
+                    int unknownIndex = group.indexOf( '?' );
+                    if ( unknownIndex == 0 ) {
+                        candidate.add( group.substring( 1 ) );
+                    }
+                    else if ( unknownIndex == group.length() - 1 ) {
+                        candidate.add( group.substring( 0, unknownIndex ) );
+                    }
+                    else {
+                        candidate.add( group.substring( 0, unknownIndex ) );
+                        candidate.add( group.substring( unknownIndex + 1 ) );
+                    }
+                }
+                else { //#
+                    candidate.add( group.replaceFirst( "\\?", "" + replace ) );
                 }
             }
             else {
-                opens.push( next.replaceFirst( "\\?", "#" ) );
-                opens.push( next.replaceFirst( "\\?", "." ) );
+                if ( group.length() == row.brokenGroups().get( i ) ) {
+                    candidate.add( group );
+                }
+                else {
+                    return null;
+                }
             }
         }
-        return candidates.size();
+        return candidate;
     }
+
 
     private static List<String> createGroups( String line ) {
         Matcher matcher = SPRING_REG.matcher( line );
@@ -78,7 +118,6 @@ public class Day12 extends Day<Integer> {
 
     record SpringRow(String original, List<String> groups, List<Integer> brokenGroups) {
         static SpringRow create( String line ) {
-            List<String> groups = createGroups( line );
             Matcher matcher = NUMBER_REG.matcher( line );
             List<Integer> broken = new ArrayList<>();
             while ( matcher.find() ) {
@@ -89,13 +128,15 @@ public class Day12 extends Day<Integer> {
             StringBuilder foldedOriginal = new StringBuilder();
             for ( int i = 0; i < folding; i++ ) {
                 foldedOriginal.append( original );
+                if ( i < folding - 1 ) {foldedOriginal.append( "?" );}
                 foldedBroken.addAll( broken );
             }
+            List<String> groups = createGroups( foldedOriginal.toString() );
             return new SpringRow( foldedOriginal.toString(), groups, foldedBroken );
         }
 
-        boolean matches( String candidate ) {
-            return brokenGroups().equals( createGroups( candidate ).stream().map( String::length ).toList() );
+        boolean matches( List<String> candidate ) {
+            return brokenGroups().equals( candidate.stream().map( String::length ).toList() );
         }
 
     }
