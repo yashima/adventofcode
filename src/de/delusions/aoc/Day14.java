@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.delusions.util.Direction.*;
@@ -25,7 +26,7 @@ public class Day14 extends Day<Integer> {
     static int TEST_CYCLES = 10000;
 
     public Day14( Integer... expected ) {
-        super( 14, "", expected );
+        super( 14, "Parabolic Reflector Dish", expected );
     }
 
     @Override
@@ -53,12 +54,23 @@ public class Day14 extends Day<Integer> {
         return results.get( ( FULL_CYCLES - START_CYCLE_DETECTION ) % results.size() );
     }
 
+    /**
+     * Finding a repeating signature in the results, helps avoiding unnecessary calculationgs
+     *
+     * @param cycles the list of results to convert to a signature
+     * @return a string representing the subset of results used for the signature
+     */
     String getSignature( List<Integer> cycles ) {
         return numbersToString( cycles.subList( Math.max( 0, cycles.size() - SIGNATURE_LENGTH ), cycles.size() - 1 ) );
     }
 
-    void processTiltCycle( Matrix original ) {
-        List.of( north, west, south, east ).forEach( dir -> processTiltDish( original, dir ) );
+    /**
+     * Converts a list of numbers to a string representation via characters
+     * @param numbers the numbers to convert to characters and then string
+     * @return a string representing the given numbers
+     */
+    String numbersToString( List<Integer> numbers ) {
+        return numbers.stream().map( c -> String.valueOf( (char) (int) c ) ).collect( Collectors.joining());
     }
 
     /**
@@ -72,8 +84,13 @@ public class Day14 extends Day<Integer> {
         return dish.rows().mapToLong( r -> stress( r, stressFactor.getAndDecrement() ) ).sum();
     }
 
-    String numbersToString( List<Integer> numbers ) {
-        return numbers.stream().map( c -> String.valueOf( (char) (int) c ) ).reduce( "", ( a, b ) -> a + b );
+    /**
+     * Executes a set of tilts in the right order (well, one should read the problem which states the order)
+     *
+     * @param dish the dish matrix is modified by the tilting
+     */
+    void processTiltCycle( Matrix dish ) {
+        List.of( north, west, south, east ).forEach( tiltDirection -> processTiltDish( dish, tiltDirection ) );
     }
 
     /**

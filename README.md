@@ -46,3 +46,7 @@ My attempts at solving Advent of Code 2023 Puzzles
   finding for columns. For the "smudges" in part two, I am doing some bit operator shenanigans because nothing is quite as nice comparing if two
   columns/rows are the same or differ by a single bit? And it would all work instantly if not for the literal edge-cases... and then I simplified
   instead of optimizing. Thanks @pillbox!
+* Day 14 "Parabolic Reflector Dish" seemed quite easy in part 1, solving the tilting and rolling of stones in a single function that calculated the
+  stress on the northside without changing the underlying datastructure. But that was not enough for part 2. First I tried transposing the matrix
+  and recycling the tilt operation that way, I ended up extracting and writing directed rows and columns instead and then I copied my cycle detection
+  from last year's tetris problem to avoid calculating all the asked for cycles.
