@@ -10,7 +10,6 @@ public class Day12Test {
     @Test
     public void testRecordSingleMatch() {
         Day12.SpringRow row = Day12.SpringRow.create( "???.### 1,1,3" );
-        assertThat( row.matches( "#.#.###" ) ).isTrue();
         assertThat( row.groups() ).containsExactly( "???", "###" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 1 );
 

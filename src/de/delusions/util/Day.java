@@ -33,7 +33,14 @@ public abstract class Day<T> {
         long timer = System.currentTimeMillis();
         T result = part == 0 ? part0( getInput( test, part ) ) : part1( getInput( test, part ) );
         timer = System.currentTimeMillis() - timer;
-        System.out.printf( "Day %01d '%s' Part %d: result=%s success=%s time=%dms%n", day, tag, part, result, verify( result, part, test ), timer );
+        boolean verify = verify( result, part, test );
+        String log = String.format( "Day %01d '%s' Part %d: result=%s success=%s time=%dms", day, tag, part, result, verify, timer );
+        if ( verify ) {
+            System.out.println( log );
+        }
+        else {
+            System.err.println( log );
+        }
     }
 
     public boolean verify( T result, int part, boolean test ) {
