@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -18,6 +19,10 @@ public class Matrix {
     int xOffset;
 
     int yOffset;
+
+    public String rowToString( int idx ) {
+        return toCharString( getRow( idx ) ).trim();
+    }
 
     Map<Integer, String> printMap = new HashMap<>();
     //Map.of( 0, ".", 1, "#", 2, "o", 3, "S", 4, "B" );
@@ -62,8 +67,8 @@ public class Matrix {
         return max.get();
     }
 
-    public String rowToString( int idx ) {
-        return toCharString( getRow( idx ) );
+    public IndexedRow getIndexedRow( int index ) {
+        return new IndexedRow( index, getRow( index ) );
     }
 
     public int rowToBinary( int idx, Map<Character, Integer> mapping ) {
@@ -160,6 +165,15 @@ public class Matrix {
         return Arrays.stream( array ).mapToObj( c -> (char) c + "" ).collect( Collectors.joining() );
     }
 
+    public Stream<IndexedRow> indexedRows() {
+        AtomicInteger index = new AtomicInteger( 0 );
+        return Arrays.stream( matrix ).map( r -> new IndexedRow( index.getAndIncrement(), r ) );
+    }
+
+    public void setRow( int x, int[] row ) {
+        if ( getYLength() >= 0 ) {System.arraycopy( row, 0, matrix[x], 0, getYLength() );}
+    }
+
     public int[] getRow( int x ) {
         if ( x < 0 || x > matrix.length - 1 ) {
             return null;
@@ -167,16 +181,32 @@ public class Matrix {
         return matrix[x];
     }
 
-    public String colToString( int idx ) {
-        return toCharString( getColumn( idx ) );
+    public void setRowReverse( int x, int[] row ) {
+        for ( int y = 0; y < getYLength(); y++ ) {
+            matrix[x][getYLength() - y - 1] = row[y];
+        }
     }
 
-    public int[] getColumn( int y ) {
+    public void setColumn( int y, int[] column, boolean fromTop ) {
+        for ( int x = 0; x < getXLength(); x++ ) {
+            matrix[fromTop ? x : getXLength() - x - 1][y] = column[x];
+        }
+    }
+
+    public String colToString( int idx ) {
+        return toCharString( getColumn( idx, true ) );
+    }
+
+    public int[] getColumn( int y, boolean fromTop ) {
         int[] column = new int[matrix.length];
         for ( int x = 0; x < getXLength(); x++ ) {
-            column[x] = matrix[x][y];
+            column[fromTop ? x : getXLength() - x - 1] = matrix[x][y];
         }
         return column;
+    }
+
+    public IntStream colAsStream( int y ) {
+        return Arrays.stream( getColumn( y, true ) );
     }
 
     @Override
@@ -196,24 +226,66 @@ public class Matrix {
         return builder.toString();
     }
 
-    public IntStream colAsStream( int y ) {
-        return Arrays.stream( getColumn( y ) );
+    public Matrix transposeLeft() {
+        return new Matrix( this.columnsLeft().toList().toArray( new int[0][0] ) );
     }
 
     public Matrix transpose() {
         return new Matrix( this.columns().toList().toArray( new int[0][0] ) );
     }
 
+    Stream<int[]> columnsLeft() {
+        List<int[]> columns = new ArrayList<>();
+        for ( int y = getYLength() - 1; y >= 0; y-- ) {
+            columns.add( getColumn( y, true ) );
+        }
+        return columns.stream();
+    }
+
+    public Matrix transposeRight() {
+        return new Matrix( this.columnsRight().toList().toArray( new int[0][0] ) );
+    }
+
     public Stream<int[]> rows() {
         return Arrays.stream( matrix );
+    }
+
+    Stream<int[]> columnsRight() {
+        List<int[]> columns = new ArrayList<>();
+        for ( int y = 0; y < getYLength(); y++ ) {
+
+            int[] column = getColumn( y, false );
+
+            columns.add( column );
+        }
+        return columns.stream();
     }
 
     public Stream<int[]> columns() {
         List<int[]> columns = new ArrayList<>();
         for ( int y = 0; y < getYLength(); y++ ) {
-            columns.add( getColumn( y ) );
+            columns.add( getColumn( y, true ) );
         }
         return columns.stream();
     }
 
+    @Override
+    public int hashCode() {
+        int result = Objects.hash( xOffset, yOffset );
+        result = 31 * result + Arrays.deepHashCode( getMatrix() );
+        return result;
+    }
+
+    @Override
+    public boolean equals( Object o ) {
+        if ( this == o ) {return true;}
+        if ( !( o instanceof Matrix matrix1 ) ) {return false;}
+        return xOffset == matrix1.xOffset && yOffset == matrix1.yOffset && Arrays.deepEquals( getMatrix(), matrix1.getMatrix() );
+    }
+
+    public int[] getRowReverse( int index ) {
+        return Arrays.stream( getRow( index ) ).boxed().toList().reversed().stream().mapToInt( i -> i ).toArray();
+    }
+
+    public record IndexedRow(int index, int[] row) {}
 }
