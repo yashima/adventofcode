@@ -50,3 +50,6 @@ My attempts at solving Advent of Code 2023 Puzzles
   stress on the northside without changing the underlying datastructure. But that was not enough for part 2. First I tried transposing the matrix
   and recycling the tilt operation that way, I ended up extracting and writing directed rows and columns instead and then I copied my cycle detection
   from last year's tetris problem to avoid calculating all the asked for cycles.
+* Day 15 "Lens Library" was not all that hard: first create a neat little hash function and then use that to sort lenses into buckets and finally
+  calculate the power of the data structure. My downfall was not resetting the map between test and production runs. This is not the first time this
+  happened either.

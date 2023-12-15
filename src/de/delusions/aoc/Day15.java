@@ -27,12 +27,20 @@ public class Day15 extends Day<Integer> {
         return Arrays.stream( input.collect( Collectors.joining() ).split( "," ) ).mapToInt( Day15::hashString ).sum();
     }
 
+    /**
+     * Formula for calculating the lense hash for part 1
+     *
+     * @param input the string to hash
+     * @return a number representing the string to be put into buckets
+     */
     static int hashString( String input ) {
         return input.chars().reduce( 0, ( a, b ) -> ( ( a + b ) * 17 ) % 256 );
     }
 
     @Override
     public Integer part1( Stream<String> input ) {
+        bucketMap.clear();
+        //processing the input, creating the instructions and executing them to build the bucketMap:
         Arrays.stream( input.collect( Collectors.joining() ).split( "," ) ).map( LensInstruction::create ).forEach( this::executeInstruction );
         return bucketMap.values().stream().mapToInt( bucket -> bucket.stream().mapToInt( lens -> power( bucket, lens ) ).sum() ).sum();
     }

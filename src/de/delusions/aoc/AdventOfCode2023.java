@@ -20,12 +20,13 @@ public class AdventOfCode2023 {
                                              new Day10( 8, 10, 6806, 449 ),
                                              new Day11( 374L, 8410L, 9543156L, 625243292686L ),
                                              new Day12( 21, 525152, 7622, 0 ),
-                                             new Day13( 405, 400, 31739, 31539 ), new Day14( 136, 64, 108759, 89089 ),
-                                             new Day15( 1320, 145, 503487, 0 )
+                                             new Day13( 405, 400, 31739, 31539 ),
+                                             new Day14( 136, 64, 108759, 89089 ),
+                                             new Day15( 1320, 145, 503487, 261505 )
                                              //261686 too high
         );
         System.out.println( "Days: " + daysOfAdvent.size() );
-        runAllVariants( daysOfAdvent.get( 13 ) );
+        runAllVariants( daysOfAdvent.getLast() );
 
     }
 
