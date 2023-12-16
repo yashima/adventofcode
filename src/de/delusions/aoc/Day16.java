@@ -24,9 +24,8 @@ public class Day16 extends Day<Integer> {
     @Override
     public Integer part0( Stream<String> input ) {
         Matrix mirrors = Matrix.createFromStream( input );
-        Coordinates startCoordinates = new Coordinates( 0, 0, east );
-        //split beams will split:
-        return calculateEnergizedTiles( startCoordinates, mirrors, true );
+
+        return calculateEnergizedTiles( new Coordinates( 0, 0, east ), mirrors, true );
     }
 
     @Override
@@ -45,6 +44,7 @@ public class Day16 extends Day<Integer> {
     }
 
     private static int calculateEnergizedTiles( Coordinates startCoordinates, Matrix mirrors, boolean visualize ) {
+        //split beams will split:
         Stack<Coordinates> beams = new Stack<>();
         Map<Coordinates, List<Direction>> energized = new HashMap<>();
         beams.push( startCoordinates );

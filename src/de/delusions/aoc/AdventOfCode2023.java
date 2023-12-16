@@ -25,14 +25,14 @@ public class AdventOfCode2023 {
                                              new Day15( 1320, 145, 503487, 261505 ),
                                              new Day16( 46, 51, 6921, 0 ) );
         System.out.println( "Days: " + daysOfAdvent.size() );
-        runAllVariants( daysOfAdvent.getLast() );
+        runAllVariants( daysOfAdvent.get( 11 ) );
 
     }
 
     private static void runAllVariants( Day<?> today ) {
-        today.run( true, 0 );
-        today.run( false, 0 );
+//        today.run( true, 0 );
+//        today.run( false, 0 );
         today.run( true, 1 );
-        today.run( false, 1 );
+        //today.run( false, 1 );
     }
 }
