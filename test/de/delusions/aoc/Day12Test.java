@@ -2,6 +2,8 @@ package de.delusions.aoc;
 
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class Day12Test {
@@ -35,11 +37,18 @@ public class Day12Test {
     @Test
     public void multipleMatchesSpecial() {
 
-
-
         Day12.SpringRow row = Day12.SpringRow.create( "?###???????? 3,2,1" );
 
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 10 );
+
+    }
+
+    @Test
+    public void testFindImpossiblePrefix() {
+        assertThat( Day12.isImpossible( List.of( "#", "#?" ), List.of( 2, 5 ) ) ).isTrue();
+        assertThat( Day12.isImpossible( List.of( "##", "??" ), List.of( 1, 2 ) ) ).isTrue();
+        assertThat( Day12.isImpossible( List.of( "##", "#", "?", "#" ), List.of( 2, 2, 2, 4 ) ) ).isTrue();
+        assertThat( Day12.isImpossible( List.of( "#", "##" ), List.of( 1, 2, 3 ) ) ).isFalse();
 
     }
 

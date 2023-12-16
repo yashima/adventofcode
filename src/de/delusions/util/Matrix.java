@@ -87,6 +87,10 @@ public class Matrix {
         setValue( coordinates, coordinates.getValue() );
     }
 
+    public void incrementValue( Coordinates coordinates ) {
+        setValue( coordinates, getValue( coordinates ) + coordinates.getValue() );
+    }
+
     public void setValue( Coordinates coordinates, int value ) {
         int x = coordinates.x - xOffset;
         int y = coordinates.y - yOffset;

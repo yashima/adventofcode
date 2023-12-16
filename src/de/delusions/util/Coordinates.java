@@ -27,6 +27,12 @@ public class Coordinates {
         this( x, y, 0, null );
     }
 
+    public Coordinates( int x, int y, Direction facing ) {
+        this( x, y, 0, null );
+        this.facing = facing;
+    }
+
+
     public Coordinates( int x, int y, int value ) {
         this( x, y, value, null );
     }

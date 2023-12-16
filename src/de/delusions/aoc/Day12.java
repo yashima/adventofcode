@@ -67,6 +67,11 @@ public class Day12 extends Day<Integer> {
         return configurations;
     }
 
+    static boolean isImpossible( List<String> groups, List<Integer> broken ) {
+        List<String> prefix = groups.stream().filter( g -> g.matches( "#*" ) ).toList();
+        return !prefix.stream().map( String::length ).toList().equals( broken.subList( 0, groups.size() ) );
+    }
+
     private static List<String> generateCandidate( List<String> next, char replace, SpringRow row ) {
         List<String> candidate = new ArrayList<>();
         boolean foundUnknown = false;
