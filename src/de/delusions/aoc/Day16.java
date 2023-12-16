@@ -24,26 +24,46 @@ public class Day16 extends Day<Integer> {
     @Override
     public Integer part0( Stream<String> input ) {
         Matrix mirrors = Matrix.createFromStream( input );
+        Coordinates startCoordinates = new Coordinates( 0, 0, east );
         //split beams will split:
+        return calculateEnergizedTiles( startCoordinates, mirrors, true );
+    }
+
+    @Override
+    public Integer part1( Stream<String> input ) {
+        Matrix mirrors = Matrix.createFromStream( input );
+        List<Integer> energized = new ArrayList<>();
+        for ( int x = 0; x < mirrors.getXLength(); x++ ) {
+            energized.add( calculateEnergizedTiles( new Coordinates( x, 0, east ), mirrors, false ) );
+            energized.add( calculateEnergizedTiles( new Coordinates( x, mirrors.getYLength() - 1, west ), mirrors, false ) );
+        }
+        for ( int y = 0; y < mirrors.getYLength(); y++ ) {
+            energized.add( calculateEnergizedTiles( new Coordinates( 0, y, south ), mirrors, false ) );
+            energized.add( calculateEnergizedTiles( new Coordinates( mirrors.getXLength() - 1, y, north ), mirrors, false ) );
+        }
+        return energized.stream().mapToInt( i -> i ).max().getAsInt();
+    }
+
+    private static int calculateEnergizedTiles( Coordinates startCoordinates, Matrix mirrors, boolean visualize ) {
         Stack<Coordinates> beams = new Stack<>();
         Map<Coordinates, List<Direction>> energized = new HashMap<>();
-        beams.push( new Coordinates( 0, 0, east ) );
+        beams.push( startCoordinates );
         while ( !beams.isEmpty() ) {
             Coordinates current = beams.pop();
             //needs to prevent bouncing beams that just go in circles and set your processor on fire:
             if ( mirrors.isInTheMatrix( current ) && !energized.getOrDefault( current, new ArrayList<>() ).contains( current.getFacing() ) ) {
                 Mirror mirror = Mirror.getBySymbol( (char) mirrors.getValue( current ) );
                 mirror.getNextLights( current ).forEach( beams::push );
-                if ( mirror == EMPTY ) {
+                if ( mirror == EMPTY && visualize ) {
                     mirrors.setValue( current, current.getFacing().getSymbol().charAt( 0 ) );
                 }
                 energized.putIfAbsent( current, new ArrayList<>() );
                 energized.get( current ).add( current.getFacing() );
             }
         }
-        System.out.println( mirrors );
         return energized.size();
     }
+
 
     enum Mirror {
         DIVIDER_HORIZONTAL( '-' ) {
@@ -103,8 +123,4 @@ public class Day16 extends Day<Integer> {
         }
     }
 
-    @Override
-    public Integer part1( Stream<String> input ) {
-        return null;
-    }
 }
