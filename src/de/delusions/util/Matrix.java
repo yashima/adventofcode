@@ -21,6 +21,9 @@ public class Matrix {
     int yOffset;
 
     public String rowToString( int idx ) {
+        if ( idx < 0 || idx >= matrix.length ) {
+            return null;
+        }
         return toCharString( getRow( idx ) ).trim();
     }
 

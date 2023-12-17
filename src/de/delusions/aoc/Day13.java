@@ -37,7 +37,7 @@ public class Day13 extends Day<Integer> {
         patterns.forEach( pattern -> {
             int mirrorPosition = findByDiff( pattern, maxDiff );
             if ( mirrorPosition < 0 ) {
-                mirrorPosition = findByDiff( pattern.transpose(), maxDiff );
+                mirrorPosition = findByDiff( pattern.transposeRight(), maxDiff );
                 if ( mirrorPosition < 0 ) {
                     System.err.println( pattern );
                     throw new IllegalStateException( "Bug Alarm: Every matrix is mirrored" );
