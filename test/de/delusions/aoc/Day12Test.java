@@ -1,5 +1,6 @@
 package de.delusions.aoc;
 
+import de.delusions.aoc.Day12.SpringRow;
 import org.testng.annotations.Test;
 
 import java.util.List;
@@ -11,14 +12,14 @@ public class Day12Test {
 
     @Test
     public void testRecordSingleMatch() {
-        Day12.SpringRow row = Day12.SpringRow.create( "???.### 1,1,3" );
+        SpringRow row = SpringRow.create( "???.### 1,1,3" );
         assertThat( row.groups() ).containsExactly( "???", "###" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 1 );
 
-        row = Day12.SpringRow.create( "?#?#?#?#?#?#?#? 1,3,1,6" );
+        row = SpringRow.create( "?#?#?#?#?#?#?#? 1,3,1,6" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 1 );
 
-        row = Day12.SpringRow.create( "????.#...#... 4,1,1" );
+        row = SpringRow.create( "????.#...#... 4,1,1" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 1 );
     }
 
@@ -26,10 +27,15 @@ public class Day12Test {
     @Test
     public void multipleMatches() {
 
-        Day12.SpringRow row = Day12.SpringRow.create( ".??..??...?##. 1,1,3" );
+        assertThat( SpringRow.allUnknown( "???" ) ).isTrue();
+        assertThat( SpringRow.allUnknown( "?#?" ) ).isFalse();
+        assertThat( SpringRow.allBroken( "###" ) ).isTrue();
+        assertThat( SpringRow.allBroken( "?#?" ) ).isFalse();
+
+        SpringRow row = SpringRow.create( ".??..??...?##. 1,1,3" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 4 );
 
-        row = Day12.SpringRow.create( "????.######..#####. 1,6,5" );
+        row = SpringRow.create( "????.######..#####. 1,6,5" );
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 4 );
 
     }
@@ -37,7 +43,7 @@ public class Day12Test {
     @Test
     public void multipleMatchesSpecial() {
 
-        Day12.SpringRow row = Day12.SpringRow.create( "?###???????? 3,2,1" );
+        SpringRow row = SpringRow.create( "?###???????? 3,2,1" );
 
         assertThat( Day12.getConfigurations( row ) ).isEqualTo( 10 );
 
@@ -49,6 +55,37 @@ public class Day12Test {
         assertThat( Day12.isImpossible( List.of( "##", "??" ), List.of( 1, 2 ) ) ).isTrue();
         assertThat( Day12.isImpossible( List.of( "##", "#", "?", "#" ), List.of( 2, 2, 2, 4 ) ) ).isTrue();
         assertThat( Day12.isImpossible( List.of( "#", "##" ), List.of( 1, 2, 3 ) ) ).isFalse();
+    }
+
+    @Test
+    public void testRemovePrefix() {
+        SpringRow springRow2 = new SpringRow( List.of( "#" ), List.of( 1 ) );
+        while ( !springRow2.isDone() && springRow2.removeUnambiguousHead() ) {
+            //do nothing?
+        }
+        assertThat( springRow2.isDone() ).isTrue();
+        SpringRow springRow1 = new SpringRow( List.of( "#", "##" ), List.of( 1 ) );
+        while ( !springRow1.isDone() && springRow1.removeUnambiguousHead() ) {
+            //do nothing?
+        }
+        assertThat( springRow1 ).isEqualTo( new SpringRow( List.of( "##" ), List.of() ) );
+        SpringRow springRow = new SpringRow( List.of( "?", "##", "?" ), List.of( 1, 2, 3 ) );
+        while ( !springRow.isDone() && springRow.removeUnambiguousHead() ) {
+            //do nothing?
+        }
+        assertThat( springRow ).isEqualTo( new SpringRow( List.of( "?" ), List.of( 3 ) ) );
+    }
+
+    @Test
+    public void testSplitGroup() {
+        assertThat( SpringRow.splitOff( "##?", 1 ) ).isNull();
+        assertThat( SpringRow.splitOff( "#??", 4 ) ).isNull();
+        assertThat( SpringRow.splitOff( "???", 1 ) ).isNull();
+
+        assertThat( SpringRow.splitOff( "#??", 1 ) ).isEqualTo( "?" );
+        assertThat( SpringRow.splitOff( "#??", 2 ) ).isEqualTo( "" );
+        assertThat( SpringRow.splitOff( "#??", 3 ) ).isEqualTo( "" );
+
 
     }
 
