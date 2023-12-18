@@ -39,4 +39,12 @@ public enum Direction {
     public Direction opposite() {
         return turnRight( 180 );
     }
+
+    public boolean isOpposite( Direction d ) {
+        return this.opposite() == d;
+    }
+
+    public boolean isOrthogonal( Direction d ) {
+        return this.turnLeft() == d || this.turnRight() == d;
+    }
 }
