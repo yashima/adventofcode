@@ -68,6 +68,10 @@ public class Coordinates {
         return moveTo( move, 1, value );
     }
 
+    public Coordinates moveTo( Direction move ) {
+        return moveTo( move, 1, 1 );
+    }
+
     public Coordinates moveToNext() {
         return moveTo( facing, 1, 1 );
     }

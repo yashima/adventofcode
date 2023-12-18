@@ -33,7 +33,7 @@ public class AdventOfCode2023 {
     private static void runAllVariants( Day<?> today ) {
         today.run( true, 0 );
         today.run( false, 0 );
-        today.run( true, 1 );
-        today.run( false, 1 );
+//        today.run( true, 1 );
+//        today.run( false, 1 );
     }
 }
