@@ -22,17 +22,18 @@ public class AdventOfCode2023 {
                                              new Day12( 21, 525152, 7622, 0 ),
                                              new Day13( 405, 400, 31739, 31539 ),
                                              new Day14( 136, 64, 108759, 89089 ),
-                                             new Day15( 1320, 145, 503487, 261505 ),
-                                             new Day16( 46, 51, 6921, 7594 ), new Day17( 102, 71, 698, 0 ), new Day18( 62, 0, 0, 0 ) );
+                                             new Day15( 1320, 145, 503487, 261505 ), new Day16( 46, 51, 6921, 7594 ),//
+                                             new Day17( 102, 71, 698, 825 ),//
+                                             new Day18( 62, 0, 0, 0 ) );
         System.out.println( "Days: " + daysOfAdvent.size() );
-        runAllVariants( daysOfAdvent.get( 16 ) );
+        runAllVariants( daysOfAdvent.getLast() );
 
     }
 
     private static void runAllVariants( Day<?> today ) {
-        //today.run( true, 0 );
-        //today.run( false, 0 );
-        //today.run( true, 1 );
+        today.run( true, 0 );
+        today.run( false, 0 );
+        today.run( true, 1 );
         today.run( false, 1 );
     }
 }

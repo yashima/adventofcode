@@ -40,11 +40,13 @@ public class Day18 extends Day<Integer> {
             minY.set( Math.min( minY.get(), digger.get().getY() ) );
         } );
         System.out.printf( "%d x %d : %d x %d%n", minX.get(), minY.get(), maxX.get(), maxY.get() );
-        Matrix matrix = new Matrix( maxX.get() - minX.get() + 1, maxY.get() - minY.get() + 1, minX.get(), minY.get() );
+        //adding 1 space around the matrix
+        Matrix matrix = new Matrix( maxX.get() - minX.get() + 1 + 2, maxY.get() - minY.get() + 1 + 2, minX.get() - 1, minY.get() - 1 );
         matrix.setAllValues( '.' );
         loop.forEach( trench -> {
             matrix.setValue( trench, '#' );
         } );
+        matrix.setValue( 0, 0, 'S' );
         System.out.println( matrix );
         return loop.size();
     }

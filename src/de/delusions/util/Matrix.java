@@ -86,6 +86,10 @@ public class Matrix {
         return Arrays.stream( getRow( x ) );
     }
 
+    public void setValue( int x, int y, int value ) {
+        this.matrix[x - xOffset][y - yOffset] = value;
+    }
+
     public void setValue( Coordinates coordinates ) {
         setValue( coordinates, coordinates.getValue() );
     }

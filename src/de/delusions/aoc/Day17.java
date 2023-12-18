@@ -1,73 +1,31 @@
 package de.delusions.aoc;
 
+import de.delusions.algorithms.Dijkstra;
+import de.delusions.algorithms.Pathable;
 import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
 import de.delusions.util.Direction;
 import de.delusions.util.Matrix;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.PriorityQueue;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class Day17 extends Day<Integer> {
 
     public static final int STRAIGHT_AFTER_TURN = 1;
 
+
+    static int maxStraight;
+
+    static int minStraight;
+
     public Day17( Integer... expected ) {
         super( 17, "Clumsy Crucible", expected );
     }
 
-    @Override
-    public Integer part0( Stream<String> input ) {
-        Matrix industrialComplex = Matrix.createFromStream( input );
-        return findBestPath( industrialComplex, 3, 1 );
-    }
-
-    @Override
-    public Integer part1( Stream<String> input ) {
-        Matrix industrialComplex = Matrix.createFromStream( input );
-        return findBestPath( industrialComplex, 10, 4 );
-    }
-
-    static int findBestPath( Matrix industrialComplex, int maxStraight, int minStraight ) {
-        PriorityQueue<Crucible> opens = new PriorityQueue<>();
-        Set<Crucible> visited = new HashSet<>();
-
-        //we don't really need start in visited because it gets added in the loop
-        opens.add( new Crucible( new Coordinates( 0, 0 ), 0, null, 1, null ) );
-
-        while ( !opens.isEmpty() ) {
-            Crucible crucible = opens.poll();
-            if ( crucible.goal( industrialComplex, minStraight ) ) { //we're done, the lava has arrived
-                if ( true ) {
-                    return reconstructPath( crucible, industrialComplex );
-                }
-                return crucible.distance();
-            }
-            //ah well, this one has been visited
-            visited.add( crucible );
-
-            crucible.getNeighbors( industrialComplex, maxStraight, minStraight ).forEach( n -> {
-                if ( !visited.contains( n ) && !opens.contains( n ) ) {
-                    opens.add( n );
-                }
-                else if ( opens.contains( n ) ) {
-                    Crucible old = opens.stream().filter( n::equals ).findFirst().get();
-                    if ( old.distance() > n.distance() ) {
-                        opens.remove( old );
-                        opens.add( n );
-                    }
-                }
-            } );
-
-        }
-        return -1;
-    }
-
+    /* for some debug output if needed */
     private static int reconstructPath( Crucible crucible, Matrix industrialComplex ) {
         int totalHeatLoss = crucible.heatLoss();
         while ( crucible.previous() != null ) {
@@ -78,9 +36,32 @@ public class Day17 extends Day<Integer> {
         return totalHeatLoss;
     }
 
-    record Crucible(Coordinates position, int heatLoss, Direction facing, int straight, Crucible previous) implements Comparable<Crucible> {
+    @Override
+    public Integer part0( Stream<String> input ) {
+        maxStraight = 3;
+        minStraight = 1;
+        return run( input );
+    }
 
-        List<Crucible> getNeighbors( Matrix industrialComplex, int maxStraight, int minStraight ) {
+    @Override
+    public Integer part1( Stream<String> input ) {
+        maxStraight = 10;
+        minStraight = 4;
+        return run( input );
+    }
+
+    private static Integer run( Stream<String> input ) {
+        Matrix industrialComplex = Matrix.createFromStream( input );
+        Crucible start = new Crucible( new Coordinates( 0, 0 ), 0, null, 1, null );
+        //I extracted my algorithm into a generic version so I don't have to go flailing about next time
+        Dijkstra<Crucible, Matrix> crucibleMatrixDijkstra = new Dijkstra<>( start );
+        return crucibleMatrixDijkstra.findBestPath( industrialComplex ).distance();
+    }
+
+    record Crucible(Coordinates position, int heatLoss, Direction facing, int straight, Crucible previous)
+        implements Pathable<Crucible, Integer, Matrix> {
+
+        public List<Crucible> getNeighbors( Matrix industrialComplex ) {
 
             List<Crucible> neighbors = new ArrayList<>();
             Direction.getBasic().forEach( d -> {
@@ -123,19 +104,19 @@ public class Day17 extends Day<Integer> {
             return "Crucible{" + "position=" + position + ", heatLoss=" + heatLoss + ", facing=" + facing + ", straight=" + straight + '}';
         }
 
-        boolean goal( Matrix industrialComplex, int minStraight ) {
+        public Integer distance() {
+            return heatLoss;
+        }
+
+        public boolean goal( Matrix industrialComplex ) {
             return straight >= minStraight &&
                 position.equals( new Coordinates( industrialComplex.getXLength() - 1, industrialComplex.getYLength() - 1 ) );
         }
 
         @Override
         public int compareTo( Crucible o ) {
-            if ( this.distance() == o.distance() ) {return 0;}
+            if ( this.distance().equals( o.distance() ) ) {return 0;}
             return this.distance() < o.distance() ? -1 : 1;
-        }
-
-        int distance() {
-            return heatLoss;
         }
     }
 
