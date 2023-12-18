@@ -6,11 +6,11 @@ import de.delusions.util.Direction;
 import de.delusions.util.Matrix;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class Day17 extends Day<Integer> {
@@ -32,36 +32,36 @@ public class Day17 extends Day<Integer> {
 
     static int findBestPath( Matrix industrialComplex, int maxInstability ) {
         PriorityQueue<Crucible> opens = new PriorityQueue<>();
-        Map<Coordinates, Crucible> visited = new HashMap<>();
+        Set<Crucible> visited = new HashSet<>();
 
-        Crucible start = new Crucible( new Coordinates( 0, 0 ), 0, null, 0, null );
-        visited.put( start.position(), start );
-        opens.add( start );
+        //we don't really need start in visited
+        opens.add( new Crucible( new Coordinates( 0, 0 ), 0, null, -1, null ) );
 
         while ( !opens.isEmpty() ) {
             Crucible crucible = opens.poll();
             if ( crucible.goal( industrialComplex ) ) { //we're done, the lava has arrived
                 return reconstructPath( crucible, industrialComplex );
             }
-            //ah well, this one has been visited
-            if ( !visited.containsKey( crucible.position() ) ) {
-                visited.put( crucible.position(), crucible );
+            if ( crucible.instability() > maxInstability ) {
+                throw new IllegalStateException( "The crucible is off the rails, the lava is spilling" );
             }
+            //ah well, this one has been visited
+            visited.add( crucible );
+
 
             crucible.getNeighbors( industrialComplex, maxInstability ).forEach( n -> {
-                if ( !visited.containsKey( n.position() ) && !opens.contains( n ) ) {
+                if ( !visited.contains( n ) && !opens.contains( n ) ) {
                     opens.add( n );
                 }
-                else {
-                    if ( opens.contains( n ) ) {
-                        Crucible old = opens.stream().filter( c -> c.position().equals( n.position() ) ).findFirst().get();
-                        if ( old.distance() > n.distance() ) {
-                            opens.remove( old );
-                            opens.add( n );
-                        }
+                else if ( opens.contains( n ) ) {
+                    Crucible old = opens.stream().filter( n::equals ).findFirst().get();
+                    if ( old.distance() > n.distance() ) {
+                        opens.remove( old );
+                        opens.add( n );
                     }
                 }
             } );
+
         }
         return -1;
     }
@@ -79,18 +79,19 @@ public class Day17 extends Day<Integer> {
     record Crucible(Coordinates position, int heatLoss, Direction facing, int instability, Crucible previous) implements Comparable<Crucible> {
 
         List<Crucible> getNeighbors( Matrix industrialComplex, int maxInstability ) {
+
             List<Crucible> neighbors = new ArrayList<>();
             Direction.getBasic().forEach( d -> {
                 Coordinates nextPosition = position.moveTo( d, 1 );
 
                 if ( industrialComplex.isInTheMatrix( nextPosition ) ) { //do not consider stuff outside the matrix, duh
                     int losingMoreHeat = industrialComplex.getValue( nextPosition ) - 48; //still storing characters so I need the ascii offset
-                    if ( d == facing ) {
-                        if ( instability < maxInstability ) { //current direction we were going, still stable?
-                            neighbors.add( new Crucible( nextPosition, heatLoss() + losingMoreHeat, d, instability() + 1, this ) );
+                    if ( d == facing ) { //straight ahead
+                        if ( instability != maxInstability ) { //current direction we were going, still stable?
+                            neighbors.add( new Crucible( nextPosition, heatLoss() + losingMoreHeat, d, this.instability() + 1, this ) );
                         }
                     }
-                    else if ( facing == null || d != facing().opposite() ) { //we are not going back, ever!
+                    else if ( facing == null || d != facing.opposite() ) { //turns, we are not going back, ever!
                         neighbors.add( new Crucible( nextPosition, heatLoss() + losingMoreHeat, d, 1, this ) );
                     }
                 }
@@ -126,7 +127,7 @@ public class Day17 extends Day<Integer> {
         }
 
         int distance() {
-            return heatLoss + instability * 2;
+            return heatLoss;
         }
     }
 
