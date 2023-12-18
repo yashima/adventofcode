@@ -30,7 +30,7 @@ public class Day17 extends Day<Integer> {
     @Override
     public Integer part1( Stream<String> input ) {
         Matrix industrialComplex = Matrix.createFromStream( input );
-        return findBestPath( industrialComplex, 10, 2 );
+        return findBestPath( industrialComplex, 10, 4 );
     }
 
     static int findBestPath( Matrix industrialComplex, int maxStraight, int minStraight ) {
@@ -42,7 +42,7 @@ public class Day17 extends Day<Integer> {
 
         while ( !opens.isEmpty() ) {
             Crucible crucible = opens.poll();
-            if ( crucible.goal( industrialComplex ) ) { //we're done, the lava has arrived
+            if ( crucible.goal( industrialComplex, minStraight ) ) { //we're done, the lava has arrived
                 if ( true ) {
                     return reconstructPath( crucible, industrialComplex );
                 }
@@ -88,8 +88,7 @@ public class Day17 extends Day<Integer> {
 
                 if ( industrialComplex.isInTheMatrix( nextPosition ) ) { //do not consider stuff outside the matrix, duh
                     int losingMoreHeat = industrialComplex.getValue( nextPosition ) - 48; //still storing characters so I need the ascii offset
-                    if ( facing == null ) { //start case: all fine, north+west are outside the matrix
-                        System.out.println( "Initial neighbor: to the " + d );
+                    if ( facing == null ) { //just the starter
                         neighbors.add( new Crucible( nextPosition, losingMoreHeat, d, STRAIGHT_AFTER_TURN, this ) );
                     }
                     else if ( d == facing ) { //straight ahead
@@ -104,9 +103,6 @@ public class Day17 extends Day<Integer> {
 
                 }
             } );
-            if ( neighbors.isEmpty() ) {
-                System.err.printf( "Found no neighbors for %s %n", this );
-            }
             return neighbors;
         }
 
@@ -127,8 +123,9 @@ public class Day17 extends Day<Integer> {
             return "Crucible{" + "position=" + position + ", heatLoss=" + heatLoss + ", facing=" + facing + ", straight=" + straight + '}';
         }
 
-        boolean goal( Matrix industrialComplex ) {
-            return position.equals( new Coordinates( industrialComplex.getXLength() - 1, industrialComplex.getYLength() - 1 ) );
+        boolean goal( Matrix industrialComplex, int minStraight ) {
+            return straight >= minStraight &&
+                position.equals( new Coordinates( industrialComplex.getXLength() - 1, industrialComplex.getYLength() - 1 ) );
         }
 
         @Override
