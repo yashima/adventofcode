@@ -105,10 +105,10 @@ public class Day19 extends Day<Long> {
 
     static Map<Character, Interval> createXmasMap() {
         Map<Character, Interval> xmasMap = new HashMap<>();
-        xmasMap.put( 'x', new Interval( 0, 4000 ) );
-        xmasMap.put( 'm', new Interval( 0, 4000 ) );
-        xmasMap.put( 'a', new Interval( 0, 4000 ) );
-        xmasMap.put( 's', new Interval( 0, 4000 ) );
+        xmasMap.put( 'x', new Interval( 1, 4000 ) );
+        xmasMap.put( 'm', new Interval( 1, 4000 ) );
+        xmasMap.put( 'a', new Interval( 1, 4000 ) );
+        xmasMap.put( 's', new Interval( 1, 4000 ) );
         return xmasMap;
     }
 
@@ -118,7 +118,9 @@ public class Day19 extends Day<Long> {
 
     record SquashedRule(String workflow, Map<Character, Interval> map) {
         long combinations() {
-            return map.values().stream().mapToLong( v -> v.length() - 1 ).reduce( 1, ( a, b ) -> a * b );
+            long reduce = map.values().stream().mapToLong( Interval::length ).peek( System.out::println ).reduce( 1, ( a, b ) -> a * b );
+            System.out.println( "Product " + reduce );
+            return reduce;
         }
 
         boolean isAccepted() {
@@ -128,15 +130,21 @@ public class Day19 extends Day<Long> {
         SquashedRule squash( Rule rule ) {
             System.out.println( this + " with " + rule );
             if ( rule.xmas == null ) { //the rule is the default, and does nothing
-                return new SquashedRule( rule.target, this.map ); //needs no copy
+                return new SquashedRule( rule.target, map() ); //needs no copy b/c only 1 default rule per workflow
             }
             SquashedRule squashedRule = new SquashedRule( rule.target(), deepCopy( map() ) );
+            Interval originalXmas = map.get( rule.xmas );
             Interval xmas = squashedRule.map.get( rule.xmas );
-            if ( rule.greater() ) {
-                xmas.setLower( rule.threshold == 0 ? xmas.getLower() : Math.max( rule.threshold, xmas.getLower() ) );
+            if ( rule.threshold == 0 ) {
+                //do nothing to the interval
+            }
+            else if ( rule.greater() ) {
+                xmas.setLower( Math.max( rule.threshold + 1, xmas.getLower() ) );
+                originalXmas.setUpper( Math.min( rule.threshold, originalXmas.getUpper() ) );
             }
             else {
-                xmas.setUpper( rule.threshold == 0 ? xmas.getUpper() : Math.min( rule.threshold, xmas.getUpper() ) );
+                xmas.setUpper( Math.min( rule.threshold - 1, xmas.getUpper() ) );
+                originalXmas.setLower( Math.max( rule.threshold, originalXmas.getLower() ) );
             }
             return squashedRule;
         }

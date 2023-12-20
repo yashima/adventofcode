@@ -36,6 +36,6 @@ public class AdventOfCode2023 {
         //today.run( true, 0 );
         //today.run( false, 0 );
         today.run( true, 1 );
-//        today.run( false, 1 );
+        today.run( false, 1 );// to low: 8281393428000
     }
 }
