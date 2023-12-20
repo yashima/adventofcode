@@ -3,9 +3,9 @@ package de.delusions.util;
 import java.util.Objects;
 
 public class Interval implements Comparable<Interval> {
-    final long lower;
+    long lower;
 
-    final long upper;
+    long upper;
 
     public Interval( String lower, String upper ) {
         this( Long.parseLong( lower ), Long.parseLong( upper ) );
@@ -13,6 +13,14 @@ public class Interval implements Comparable<Interval> {
 
     public Interval( long lower, long upper ) {
         this.lower = lower;
+        this.upper = upper;
+    }
+
+    public void setLower( long lower ) {
+        this.lower = lower;
+    }
+
+    public void setUpper( long upper ) {
         this.upper = upper;
     }
 
@@ -79,6 +87,10 @@ public class Interval implements Comparable<Interval> {
     @Override
     public String toString() {
         return "Interval{" + "lower=" + lower + ", upper=" + upper + '}';
+    }
+
+    public Interval copy() {
+        return new Interval( this.lower, this.upper );
     }
 
 }

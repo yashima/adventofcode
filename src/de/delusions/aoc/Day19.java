@@ -1,12 +1,16 @@
 package de.delusions.aoc;
 
 import de.delusions.util.Day;
+import de.delusions.util.Interval;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -57,9 +61,31 @@ public class Day19 extends Day<Long> {
         return sum.get();
     }
 
+    static Map<Character, Interval> deepCopy( Map<Character, Interval> xmasMap ) {
+        Map<Character, Interval> copy = new HashMap<>();
+        copy.put( 'x', xmasMap.get( 'x' ).copy() );
+        copy.put( 'm', xmasMap.get( 'm' ).copy() );
+        copy.put( 'a', xmasMap.get( 'a' ).copy() );
+        copy.put( 's', xmasMap.get( 's' ).copy() );
+        return copy;
+    }
+
     @Override
     public Long part1( Stream<String> input ) {
-        return null;
+        if ( workflows.isEmpty() ) {parseInput( input );}
+
+        Stack<SquashedRule> stack = new Stack<>();
+        stack.push( new SquashedRule( START, createXmasMap() ) );
+
+        Set<SquashedRule> completed = new HashSet<>();
+        while ( !stack.empty() ) {
+            SquashedRule current = stack.pop();
+            switch ( current.workflow().charAt( 0 ) ) {
+                case ACCEPT, REJECT -> completed.add( current );
+                default -> getFollowers( current ).forEach( stack::push );
+            }
+        }
+        return completed.stream().filter( SquashedRule::isAccepted ).mapToLong( SquashedRule::combinations ).sum();
     }
 
     String process( Part p, Workflow w ) {
@@ -75,6 +101,45 @@ public class Day19 extends Day<Long> {
 
     record Part(int x, int m, int a, int s) {
         int sum() {return x + m + a + s;}
+    }
+
+    static Map<Character, Interval> createXmasMap() {
+        Map<Character, Interval> xmasMap = new HashMap<>();
+        xmasMap.put( 'x', new Interval( 0, 4000 ) );
+        xmasMap.put( 'm', new Interval( 0, 4000 ) );
+        xmasMap.put( 'a', new Interval( 0, 4000 ) );
+        xmasMap.put( 's', new Interval( 0, 4000 ) );
+        return xmasMap;
+    }
+
+    List<SquashedRule> getFollowers( SquashedRule rule ) {
+        return workflows.get( rule.workflow() ).rules().stream().map( rule::squash ).toList();
+    }
+
+    record SquashedRule(String workflow, Map<Character, Interval> map) {
+        long combinations() {
+            return map.values().stream().mapToLong( v -> v.length() - 1 ).reduce( 1, ( a, b ) -> a * b );
+        }
+
+        boolean isAccepted() {
+            return workflow.charAt( 0 ) == ACCEPT;
+        }
+
+        SquashedRule squash( Rule rule ) {
+            System.out.println( this + " with " + rule );
+            if ( rule.xmas == null ) { //the rule is the default, and does nothing
+                return new SquashedRule( rule.target, this.map ); //needs no copy
+            }
+            SquashedRule squashedRule = new SquashedRule( rule.target(), deepCopy( map() ) );
+            Interval xmas = squashedRule.map.get( rule.xmas );
+            if ( rule.greater() ) {
+                xmas.setLower( rule.threshold == 0 ? xmas.getLower() : Math.max( rule.threshold, xmas.getLower() ) );
+            }
+            else {
+                xmas.setUpper( rule.threshold == 0 ? xmas.getUpper() : Math.min( rule.threshold, xmas.getUpper() ) );
+            }
+            return squashedRule;
+        }
     }
 
     record Rule(Character xmas, boolean greater, int threshold, String target) {
