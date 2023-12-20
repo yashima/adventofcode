@@ -72,7 +72,7 @@ public class Day19 extends Day<Long> {
 
     @Override
     public Long part1( Stream<String> input ) {
-        if ( workflows.isEmpty() ) {parseInput( input );}
+        parseInput( input );
 
         Stack<SquashedRule> stack = new Stack<>();
         stack.push( new SquashedRule( START, createXmasMap() ) );
@@ -116,55 +116,8 @@ public class Day19 extends Day<Long> {
         return workflows.get( rule.workflow() ).rules().stream().map( rule::squash ).toList();
     }
 
-    record SquashedRule(String workflow, Map<Character, Interval> map) {
-        long combinations() {
-            long reduce = map.values().stream().mapToLong( Interval::length ).peek( System.out::println ).reduce( 1, ( a, b ) -> a * b );
-            System.out.println( "Product " + reduce );
-            return reduce;
-        }
-
-        boolean isAccepted() {
-            return workflow.charAt( 0 ) == ACCEPT;
-        }
-
-        SquashedRule squash( Rule rule ) {
-            System.out.println( this + " with " + rule );
-            if ( rule.xmas == null ) { //the rule is the default, and does nothing
-                return new SquashedRule( rule.target, map() ); //needs no copy b/c only 1 default rule per workflow
-            }
-            SquashedRule squashedRule = new SquashedRule( rule.target(), deepCopy( map() ) );
-            Interval originalXmas = map.get( rule.xmas );
-            Interval xmas = squashedRule.map.get( rule.xmas );
-            if ( rule.threshold == 0 ) {
-                //do nothing to the interval
-            }
-            else if ( rule.greater() ) {
-                xmas.setLower( Math.max( rule.threshold + 1, xmas.getLower() ) );
-                originalXmas.setUpper( Math.min( rule.threshold, originalXmas.getUpper() ) );
-            }
-            else {
-                xmas.setUpper( Math.min( rule.threshold - 1, xmas.getUpper() ) );
-                originalXmas.setLower( Math.max( rule.threshold, originalXmas.getLower() ) );
-            }
-            return squashedRule;
-        }
-    }
-
-    record Rule(Character xmas, boolean greater, int threshold, String target) {
-        boolean satisfiedBy( Part part ) {
-            if ( xmas == null ) {return true;}
-            Integer cat = fXmas( xmas ).apply( part );
-            return greater ? cat > threshold : cat < threshold;
-        }
-    }
-
-    record Workflow(String id, List<Rule> rules) {
-        boolean accept( Part p ) {
-            return true;
-        }
-    }
-
     private List<Part> parseInput( Stream<String> input ) {
+        workflows.clear();
         List<Part> parts = new ArrayList<>();
         input.forEach( line -> {
             Matcher m1 = pWorkflow.matcher( line );
@@ -193,5 +146,50 @@ public class Day19 extends Day<Long> {
             }
         } );
         return parts;
+    }
+
+    record Rule(Character xmas, boolean greater, int threshold, String target) {
+        boolean satisfiedBy( Part part ) {
+            if ( xmas == null ) {return true;}
+            Integer cat = fXmas( xmas ).apply( part );
+            return greater ? cat > threshold : cat < threshold;
+        }
+    }
+
+    record Workflow(String id, List<Rule> rules) {
+        boolean accept( Part p ) {
+            return true;
+        }
+    }
+
+    record SquashedRule(String workflow, Map<Character, Interval> map) {
+        long combinations() {
+            return map.values().stream().mapToLong( Interval::length ).reduce( 1, ( a, b ) -> a * b );
+        }
+
+        boolean isAccepted() {
+            return workflow.charAt( 0 ) == ACCEPT;
+        }
+
+        SquashedRule squash( Rule rule ) {
+            if ( rule.xmas == null ) { //the rule is the default, and does nothing
+                return new SquashedRule( rule.target, map() ); //needs no copy b/c only 1 default rule per workflow
+            }
+            SquashedRule squashedRule = new SquashedRule( rule.target(), deepCopy( map() ) );
+            Interval originalXmas = map.get( rule.xmas );
+            Interval xmas = squashedRule.map.get( rule.xmas );
+            if ( rule.threshold == 0 ) {
+                //do nothing to the interval
+            }
+            else if ( rule.greater() ) {
+                xmas.setLower( Math.max( rule.threshold + 1, xmas.getLower() ) );
+                originalXmas.setUpper( Math.min( rule.threshold, originalXmas.getUpper() ) );
+            }
+            else {
+                xmas.setUpper( Math.min( rule.threshold - 1, xmas.getUpper() ) );
+                originalXmas.setLower( Math.max( rule.threshold, originalXmas.getLower() ) );
+            }
+            return squashedRule;
+        }
     }
 }
