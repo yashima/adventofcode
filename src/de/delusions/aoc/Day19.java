@@ -99,9 +99,6 @@ public class Day19 extends Day<Long> {
         };
     }
 
-    record Part(int x, int m, int a, int s) {
-        int sum() {return x + m + a + s;}
-    }
 
     static Map<Character, Interval> createXmasMap() {
         Map<Character, Interval> xmasMap = new HashMap<>();
@@ -148,6 +145,11 @@ public class Day19 extends Day<Long> {
         return parts;
     }
 
+    record Part(int x, int m, int a, int s) {
+        int sum() {return x + m + a + s;}
+    }
+
+
     record Rule(Character xmas, boolean greater, int threshold, String target) {
         boolean satisfiedBy( Part part ) {
             if ( xmas == null ) {return true;}
@@ -156,11 +158,7 @@ public class Day19 extends Day<Long> {
         }
     }
 
-    record Workflow(String id, List<Rule> rules) {
-        boolean accept( Part p ) {
-            return true;
-        }
-    }
+    record Workflow(String id, List<Rule> rules) {}
 
     record SquashedRule(String workflow, Map<Character, Interval> map) {
         long combinations() {
