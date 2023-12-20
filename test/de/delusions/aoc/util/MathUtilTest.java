@@ -18,4 +18,10 @@ public class MathUtilTest {
     public void testMultiply() {
         assertThat( MathUtil.calculatePrimeFactors( 144 ).stream().reduce( ( a, b ) -> a * b ).orElse( -1 ) ).isEqualTo( 144 );
     }
+
+    @Test
+    public void testBigPrime() {
+        System.out.println( MathUtil.calculateBiggerPrimeFactors( 167409079868000L ) );
+    }
+
 }

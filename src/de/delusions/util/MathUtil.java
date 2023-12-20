@@ -25,6 +25,25 @@ public class MathUtil {
         return factors;
     }
 
+    public static List<Long> calculateBiggerPrimeFactors( long number ) {
+        List<Long> factors = new ArrayList<>();
+        if ( number == 1 ) {
+            return factors;
+        }
+        long factor = 2;
+        while ( factor * factor <= number ) {
+            while ( number % factor == 0 ) {
+                factors.add( factor );
+                number = number / factor;
+            }
+            factor++;
+        }
+        if ( number != 1 ) {
+            factors.add( number );
+        }
+        return factors;
+    }
+
     public static BigInteger calculateSmallestCommonMultiple( List<List<Integer>> numbers ) {
         List<Integer> commonFactors = new ArrayList<>();
         for ( int i = 0; i < numbers.size(); i++ ) {
