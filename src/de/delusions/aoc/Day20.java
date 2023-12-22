@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -23,14 +24,12 @@ public class Day20 extends Day<Long> {
 
     public Day20( Long... expected ) {super( 20, "Pulse Propagations", expected );}
 
-
-
     Pattern p = Pattern.compile( "^([%&])*([a-z]+) -> (.*)$" );
 
     @Override
     public Long part0( Stream<String> input ) {
         Map<String, Module> moduleMap = parseInput( input );
-        pressButton( moduleMap, 1000 );
+        pressButton( moduleMap, mm -> mm.get( BUTTON ).getLow() < 1000 );
         long lowSum = moduleMap.values().stream().mapToLong( Module::getLow ).sum();
         long highSum = moduleMap.values().stream().mapToLong( Module::getHigh ).sum();
         return lowSum * highSum;
@@ -38,8 +37,12 @@ public class Day20 extends Day<Long> {
 
     @Override
     public Long part1( Stream<String> input ) {
-        parseInput( input );
-        return null;
+        if ( isTestMode() ) {
+            return 0L;
+        }
+        Map<String, Module> moduleMap = parseInput( input );
+        pressButton( moduleMap, mm -> mm.get( "rx" ).getLow() != 1 );
+        return moduleMap.get( BUTTON ).getLow();
     }
 
     Map<String, Module> parseInput( Stream<String> input ) {
@@ -87,11 +90,14 @@ public class Day20 extends Day<Long> {
         return moduleMap;
     }
 
-    void pressButton( Map<String, Module> moduleMap, int buttonPresses ) {
+    void pressButton( Map<String, Module> moduleMap, Function<Map<String, Module>, Boolean> keepPressing ) {
         Stack<PulseState> stack = new Stack<>();
 
-        while ( moduleMap.get( BUTTON ).getLow() < buttonPresses ) {
+        while ( keepPressing.apply( moduleMap ) ) {
             stack.push( new PulseState( null, BUTTON, LOW ) );
+            if ( moduleMap.get( BUTTON ).getLow() % 10000 == 0 ) {
+                System.out.println( "Nope" );
+            }
             while ( !stack.isEmpty() ) {
                 PulseState current = stack.pop();
                 Module module = moduleMap.get( current.to );

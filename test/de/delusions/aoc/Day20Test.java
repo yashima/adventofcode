@@ -1,6 +1,5 @@
 package de.delusions.aoc;
 
-import de.delusions.aoc.Day20.*;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
@@ -107,7 +106,7 @@ public class Day20Test {
         moduleMap.put( "con", new Conjunction( "con", List.of( "output" ) ).addInput( "a" ).addInput( "b" ) );
         moduleMap.put( "output", new Endpoint( "output" ) );
 
-        new Day20().pressButton( moduleMap, 1 );
+        new Day20().pressButton( moduleMap, mm -> mm.get( "button" ).getLow() < 1 );
         assertThat( moduleMap.get( "button" ).getLow() ).isEqualTo( 1 );
         assertThat( moduleMap.get( "button" ).getHigh() ).isEqualTo( 0 );
         assertThat( moduleMap.get( "broadcaster" ).getLow() ).isEqualTo( 1 );
