@@ -110,6 +110,15 @@ public class Matrix {
         return matrix[x][y];
     }
 
+    /* sometimes we have an endless matrix and just want coordinates values */
+    public int getRelativeValue( Coordinates c ) {
+        return matrix[convert( c.x, getXLength() )][convert( c.y, getYLength() )];
+    }
+
+    private int convert( int val, int len ) {
+        return val > 0 ? val % len : ( ( val % len ) + len ) % len;
+    }
+
     public void setAllValuesRow( int y, int value ) {
         for ( int i = 0; i < matrix.length; i++ ) {
             matrix[i][y] = value;
