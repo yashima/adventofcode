@@ -23,14 +23,14 @@ public class Day20 extends Day<Long> {
 
     public Day20( Long... expected ) {super( 20, "Pulse Propagations", expected );}
 
-    Map<String, Module> moduleMap = new HashMap<>();
+
 
     Pattern p = Pattern.compile( "^([%&])*([a-z]+) -> (.*)$" );
 
     @Override
     public Long part0( Stream<String> input ) {
-        parseInput( input );
-        pressButton( 1000 );
+        Map<String, Module> moduleMap = parseInput( input );
+        pressButton( moduleMap, 1000 );
         long lowSum = moduleMap.values().stream().mapToLong( Module::getLow ).sum();
         long highSum = moduleMap.values().stream().mapToLong( Module::getHigh ).sum();
         return lowSum * highSum;
@@ -42,8 +42,8 @@ public class Day20 extends Day<Long> {
         return null;
     }
 
-    private void parseInput( Stream<String> input ) {
-        moduleMap.clear();
+    Map<String, Module> parseInput( Stream<String> input ) {
+        Map<String, Module> moduleMap = new HashMap<>();
 
         input.forEach( line -> {
             Matcher m = p.matcher( line );
@@ -52,12 +52,9 @@ public class Day20 extends Day<Long> {
                 String id = m.group( 2 );
                 List<String> receivers = Arrays.stream( m.group( 3 ).split( "," ) ).map( String::trim ).toList();
                 switch ( type ) {
-                    case '&':
-                        moduleAdd( new Conjunction( id, receivers ) );
-                    case '%':
-                        moduleAdd( new FlipFlop( id, receivers ) );
-                    default:
-                        moduleAdd( new Broadcaster( receivers ) );
+                    case '&' -> moduleMap.put( id, new Conjunction( id, receivers ) );
+                    case '%' -> moduleMap.put( id, new FlipFlop( id, receivers ) );
+                    default -> moduleMap.put( BROADCASTER, new Broadcaster( receivers ) );
                 }
             }
             else {
@@ -66,7 +63,7 @@ public class Day20 extends Day<Long> {
         } );
 
         //add start
-        moduleAdd( new Button() );
+        moduleMap.put( BUTTON, new Button() );
 
         //find any modules referenced as receivers but not defined:
         List<Endpoint> endpoints = moduleMap.values()
@@ -78,29 +75,32 @@ public class Day20 extends Day<Long> {
                                             .map( Endpoint::new )
                                             .toList();
         //needs to be after the processing or concurrent modification:
-        endpoints.forEach( this::moduleAdd );
+        endpoints.forEach( e -> moduleMap.put( e.id, e ) );
+
+        //now find me all the inputs for all the conjunctions and add them.
+        moduleMap.values().stream().filter( m -> m instanceof Conjunction ).forEach( conjunction -> {
+            moduleMap.values().stream().filter( in -> in.receivers.contains( conjunction.id ) ).forEach( in -> {
+                ( (Conjunction) conjunction ).addInput( in.id );
+            } );
+        } );
+
+        return moduleMap;
     }
 
-    private void pressButton( int buttonPresses ) {
+    void pressButton( Map<String, Module> moduleMap, int buttonPresses ) {
         Stack<PulseState> stack = new Stack<>();
 
-        while ( !stack.isEmpty() || moduleMap.get( BUTTON ).getLow() <= buttonPresses ) {
-            if ( stack.isEmpty() ) {
-                stack.push( new PulseState( null, BUTTON, LOW ) );
+        while ( moduleMap.get( BUTTON ).getLow() < buttonPresses ) {
+            stack.push( new PulseState( null, BUTTON, LOW ) );
+            while ( !stack.isEmpty() ) {
+                PulseState current = stack.pop();
+                Module module = moduleMap.get( current.to );
+                List<PulseState> next = module.sendAndGetReceivers( current.from, current.p );
+                stack.addAll( next );
             }
-            PulseState current = stack.pop();
-            Module module = moduleMap.get( current.to );
-            if ( module == null ) {
-                throw new IllegalStateException( "Module '" + current.to + "' not found" );
-            }
-            List<PulseState> next = module.sendAndGetReceivers( current.from, current.p );
-            stack.addAll( next );
         }
     }
 
-    void moduleAdd( Module module ) {
-        this.moduleMap.put( module.id, module );
-    }
 
     enum Pulse {HIGH, LOW}
 
@@ -126,10 +126,19 @@ public class Day20 extends Day<Long> {
             super( id, targets );
         }
 
+        Conjunction addInput( String input ) {
+            inputs.put( input, LOW );
+            return this;
+        }
+
         @Override
         Pulse receiveAndSend( String from, Pulse receive ) {
             inputs.put( from, receive );
-            return inputs.values().stream().allMatch( p -> p == HIGH ) ? LOW : HIGH;
+            return isAllHigh() ? LOW : HIGH;
+        }
+
+        boolean isAllHigh() {
+            return inputs.values().stream().allMatch( p -> p == HIGH );
         }
     }
 
@@ -200,7 +209,7 @@ public class Day20 extends Day<Long> {
             return receivers;
         }
 
-        List<PulseState> sendAndGetReceivers( String from, Pulse receive ) {
+        public List<PulseState> sendAndGetReceivers( String from, Pulse receive ) {
             Pulse send = receiveAndSend( from, receive );
             if ( send == null ) {
                 return List.of();
@@ -214,7 +223,7 @@ public class Day20 extends Day<Long> {
 
         @Override
         public String toString() {
-            return "Module{" + "id='" + id + '\'' + ", targets=" + receivers + ", pulseCounter=" + lowCount + '}';
+            return "Module{" + "id='" + id + '\'' + ", receivers=" + receivers + ", lowCount=" + lowCount + ", highCount=" + highCount + '}';
         }
     }
 }
