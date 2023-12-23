@@ -2,6 +2,7 @@ package de.delusions.aoc;
 
 import de.delusions.util.Day;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,10 @@ public class Day20 extends Day<Long> {
 
     public static final String BROADCASTER = "broadcaster";
 
+
+    public static final String CONJUNCTION = "rs";
+
+
     public Day20( Long... expected ) {super( 20, "Pulse Propagations", expected );}
 
     Pattern p = Pattern.compile( "^([%&])*([a-z]+) -> (.*)$" );
@@ -35,15 +40,7 @@ public class Day20 extends Day<Long> {
         return lowSum * highSum;
     }
 
-    @Override
-    public Long part1( Stream<String> input ) {
-        if ( isTestMode() ) {
-            return 0L;
-        }
-        Map<String, Module> moduleMap = parseInput( input );
-        pressButton( moduleMap, mm -> mm.get( "rx" ).getLow() != 1 );
-        return moduleMap.get( BUTTON ).getLow();
-    }
+    static final Map<String, List<HighState>> TRACK_HIGH = new HashMap<>();
 
     Map<String, Module> parseInput( Stream<String> input ) {
         Map<String, Module> moduleMap = new HashMap<>();
@@ -90,23 +87,54 @@ public class Day20 extends Day<Long> {
         return moduleMap;
     }
 
+    static final AtomicLong RX_COUNTER = new AtomicLong( 0 );
+
+    @Override
+    public Long part1( Stream<String> input ) {
+        if ( isTestMode() ) {
+            return 0L;
+        }
+        Map<String, Module> moduleMap = parseInput( input );
+        pressButton( moduleMap, mm -> !( TRACK_HIGH.size() == 4 && TRACK_HIGH.values().stream().noneMatch( List::isEmpty ) ) );
+        pressButton( moduleMap, mm -> mm.get( BUTTON ).getLow() < 23000 );
+        TRACK_HIGH.forEach( ( a, b ) -> System.out.printf( "%s : %s%n", a, b ) );
+        List<List<Long>> list = TRACK_HIGH.values().stream().map( l -> l.stream().map( HighState::rxCount ).distinct().sorted().toList() ).toList();
+        //System.out.println("RX Cycles "+list);
+        List<Long> cycles = TRACK_HIGH.values().stream().map( List::getFirst ).map( HighState::cycle ).toList();
+        return cycles.stream().reduce( 1L, ( a, b ) -> a * b );
+    }
+
     void pressButton( Map<String, Module> moduleMap, Function<Map<String, Module>, Boolean> keepPressing ) {
         Stack<PulseState> stack = new Stack<>();
 
         while ( keepPressing.apply( moduleMap ) ) {
+            RX_COUNTER.set( 0 );
             stack.push( new PulseState( null, BUTTON, LOW ) );
-            if ( moduleMap.get( BUTTON ).getLow() % 10000 == 0 ) {
-                System.out.println( "Nope" );
-            }
             while ( !stack.isEmpty() ) {
                 PulseState current = stack.pop();
                 Module module = moduleMap.get( current.to );
+                if ( CONJUNCTION.equals( module.id ) ) {trackHigh( moduleMap );}
                 List<PulseState> next = module.sendAndGetReceivers( current.from, current.p );
+
                 stack.addAll( next );
             }
         }
     }
 
+    void trackHigh( Map<String, Module> moduleMap ) {
+        Conjunction rx = (Conjunction) moduleMap.get( CONJUNCTION );
+        RX_COUNTER.getAndIncrement();
+        long cycle = moduleMap.get( BUTTON ).getLow();
+        rx.inputs.forEach( ( key, value ) -> {
+            if ( value == HIGH ) {
+                Module module = moduleMap.get( key );
+                TRACK_HIGH.putIfAbsent( key, new ArrayList<>() );
+                TRACK_HIGH.get( key ).add( new HighState( RX_COUNTER.get(), cycle, module.getLow(), module.getHigh() ) );
+            }
+        } );
+    }
+
+    record HighState(long rxCount, long cycle, long low, long high) {}
 
     enum Pulse {HIGH, LOW}
 
