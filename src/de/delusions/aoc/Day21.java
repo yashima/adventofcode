@@ -7,6 +7,7 @@ import de.delusions.util.Day;
 import de.delusions.util.Direction;
 import de.delusions.util.Matrix;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,29 +20,32 @@ import java.util.stream.Stream;
 public class Day21 extends Day<Integer> {
     static final char ROCK = '#';
 
+    static int ODD_PLOTS = 7458;
+
+    static int EVEN_PLOTS = 7451;
+
     public Day21( Integer... expected ) {super( 21, "Step Counter", expected );}
 
     @Override
     public Integer part0( Stream<String> input ) {
         Matrix garden = Matrix.createFromStream( input );
-        return getNumberOfPlots( garden, isTestMode() ? 6 : 64 );
+        return getNumberOfPlots( garden, isTestMode() ? 6 : 130 );
     }
 
     @Override
     public Integer part1( Stream<String> input ) {
         Matrix garden = Matrix.createFromStream( input );
-        IntStream.range( 0, garden.getXLength() ).forEach( x -> {
-            Coordinates target = new Coordinates( x, 0 );
-            System.out.println( target + " " + findShortestPath( target, garden ) );
-        } );
-        return getNumberOfPlots( garden, isTestMode() ? 100 : 1 );
-    }
-
-    private int findShortestPath( Coordinates c, Matrix garden ) {
-        StepCounter start = new StepCounter( 0, garden.findValues( 'S', true ).getFirst(), c );
-        Dijkstra<StepCounter, Matrix> dijkstra = new Dijkstra<>( start );
-        StepCounter path = dijkstra.findBestPath( garden );
-        return path.steps;
+        if ( isTestMode() ) {
+            return getNumberOfPlots( garden, 131 );
+        }
+        int totalSteps = 26501365;
+        int simulation = 26501365 % garden.getXLength() + garden.getXLength();
+        BigInteger oddAndEven = BigInteger.valueOf( ODD_PLOTS + EVEN_PLOTS );
+        BigInteger missingFactor = BigInteger.valueOf( ( totalSteps - simulation ) / garden.getXLength() );
+        BigInteger thePointyBits = BigInteger.valueOf( getNumberOfPlots( garden, simulation ) - ODD_PLOTS );
+        BigInteger result = missingFactor.multiply( missingFactor ).divide( BigInteger.TWO ).multiply( oddAndEven ).add( thePointyBits );
+        System.out.println( result );//too low: 305074558240574
+        return -1;
     }
 
     private int getNumberOfPlots( Matrix garden, int stepsToTake ) {
@@ -59,14 +63,23 @@ public class Day21 extends Day<Integer> {
                 queue.addAll( stepCounter.getPlots( garden, true ) );
             }
         }
-        //found.forEach( c -> garden.setValue( c.theElf,'O' ) );
-        //System.out.println(garden);
+        //setting found values for visual + debugging purposes
+        found.forEach( c -> garden.setValueSafely( c.theElf, 'O', List.of( '#' ) ) );
         return found.size();
     }
 
-    //50 -> 1594 vs 1579
-    //100-> 6536 vs 6552
-    //500-> 167004
+    @Deprecated
+    void findSomePaths( Matrix garden ) {
+        //note: because the way I wrote this and that, hashCode & equals cannot contain the distance aka steps parameter! change to use
+        IntStream.range( 0, garden.getXLength() ).forEach( x -> {
+            Coordinates target = new Coordinates( x, 0 );
+            StepCounter start = new StepCounter( 0, garden.findValues( 'S', true ).getFirst(), target );
+            Dijkstra<StepCounter, Matrix> dijkstra = new Dijkstra<>( start );
+            StepCounter path = dijkstra.findBestPath( garden );
+            System.out.println( target + " " + path.steps );
+        } );
+    }
+
     record StepCounter(int steps, Coordinates theElf, Coordinates goTo) implements Pathable<StepCounter, Integer, Matrix>, Comparable<StepCounter> {
         boolean isDone() {
             return steps == 0;
@@ -84,12 +97,12 @@ public class Day21 extends Day<Integer> {
         public boolean equals( Object o ) {
             if ( this == o ) {return true;}
             if ( !( o instanceof StepCounter that ) ) {return false;}
-            return Objects.equals( theElf, that.theElf );
+            return steps == that.steps && Objects.equals( theElf, that.theElf );
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash( theElf );
+            return Objects.hash( steps, theElf );
         }
 
         @Override

@@ -307,5 +307,14 @@ public class Matrix {
         return Arrays.stream( getRow( index ) ).boxed().toList().reversed().stream().mapToInt( i -> i ).toArray();
     }
 
+    public void setValueSafely( Coordinates theElf, char o, List<Character> filter ) {
+        if ( isInTheMatrix( theElf ) ) {
+            if ( !filter.contains( (char) getValue( theElf ) ) ) {
+                setValue( theElf, o );
+            }
+        }
+        //only set value if in matrix, else ignore
+    }
+
     public record IndexedRow(int index, int[] row) {}
 }
