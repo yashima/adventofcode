@@ -1,11 +1,16 @@
 package de.delusions.util;
 
 import java.util.Objects;
+import java.util.stream.IntStream;
 
+/**
+ * Class representing an interval with a lower and upper boundary, both inclusive.
+ */
 public class Interval implements Comparable<Interval> {
     long lower;
 
     long upper;
+
 
     public Interval( String lower, String upper ) {
         this( Long.parseLong( lower ), Long.parseLong( upper ) );
@@ -34,6 +39,10 @@ public class Interval implements Comparable<Interval> {
 
     public boolean overlap( Interval bar ) {
         return this.lower <= bar.lower && bar.lower <= this.upper || this.lower > bar.lower && this.lower <= bar.upper;
+    }
+
+    public IntStream stream() {
+        return IntStream.range( (int) this.lower, (int) this.upper + ( upper == lower ? +1 : 0 ) );
     }
 
     public Interval intersect( Interval bar ) {
