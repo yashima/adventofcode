@@ -6,6 +6,8 @@ import de.delusions.util.Interval;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,6 +22,18 @@ public class Day22 extends Day<Integer> {
 
     @Override
     public Integer part0( Stream<String> input ) {
+        List<Brick> stackedList = parseAndFallBricks( input );
+        return (int) stackedList.stream().filter( b -> b.canDisintegrate( stackedList ) ).count();
+    }
+
+
+    @Override
+    public Integer part1( Stream<String> input ) {
+        List<Brick> stackedList = parseAndFallBricks( input );
+        return stackedList.stream().mapToInt( b -> b.findConsequences( stackedList ).size() ).sum();
+    }
+
+    private List<Brick> parseAndFallBricks( Stream<String> input ) {
         AtomicInteger brickCounter = new AtomicInteger( 1 );
         List<Brick> bricks = input.map( line -> {
             Matcher m = p.matcher( line );
@@ -47,18 +61,13 @@ public class Day22 extends Day<Integer> {
             else {
                 int top = overlaps.stream().mapToInt( Brick::getTop ).max().getAsInt();
                 Brick stacked = brick.fallTo( top + 1 );
-                overlaps.stream().filter( b -> b.getTop() == top ).forEach( b -> b.supports().add( stacked.num() ) );
+                overlaps.stream().filter( b -> b.getTop() == top ).forEach( b -> b.supports().add( stacked ) );
                 stackedList.add( stacked );
             }
         }
-
-        return (int) stackedList.stream().filter( b -> b.canDisintegrate( stackedList ) ).count();
+        return stackedList;
     }
 
-    @Override
-    public Integer part1( Stream<String> input ) {
-        return null;
-    }
 
     record Dim(int x, int y, int z) {
         Dim moveDownTo( int zz ) {
@@ -66,7 +75,7 @@ public class Day22 extends Day<Integer> {
         }
     }
 
-    record Brick(int num, Dim corner1, Dim corner2, Set<Integer> supports) implements Comparable<Brick> {
+    record Brick(int num, Dim corner1, Dim corner2, Set<Brick> supports) implements Comparable<Brick> {
         Interval vertical() {
             return new Interval( getBottom(), getTop() );
         }
@@ -78,6 +87,18 @@ public class Day22 extends Day<Integer> {
         //area of a brick is X-Y:
         boolean overlapArea( Brick o ) {
             return northSouth().overlap( o.northSouth() ) && eastWest().overlap( o.eastWest() );
+        }
+
+        @Override
+        public boolean equals( Object o ) {
+            if ( this == o ) {return true;}
+            if ( !( o instanceof Brick brick ) ) {return false;}
+            return num == brick.num && Objects.equals( corner1, brick.corner1 ) && Objects.equals( corner2, brick.corner2 );
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash( num, corner1, corner2 );
         }
 
         Interval northSouth() {
@@ -101,6 +122,31 @@ public class Day22 extends Day<Integer> {
                 return true;
             }
             return supports().stream().allMatch( n -> bricks.stream().anyMatch( b -> b.num() != this.num() && b.supports().contains( n ) ) );
+        }
+
+        /* entry point for consequential recursion */
+        List<Brick> findConsequences( List<Brick> bricks ) {
+            if ( canDisintegrate( bricks ) ) {
+                return List.of();
+            }
+            List<Brick> stillStandingBricks = new ArrayList<>( bricks );
+            stillStandingBricks.remove( this );
+            return findConsequencesRecursive( stillStandingBricks );
+        }
+
+        //the actual recursion checks if the supported blocks have any other supports,
+        //if they don't have any, it adds them to the conseqeunces and calculates recursive consequences
+        List<Brick> findConsequencesRecursive( List<Brick> stillStanding ) {
+            List<Brick> consequences = new ArrayList<>();
+            for ( Brick supported : supports() ) {
+                Optional<Brick> any = stillStanding.stream().filter( b -> b.supports().contains( supported ) ).findAny();
+                if ( any.isEmpty() ) { //block is no longer supported
+                    stillStanding.remove( supported );
+                    consequences.add( supported );
+                    consequences.addAll( supported.findConsequencesRecursive( stillStanding ) );
+                }
+            }
+            return consequences;
         }
 
         Brick fallTo( int z ) {
