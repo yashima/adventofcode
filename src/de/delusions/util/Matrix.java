@@ -48,6 +48,10 @@ public class Matrix {
         this.yOffset = yOffset;
     }
 
+    public int size() {
+        return getXLength() * getYLength();
+    }
+
     public Matrix( int xDim, int yDim, int xOffset, int yOffset ) {
         this( new int[xDim][yDim], xOffset, yOffset );
     }

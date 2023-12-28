@@ -8,6 +8,8 @@ public class Dijkstra<PATH extends Pathable<PATH, ?, MAP>, MAP> {
 
     private final PATH start;
 
+    private Set<PATH> visited;
+
     public Dijkstra( PATH start ) {
         this.start = start;
     }
@@ -16,9 +18,13 @@ public class Dijkstra<PATH extends Pathable<PATH, ?, MAP>, MAP> {
         return start;
     }
 
+    public Set<PATH> getVisited() {
+        return visited;
+    }
+
     public PATH findBestPath( MAP theMap ) {
         PriorityQueue<PATH> opens = new PriorityQueue<>();
-        Set<PATH> visited = new HashSet<>();
+        visited = new HashSet<>();
 
         //we don't really need start in visited because it gets added in the loop
         opens.add( start );
