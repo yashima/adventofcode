@@ -1,4 +1,4 @@
-package de.delusions.aoc.util;
+package de.delusions.util;
 
 import java.util.ArrayList;
 import java.util.Comparator;
