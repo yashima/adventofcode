@@ -27,4 +27,4 @@ target/
 hs_err_pid*
 replay_pid*
 src/main/resources/config.properties
-src/main/resources/inputs/prod
+src/main/resources/inputs
