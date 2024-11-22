@@ -1,7 +1,10 @@
 package de.delusions.tools;
 
-import java.io.FileInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -11,23 +14,27 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class InputDownloader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InputDownloader.class);
+    private static final Logger LOG=LoggerFactory.getLogger(InputDownloader.class);;
 
     private static String sessionCookie;
     private static String inputStoragePath;
     private static final HttpClient client = HttpClient.newBuilder().build();
+    private static final Properties properties = new Properties();
 
     public static void loadProperties() throws IOException {
-        Properties properties = new Properties();
-        try (FileInputStream fis = new FileInputStream("config.properties")) {
-            properties.load(fis);
+        try (InputStream input = InputDownloader.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                LOG.error("Sorry, unable to find config.properties");
+                return;
+            }
+            properties.load(input);
             sessionCookie = properties.getProperty("session.cookie");
             inputStoragePath = properties.getProperty("input.storage.path");
+        } catch (IOException ex) {
+            LOG.error("Exception: " + ex.getMessage());
         }
     }
 
@@ -46,7 +53,7 @@ public class InputDownloader {
             return;
         }
 
-        String url = "https://adventofcode.com/" + year + "/day/" + day + "/input";
+        String url = String.format("https://adventofcode.com/%s/day/%s/input",year,day);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("cookie", "session=" + sessionCookie)
@@ -70,16 +77,14 @@ public class InputDownloader {
 
     public static void main(String[] args) {
         try {
-            // Load properties from config file
             loadProperties();
 
-            // Download input for each day
             int year = 2023;
             for (int day = 1; day <= 24; day++) {
                 downloadInput(year, day);
             }
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            LOG.error("Exception: " + e.getMessage());
         }
     }
 }
