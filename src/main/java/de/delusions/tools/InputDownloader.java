@@ -1,5 +1,7 @@
 package de.delusions.tools;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +79,7 @@ public class InputDownloader {
         }
     }
 
-    private static final String TITLE_REGEX = "^---\\s*Day\\s+\\d+:\\s*(.*?)\\s*---$";
+    private static final String TITLE_REGEX = "^---\\s*Day\\s+(\\d+):\\s*(.*?)\\s*---$";
     private static final Pattern TITLE_PATTERN = Pattern.compile(TITLE_REGEX);
     private void downloadExamples() throws IOException, InterruptedException {
         Path filePath = getPath("examples");
@@ -90,19 +92,54 @@ public class InputDownloader {
         if (body != null) {
 
             Document document = Jsoup.parse(body);
+            JSONArray testCases = new JSONArray();
             String tagline = document.selectFirst("h2").text();
             Matcher matcher = TITLE_PATTERN.matcher(tagline);
+            JSONObject day = new JSONObject();
+            day.put("url",url);
             if (matcher.matches()) {
-                tagline = matcher.group(1);
+                day.put("day", Integer.parseInt(matcher.group(1)));
+                day.put("tagline", matcher.group(2));
+                day.put("tests",testCases);
+
             }
-            Elements codeBlocks = document.select("pre code");
-            StringBuilder sb = new StringBuilder(tagline);
+            Elements codeBlocks = document.select("pre code, code em");
+
+            JSONObject testCase=null;
+            Class<?> type = String.class;
             for (Element codeBlock : codeBlocks) {
-                sb.append("\n-----------------------\n");
-                sb.append(codeBlock.text());
+
+                if(testCase!=null && codeBlock.tagName().equals("em")){
+                    String value = codeBlock.wholeText();
+                    try {
+                        Integer number = Integer.parseInt(value);
+                        type = Integer.class;
+                        testCase.getJSONArray("solutions").put(number);
+                    } catch (NumberFormatException e) {
+                        testCase.getJSONArray("solutions").put(value);
+                    }
+                } else if(codeBlock.tagName().equals("code")) {
+                    //do previous one
+                    if(testCase!=null) {
+                        testCases.put(testCase);
+                    }
+                    testCase = new JSONObject();
+                    testCase.put("solutions", new JSONArray());
+                    testCase.put("input", codeBlock.wholeText());
+                }
             }
-            saveToFile(filePath, sb.toString());
+            day.put("type",type);
+
+            testCases.put(testCase);
+            saveToFile(filePath, day.toString(2));
         }
+    }
+
+    private JSONObject getJSONArray(String solution, String testcase) {
+        JSONObject result = new JSONObject();
+        result.put("test",testcase);
+        result.put("solution", solution);
+        return result;
     }
 
     private void saveToFile(Path path, String content) throws IOException {
@@ -120,7 +157,7 @@ public class InputDownloader {
             LocalDate currentDate = LocalDate.now();
 
             int year = 2023;
-            for (int day = 1; day <= 24; day++) {
+            for (int day = 1; day <= 25; day++) {
                 LocalDate targetDate = LocalDate.of(year, 12, day);
                 if (!targetDate.isBefore(currentDate)) {
                     LOG.info("The specified date is not in the past. Skipping download for day {}", day);

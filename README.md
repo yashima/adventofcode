@@ -12,8 +12,16 @@ So my solutions will be written in java.
 
 The repository is set up like this:
 * main branch contains my utility classes and a template to start the new year with
-* for each year that I have participated I have created a branch called advent-YYYY that contains the "release" of my solutions as far as I got
+* for each year that I have participated I have created a branch called `advent-YYYY` that contains the "release" of my solutions as far as I got
 * changes to the utility files will be cherry-picked back to main.
 
 I realize this is probably an unusual structure but it is the best I could come up with that allows me to easily share my 
 utility classes with myself each year and develop them "inline" with the solutions. I am not keen on writing a library for that. 
+
+## Input Downloader
+
+I have recently added a class that helps manage my inputs and the tests described on the page for each puzzle. In order to use that
+a `config.properties` file with the following properties has to be placed in the `resources/` directory:
+
+* `session.cookie`
+* `input.storage.path`
