@@ -1,6 +1,8 @@
 package de.delusions.util;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Stream;
 
 public abstract class Day<T> {
@@ -58,6 +60,22 @@ public abstract class Day<T> {
         } catch (IOException e) {
             System.err.println("Input could not be retrieved: " + e.getMessage());
             return null;
+        }
+    }
+
+    public static Day<?> loadDayClass(int dayNumber, Object... args) {
+        try {
+            String className = "de.delusions.aoc.days.Day" + dayNumber;
+            Class<?> dayClass = Class.forName(className);
+            Constructor<?>[] constructors = dayClass.getConstructors();
+            for(Constructor<?> constructor : constructors) {
+                if(constructor.getParameterCount() == args.length) {
+                    return (Day<?>) constructor.newInstance(args);
+                }
+            }
+            throw new IllegalArgumentException("No constructor found for day: " + dayNumber);
+        } catch (ClassNotFoundException|InvocationTargetException|InstantiationException|IllegalAccessException e) {
+            throw new IllegalArgumentException("Class not found for day: " + dayNumber, e);
         }
     }
 

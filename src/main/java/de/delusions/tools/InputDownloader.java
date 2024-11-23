@@ -2,26 +2,26 @@ package de.delusions.tools;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.Properties;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.*;
-import org.jsoup.nodes.*;
-import org.jsoup.select.*;
+import static de.delusions.tools.ConfigProperties.*;
 
 /**
  * The InputDownloader class is responsible for downloading inputs and examples
@@ -34,13 +34,11 @@ import org.jsoup.select.*;
 public class InputDownloader {
 
     private static final Logger LOG = LoggerFactory.getLogger(InputDownloader.class);
-    ;
 
-    private static String sessionCookie;
-    private static String inputStoragePath;
     private static final HttpClient client = HttpClient.newBuilder().build();
-    private static final Properties properties = new Properties();
+    public record Example(String input, List<String> solutions) {}
 
+    public record DayExamples(String tagline, int day, String url, List<Example> tests) {}
     private final int day;
     private final int year;
 
@@ -52,7 +50,7 @@ public class InputDownloader {
     private String makeHttpRequest(String url) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("cookie", "session=" + sessionCookie)
+                .header("cookie", "session=" + config.sessionCookie())
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -67,7 +65,7 @@ public class InputDownloader {
     }
 
     public void downloadInput() throws IOException, InterruptedException {
-        Path filePath = getPath("input");
+        Path filePath = getInputPath(day);
         if (Files.exists(filePath)) {
             LOG.info("File {} already exists. Skipping download.", filePath.getFileName());
             return;
@@ -82,7 +80,7 @@ public class InputDownloader {
     private static final String TITLE_REGEX = "^---\\s*Day\\s+(\\d+):\\s*(.*?)\\s*---$";
     private static final Pattern TITLE_PATTERN = Pattern.compile(TITLE_REGEX);
     private void downloadExamples() throws IOException, InterruptedException {
-        Path filePath = getPath("examples");
+        Path filePath = getExamplePath(day);
         if (Files.exists(filePath)) {
             LOG.info("File {} already exists. Skipping download.", filePath.getFileName());
             return;
@@ -106,18 +104,11 @@ public class InputDownloader {
             Elements codeBlocks = document.select("pre code, code em");
 
             JSONObject testCase=null;
-            Class<?> type = String.class;
             for (Element codeBlock : codeBlocks) {
 
                 if(testCase!=null && codeBlock.tagName().equals("em")){
                     String value = codeBlock.wholeText();
-                    try {
-                        Integer number = Integer.parseInt(value);
-                        type = Integer.class;
-                        testCase.getJSONArray("solutions").put(number);
-                    } catch (NumberFormatException e) {
-                        testCase.getJSONArray("solutions").put(value);
-                    }
+                    testCase.getJSONArray("solutions").put(value);
                 } else if(codeBlock.tagName().equals("code")) {
                     //do previous one
                     if(testCase!=null) {
@@ -128,34 +119,20 @@ public class InputDownloader {
                     testCase.put("input", codeBlock.wholeText());
                 }
             }
-            day.put("type",type);
-
             testCases.put(testCase);
             saveToFile(filePath, day.toString(2));
         }
     }
 
-    private JSONObject getJSONArray(String solution, String testcase) {
-        JSONObject result = new JSONObject();
-        result.put("test",testcase);
-        result.put("solution", solution);
-        return result;
-    }
-
     private void saveToFile(Path path, String content) throws IOException {
-        Files.createDirectories(path.getParent()); // Create directories if they do not exist
+        Files.createDirectories(path.getParent());
         Files.writeString(path, content);
-    }
-
-    private Path getPath(String type) {
-        return Paths.get(inputStoragePath, String.format("%s_day_%s.txt", type, day));
     }
 
     public static void main(String[] args) {
         try {
-            loadProperties();
+            ConfigProperties.loadProperties();
             LocalDate currentDate = LocalDate.now();
-
             int year = 2023;
             for (int day = 1; day <= 25; day++) {
                 LocalDate targetDate = LocalDate.of(year, 12, day);
@@ -172,15 +149,5 @@ public class InputDownloader {
         }
     }
 
-    public static void loadProperties() throws IOException {
-        try (InputStream input = InputDownloader.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (input == null) {
-                LOG.error("Sorry, unable to find config.properties");
-                return;
-            }
-            properties.load(input);
-            sessionCookie = properties.getProperty("session.cookie");
-            inputStoragePath = properties.getProperty("input.storage.path");
-        }
-    }
+
 }
