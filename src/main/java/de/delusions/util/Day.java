@@ -1,5 +1,7 @@
 package de.delusions.util;
 
+import de.delusions.tools.ConfigProperties;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -54,8 +56,12 @@ public abstract class Day<T> {
 
     public Stream<String> getInput(boolean test, int part) {
         try {
-
-            return new Input(day, test, part).getStream();
+            ConfigProperties.loadProperties();
+            if (test) {
+                return ConfigProperties.getExampleStream(day, part);
+            } else {
+                return ConfigProperties.getInputStream(day, part);
+            }
 
         } catch (IOException e) {
             System.err.println("Input could not be retrieved: " + e.getMessage());

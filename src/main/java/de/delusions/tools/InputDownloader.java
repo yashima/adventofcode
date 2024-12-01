@@ -39,12 +39,15 @@ public class InputDownloader {
     public record Example(String input, List<String> solutions) {}
 
     public record DayExamples(String tagline, int day, String url, List<Example> tests) {}
+
     private final int day;
     private final int year;
+    private final int part;
 
-    InputDownloader(int year, int day) {
+    InputDownloader(int year, int day, int part) {
         this.year = year;
         this.day = day;
+        this.part = part;
     }
 
     private String makeHttpRequest(String url) throws IOException, InterruptedException {
@@ -65,7 +68,7 @@ public class InputDownloader {
     }
 
     public void downloadInput() throws IOException, InterruptedException {
-        Path filePath = getInputPath(day);
+        Path filePath = getInputPath(day, part);
         if (Files.exists(filePath)) {
             LOG.info("File {} already exists. Skipping download.", filePath.getFileName());
             return;
@@ -79,7 +82,7 @@ public class InputDownloader {
 
     private static final String TITLE_REGEX = "^---\\s*Day\\s+(\\d+):\\s*(.*?)\\s*---$";
     private static final Pattern TITLE_PATTERN = Pattern.compile(TITLE_REGEX);
-    private void downloadExamples() throws IOException, InterruptedException {
+    public void downloadExamples() throws IOException, InterruptedException {
         Path filePath = getExamplePath(day);
         if (Files.exists(filePath)) {
             LOG.info("File {} already exists. Skipping download.", filePath.getFileName());
@@ -132,15 +135,15 @@ public class InputDownloader {
     public static void main(String[] args) {
         try {
             ConfigProperties.loadProperties();
-            LocalDate currentDate = LocalDate.now();
-            int year = 2023;
+            LocalDate currentDate = LocalDate.now().plusDays(1);
+            int year = ConfigProperties.getYear();
             for (int day = 1; day <= 25; day++) {
                 LocalDate targetDate = LocalDate.of(year, 12, day);
                 if (!targetDate.isBefore(currentDate)) {
                     LOG.info("The specified date is not in the past. Skipping download for day {}", day);
                     break;
                 }
-                InputDownloader downloader = new InputDownloader(year, day);
+                InputDownloader downloader = new InputDownloader(year, day, 1);
                 downloader.downloadInput();
                 downloader.downloadExamples();
             }
