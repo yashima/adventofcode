@@ -60,7 +60,7 @@ public abstract class Day<T> {
             if (test) {
                 return ConfigProperties.getExampleStream(day, part);
             } else {
-                return ConfigProperties.getInputStream(day, part);
+                return ConfigProperties.getInputStream(day);
             }
 
         } catch (IOException e) {

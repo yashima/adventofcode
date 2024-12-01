@@ -53,19 +53,19 @@ public class ConfigProperties {
         return Paths.get(config.inputStoragePath(), String.format(config.exampleFormat(), day));
     }
 
-    static Path getInputPath(int day, int part) {
-        return Paths.get(config.inputStoragePath(), String.format(config.inputFormat(), day, part ));
+    static Path getInputPath(int day) {
+        return Paths.get(config.inputStoragePath(), String.format(config.inputFormat(), day ));
     }
 
     static int getYear() {
         return config.year();
     }
 
-    public static Stream<String> getInputStream(int day, int part)
+    public static Stream<String> getInputStream(int day)
             throws IOException {
-        Path path = getInputPath(day,part);
+        Path path = getInputPath(day);
         if (!Files.exists(path)) {
-            InputDownloader downloader = new InputDownloader(config.year, day,part);
+            InputDownloader downloader = new InputDownloader(config.year, day);
             try {
                 downloader.downloadInput();
             } catch (InterruptedException e) {
@@ -78,7 +78,7 @@ public class ConfigProperties {
     public static  Stream<String> getExampleStream(int day, int part) throws IOException {
         Path path = getExamplePath(day);
         if (!Files.exists(path)) {
-            InputDownloader downloader = new InputDownloader(config.year, day, part );
+            InputDownloader downloader = new InputDownloader(config.year, day );
             try {
                 downloader.downloadExamples();
             } catch (InterruptedException e) {
@@ -87,7 +87,7 @@ public class ConfigProperties {
         }
         String content = Files.readString(path);
         InputDownloader.DayExamples dayExamples = new ObjectMapper().readValue(content, InputDownloader.DayExamples.class);
-        return dayExamples.tests().get(0).input().lines();
+        return dayExamples.tests().get(part).input().lines();
 
     }
 }

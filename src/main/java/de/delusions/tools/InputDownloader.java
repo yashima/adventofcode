@@ -42,13 +42,11 @@ public class InputDownloader {
 
     private final int day;
     private final int year;
-    private final int part;
 
-    InputDownloader(int year, int day, int part) {
+    InputDownloader(int year, int day) {
         this.year = year;
         this.day = day;
-        this.part = part;
-    }
+        }
 
     private String makeHttpRequest(String url) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
@@ -68,7 +66,7 @@ public class InputDownloader {
     }
 
     public void downloadInput() throws IOException, InterruptedException {
-        Path filePath = getInputPath(day, part);
+        Path filePath = getInputPath(day);
         if (Files.exists(filePath)) {
             LOG.info("File {} already exists. Skipping download.", filePath.getFileName());
             return;
@@ -143,7 +141,7 @@ public class InputDownloader {
                     LOG.info("The specified date is not in the past. Skipping download for day {}", day);
                     break;
                 }
-                InputDownloader downloader = new InputDownloader(year, day, 1);
+                InputDownloader downloader = new InputDownloader(year, day);
                 downloader.downloadInput();
                 downloader.downloadExamples();
             }
