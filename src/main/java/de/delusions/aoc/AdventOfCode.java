@@ -1,6 +1,7 @@
 package de.delusions.aoc;
 
 import de.delusions.aoc.days.Day1;
+import de.delusions.aoc.days.Day2;
 import de.delusions.util.Day;
 
 import java.util.List;
@@ -9,7 +10,8 @@ public class AdventOfCode {
     public static void main( String[] args ) {
 
         List<Day<?>> daysOfAdvent = List.of( //
-                                             new Day1()
+                                             new Day1(),
+                                            new Day2()
                                              );
         System.out.println( "Days: " + daysOfAdvent.size() );
         runAllVariants( daysOfAdvent.getLast() );
