@@ -87,6 +87,8 @@ public class ConfigProperties {
         }
         String content = Files.readString(path);
         InputDownloader.DayExamples dayExamples = new ObjectMapper().readValue(content, InputDownloader.DayExamples.class);
+        if(part==1 && dayExamples.tests().size()==1)
+            return dayExamples.tests().get(0).input().lines();
         return dayExamples.tests().get(part).input().lines();
 
     }
