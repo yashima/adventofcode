@@ -15,7 +15,7 @@ public class Day2 extends Day<Long> {
     private static final Logger LOG = LoggerFactory.getLogger(Day2.class);
 
     public Day2() {
-        super(2, "tag", 2l, 4L, 421l, 476L);
+        super(2, "Red-Nosed Reports", 2l, 4L, 421l, 476L);
     }
 
     public record Report(List<Long> levels, boolean activatedDamper) {
