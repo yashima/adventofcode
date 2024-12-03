@@ -21,6 +21,12 @@ public abstract class Day<T> {
 
     boolean testMode = false;
 
+    public Day(String tag, T... expected) {
+        this.day = Integer.parseInt(getClass().getSimpleName().substring(3));
+        this.tag = tag;
+        this.expected = expected;
+    }
+
     @SafeVarargs
     public Day(int day, String tag, T... expected) {
         this.day = day;
