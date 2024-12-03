@@ -1,6 +1,9 @@
 package de.delusions.util;
 
 import de.delusions.tools.ConfigProperties;
+import de.delusions.tools.InputDownloader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -8,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Stream;
 
 public abstract class Day<T> {
+    private static final Logger LOG = LoggerFactory.getLogger(Day.class);
 
     T[] expected;
 
@@ -40,9 +44,9 @@ public abstract class Day<T> {
         boolean verify = verify(result, part, test);
         String log = String.format("Day %01d '%s' Part %d: result=%s success=%s time=%dms", day, tag, part, result, verify, timer);
         if (verify) {
-            System.out.println(log);
+            LOG.info(log);
         } else {
-            System.err.println(log);
+            LOG.error(log);
         }
     }
 
@@ -64,7 +68,7 @@ public abstract class Day<T> {
             }
 
         } catch (IOException e) {
-            System.err.println("Input could not be retrieved: " + e.getMessage());
+            LOG.error("Input could not be retrieved: " + e.getMessage());
             return null;
         }
     }
