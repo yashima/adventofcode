@@ -1,12 +1,24 @@
 package de.delusions.aoc;
 
+import de.delusions.aoc.days.Day1;
+import de.delusions.aoc.days.Day2;
+import de.delusions.aoc.days.Day3;
 import de.delusions.util.Day;
 
 import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 public class AdventOfCode {
     public static void main(String[] args) {
 
+        List<Day<?>> daysOfAdvent = List.of( //
+                new Day1(),
+                new Day2(),
+                new Day3()
+        );
+        System.out.println("Days: " + daysOfAdvent.size());
         LocalDate currentDate = LocalDate.now();
         Day<?> toDay = Day.loadDayClass(currentDate.getDayOfMonth());
         runAllVariants(toDay);
