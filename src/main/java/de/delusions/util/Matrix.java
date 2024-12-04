@@ -145,9 +145,11 @@ public class Matrix {
         return getValue(coordinates) == 0;
     }
 
-    public boolean isInTheMatrix(Coordinates coordinates) {
+    public boolean isInTheMatrix(Coordinates... coordinates) {
         try {
-            getValue(coordinates);
+            for(Coordinates c : coordinates) {
+                getValue(c);
+            }
             return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             return false;
