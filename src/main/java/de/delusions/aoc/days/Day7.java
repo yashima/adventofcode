@@ -1,52 +1,56 @@
 package de.delusions.aoc.days;
 
 import de.delusions.util.Day;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.math.BigInteger;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class Day7 extends Day<Long> {
-
+    private static final Logger LOG = LoggerFactory.getLogger(Day7.class);
 
     public Day7() {
-        super("Bridge Repair", 3749L, 0L, 4555081946288L, 0L);
+        super("Bridge Repair", 3749L, 11387L, 4555081946288L, 0L);
     }
 
     static final Pattern REGEX = Pattern.compile("(\\d+)");
 
     enum Operator {
-        ADD('+'), MUL('*');
-        private final char symbol;
+        ADD{
+            Long operate(Long a, Long b) {
+                return a + b;
+            }
+            Long deoperate(Long a, Long b) {
+                return a > b ? a - b : null;
+            }
+        }, MUL {
+            @Override
+            Long operate(Long a, Long b) {
+                return a*b;
+            }
 
-        Operator(char symbol) {
-            this.symbol = symbol;
-        }
-
-        Long operate(Long a, Long b) {
-            switch (this) {
-                case ADD:
-                    return a + b;
-                case MUL:
-                    return a * b;
-                default:
-                    throw new IllegalArgumentException("Unknown operator: " + this);
+            Long deoperate(Long a, Long b) {
+                return a % b == 0 ? a / b : null;
             }
         }
-
-        Long deoperate(Long a, Long b) {
-            switch (this) {
-                case ADD:
-                    return a > b ? a - b : null;
-                case MUL:
-                    return a % b == 0 ? a / b : null;
-                default:
-                    throw new IllegalArgumentException("Unknown operator: " + this);
+        , CON {
+            @Override
+            Long operate(Long a, Long b) {
+                Long powerOf10 = Long.valueOf(b.toString().length())*10L;
+                return a*powerOf10 + b;
             }
-        }
+
+            Long deoperate(Long a, Long b) {
+                Long powerOf10 = Long.valueOf(b.toString().length())*10L;
+                return a>=b && (a-b) % powerOf10==0 ? (a-b)/powerOf10 : null;
+            }
+        };
+        abstract Long deoperate(Long a, Long b);
+        abstract Long operate(Long a, Long b);
     }
 
     record Equation(long solution, List<Long> operands) {
@@ -55,7 +59,26 @@ public class Day7 extends Day<Long> {
             return new Equation(list.getFirst(), list.subList(1, list.size()));
         }
 
-        boolean solvable() {
+        boolean solveByFirst(List<Operator> operators) {
+            Stack<Equation> solutions = new Stack<>();
+            solutions.add(new Equation(this.operands.getFirst(), this.operands.subList(1, this.operands.size())));
+            while (!solutions.isEmpty()) {
+                Equation candidate = solutions.pop();
+                if(candidate.operands.isEmpty()) {
+                    if(candidate.solution == this.solution) return true;
+                    continue;
+                }
+                for (Operator op : operators) {
+                    Long newSolution = op.operate(candidate.solution, candidate.operands.getFirst());
+                    if (newSolution<=this.solution) {
+                        solutions.add(new Equation(newSolution, candidate.operands.subList(1, candidate.operands.size())));
+                    }
+                }
+            }
+            return false;
+        }
+
+        boolean solveByLast(List<Operator> operators) {
             Stack<Equation> solutions = new Stack<>();
             solutions.add(this);
             while (!solutions.isEmpty()) {
@@ -65,7 +88,7 @@ public class Day7 extends Day<Long> {
                     //else keep going
                     continue;
                 }
-                for (Operator op : Operator.values()) {
+                for (Operator op : operators) {
                     Long newSolution = op.deoperate(candidate.solution, candidate.operands.getLast());
                     if (newSolution != null) {
                         solutions.add(new Equation(newSolution, candidate.operands.subList(0, candidate.operands.size() - 1)));
@@ -80,11 +103,15 @@ public class Day7 extends Day<Long> {
     @Override
     public Long part0(Stream<String> input) {
         List<Equation> equations = input.map(Equation::fromString).toList();
-        return equations.stream().filter(Equation::solvable).mapToLong(e -> e.solution).sum();
+        return equations.stream().filter(e -> e.solveByFirst(List.of(Operator.ADD, Operator.MUL))).mapToLong(e -> e.solution).sum();
     }
 
+    //too low: 28760150883702
     @Override
     public Long part1(Stream<String> input) {
-        return 0L;// input.collect(Collectors.joining());
+        List<Equation> equations = input.map(Equation::fromString).toList();
+        BigInteger sum = equations.stream().filter(e -> e.solveByLast(List.of(Operator.ADD, Operator.MUL, Operator.CON))).map(s -> BigInteger.valueOf(s.solution)).reduce(BigInteger.ZERO, BigInteger::add);
+        if(sum.compareTo(BigInteger.valueOf(Long.MAX_VALUE))>1) throw new IllegalStateException("Long Overflow!");
+        return sum.longValue();
     }
 }
