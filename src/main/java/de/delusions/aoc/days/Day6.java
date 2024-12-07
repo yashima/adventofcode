@@ -18,7 +18,7 @@ public class Day6 extends Day<Integer> {
     private static final Logger LOG = LoggerFactory.getLogger(Day6.class);
 
     public Day6() {
-        super("", 41, 6, 4982, 1663);
+        super("Guard Gallivant", 41, 6, 4982, 1663);
         Coordinates.USE_FACING = true;
     }
 
