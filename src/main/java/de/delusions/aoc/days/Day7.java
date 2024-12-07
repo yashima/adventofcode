@@ -4,17 +4,20 @@ import de.delusions.util.Day;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static de.delusions.aoc.days.Day7.Operator.*;
+
 public class Day7 extends Day<Long> {
     private static final Logger LOG = LoggerFactory.getLogger(Day7.class);
 
     public Day7() {
-        super("Bridge Repair", 3749L, 11387L, 4555081946288L, 0L);
+        super("Bridge Repair", 3749L, 11387L, 4555081946288L, 227921760109726L);
     }
 
     static final Pattern REGEX = Pattern.compile("(\\d+)");
@@ -40,12 +43,11 @@ public class Day7 extends Day<Long> {
         , CON {
             @Override
             Long operate(Long a, Long b) {
-                Long powerOf10 = Long.valueOf(b.toString().length())*10L;
-                return a*powerOf10 + b;
+                return Long.parseLong(a.toString()+b.toString());
             }
 
             Long deoperate(Long a, Long b) {
-                Long powerOf10 = Long.valueOf(b.toString().length())*10L;
+                Long powerOf10 = BigDecimal.valueOf(Math.pow(10,Long.valueOf(b.toString().length()))).longValue();
                 return a>=b && (a-b) % powerOf10==0 ? (a-b)/powerOf10 : null;
             }
         };
@@ -53,15 +55,15 @@ public class Day7 extends Day<Long> {
         abstract Long operate(Long a, Long b);
     }
 
-    record Equation(long solution, List<Long> operands) {
+    record Equation(String input,long solution, List<Long> operands) {
         static Equation fromString(String line) {
             List<Long> list = REGEX.matcher(line).results().map(m -> Long.parseLong(m.group(1))).toList();
-            return new Equation(list.getFirst(), list.subList(1, list.size()));
+            return new Equation(line,list.getFirst(), list.subList(1, list.size()));
         }
 
         boolean solveByFirst(List<Operator> operators) {
             Stack<Equation> solutions = new Stack<>();
-            solutions.add(new Equation(this.operands.getFirst(), this.operands.subList(1, this.operands.size())));
+            solutions.add(new Equation(this.input,this.operands.getFirst(), this.operands.subList(1, this.operands.size())));
             while (!solutions.isEmpty()) {
                 Equation candidate = solutions.pop();
                 if(candidate.operands.isEmpty()) {
@@ -71,7 +73,7 @@ public class Day7 extends Day<Long> {
                 for (Operator op : operators) {
                     Long newSolution = op.operate(candidate.solution, candidate.operands.getFirst());
                     if (newSolution<=this.solution) {
-                        solutions.add(new Equation(newSolution, candidate.operands.subList(1, candidate.operands.size())));
+                        solutions.add(new Equation(this.input,newSolution, candidate.operands.subList(1, candidate.operands.size())));
                     }
                 }
             }
@@ -91,7 +93,7 @@ public class Day7 extends Day<Long> {
                 for (Operator op : operators) {
                     Long newSolution = op.deoperate(candidate.solution, candidate.operands.getLast());
                     if (newSolution != null) {
-                        solutions.add(new Equation(newSolution, candidate.operands.subList(0, candidate.operands.size() - 1)));
+                        solutions.add(new Equation(this.input,newSolution, candidate.operands.subList(0, candidate.operands.size() - 1)));
                     }
                 }
             }
@@ -103,15 +105,13 @@ public class Day7 extends Day<Long> {
     @Override
     public Long part0(Stream<String> input) {
         List<Equation> equations = input.map(Equation::fromString).toList();
-        return equations.stream().filter(e -> e.solveByFirst(List.of(Operator.ADD, Operator.MUL))).mapToLong(e -> e.solution).sum();
+        return equations.stream().filter(e -> e.solveByFirst(List.of(ADD, MUL))).mapToLong(e -> e.solution).sum();
     }
 
     //too low: 28760150883702
     @Override
     public Long part1(Stream<String> input) {
         List<Equation> equations = input.map(Equation::fromString).toList();
-        BigInteger sum = equations.stream().filter(e -> e.solveByLast(List.of(Operator.ADD, Operator.MUL, Operator.CON))).map(s -> BigInteger.valueOf(s.solution)).reduce(BigInteger.ZERO, BigInteger::add);
-        if(sum.compareTo(BigInteger.valueOf(Long.MAX_VALUE))>1) throw new IllegalStateException("Long Overflow!");
-        return sum.longValue();
+        return equations.stream().filter(e -> e.solveByLast(List.of(ADD, MUL, CON))).mapToLong(e -> (e.solution)).sum();
     }
 }
