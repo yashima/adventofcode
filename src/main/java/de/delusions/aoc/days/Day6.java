@@ -18,12 +18,13 @@ public class Day6 extends Day<Integer> {
     private static final Logger LOG = LoggerFactory.getLogger(Day6.class);
 
     public Day6() {
-        super("", 41, 6, 4982, 0);
+        super("", 41, 6, 4982, 1663);
         Coordinates.USE_FACING = true;
     }
 
     char OBSTACLE = '#';
     char VISITED = 'X';
+    char PRISTINE = '.';
 
     @Override
     public Integer part0(Stream<String> input) {
@@ -36,26 +37,28 @@ public class Day6 extends Day<Integer> {
 
     private List<Coordinates> trackTheGuard(Matrix warehouse, Coordinates guard, Function<Direction, Character> visitor) {
         List<Coordinates> steps = new ArrayList<>();
-        while (warehouse.isInTheMatrix(guard)) { //while he is in the room
+        while (warehouse.isInTheMatrix(guard)) {
 
-            if (visitor != null) { //only store visitor steps if you know how
+            if (visitor != null) {
                 warehouse.setValue(guard, visitor.apply(guard.getFacing()));
             }
 
-            if (warehouse.getValue(guard.moveToNext(), -1) == OBSTACLE) { //test next move for obstacles
+            if (warehouse.getValue(guard.moveToNext(), -1) == OBSTACLE) {
                 guard.setFacing(guard.getFacing().turnRight());//guard turns before the obstacle
-                if (steps.contains(guard)) {//only check for cycles before an obstacle, it is much faster and gets same results as all steps
+                //only check for cycles before an obstacle
+                //checking the set is somewhat more expensive than moving through the matrix
+                if (steps.contains(guard)) {
                     throw new IllegalStateException("Cycle detected");
                 }
             } else {
-                steps.add(guard);//add with the turn
+                //move only when there is no obstacle!
+                steps.add(guard);
                 guard = guard.moveToNext();
             }
         }
         return steps;
     }
 
-    //1598 too low, 2450 too high, 1743, 1796 not right not right
     @Override
     public Integer part1(Stream<String> input) {
         Matrix warehouse = Matrix.createFromStream(input);
@@ -64,15 +67,18 @@ public class Day6 extends Day<Integer> {
         List<Coordinates> steps = trackTheGuard(warehouse, guard, null); //get all original steps
         Set<Coordinates> loops = new HashSet<>();
         for (Coordinates step : steps) {
-            Coordinates candidate = step.moveToNext(); //try to block next step of the guard
-            if (warehouse.isInTheMatrix(candidate) ) { //double test no issue, and since we turn before obstacle that doesn't happen
+            warehouse.setValue(step, VISITED);
+            Coordinates candidate = step.moveToNext();
+            //since I am not testing cycles completely from the beginning, I need to be sure the guard
+            //has not been here before. This was the major issue I couldn't solve. Thanks @tshirtman@mas.to
+            if (warehouse.isInTheMatrix(candidate) && warehouse.getValue(candidate) != VISITED) {
                 warehouse.setValue(candidate, OBSTACLE); //temporarily add obstacle
                 try {
                     trackTheGuard(warehouse, step, null); //check circles
                 } catch (IllegalStateException e) {
                     loops.add(candidate); //add candidate to set
                 }
-                warehouse.setValue(candidate, '.'); //remove tested obstacle
+                warehouse.setValue(candidate, PRISTINE);
             }
         }
         return loops.size();
