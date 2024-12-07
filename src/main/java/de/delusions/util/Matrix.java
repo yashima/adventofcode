@@ -120,6 +120,13 @@ public class Matrix {
         return matrix[x][y];
     }
 
+    public int getValue(Coordinates coordinates,int defaultValue) {
+        if(!isInTheMatrix(coordinates)) return defaultValue;
+        int y = coordinates.y - yOffset;
+        int x = coordinates.x - xOffset;
+        return matrix[x][y];
+    }
+
     /* sometimes we have an endless matrix and just want coordinates values */
     public int getRelativeValue(Coordinates c) {
         return matrix[convert(c.x, getXLength())][convert(c.y, getYLength())];
@@ -168,13 +175,12 @@ public class Matrix {
         return matrix[0].length;
     }
 
-    public List<Coordinates> findValues(int value, boolean firstOnly) {
+    public List<Coordinates> findValues(List<Integer> values,boolean firstOnly) {
         List<Coordinates> positions = new ArrayList<>();
         for (int x = 0; x < getXLength(); x++) {
             for (int y = 0; y < getYLength(); y++) {
                 Coordinates coordinates = createCoords(x, y);
-                coordinates.value = value;
-                if (getValue(coordinates) == value) {
+                if (values.contains(getValue(coordinates))) {
                     positions.add(coordinates);
                     if (firstOnly) {
                         break;
@@ -183,6 +189,10 @@ public class Matrix {
             }
         }
         return positions;
+    }
+
+    public List<Coordinates> findValues(int value, boolean firstOnly) {
+       return findValues(List.of(value), firstOnly);
     }
 
     public int[][] getMatrix() {
