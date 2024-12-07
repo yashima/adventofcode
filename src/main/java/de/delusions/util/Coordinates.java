@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Coordinates {
+    public static boolean USE_FACING = false;
     public int x;
 
     public int y;
@@ -112,8 +113,9 @@ public class Coordinates {
         return facing;
     }
 
-    public void setFacing(Direction facing) {
+    public Coordinates setFacing(Direction facing) {
         this.facing = facing;
+        return this;
     }
 
     public Direction lookingTowards(Coordinates other) {
@@ -132,7 +134,10 @@ public class Coordinates {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getX(), getY());
+        if(USE_FACING)
+            return Objects.hash(getX(), getY(), getFacing());
+        else
+            return Objects.hash(getX(), getY());
     }
 
     @Override
@@ -143,11 +148,11 @@ public class Coordinates {
         if (!(o instanceof Coordinates that)) {
             return false;
         }
-        return getX() == that.getX() && getY() == that.getY();
+        return getX() == that.getX() && getY() == that.getY() && (!USE_FACING || Objects.equals(getFacing(), that.getFacing())) ;
     }
 
     @Override
     public String toString() {
-        return "Coordinates{" + "x=" + x + ", y=" + y + '}';
+        return "Coordinates{" + "x=" + x + ", y=" + y + (USE_FACING ? " "+ facing.getCharacter() : "")+ '}';
     }
 }

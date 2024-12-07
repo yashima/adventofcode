@@ -1,10 +1,12 @@
 package de.delusions.util;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public enum Direction {
 
-    north("^"), northeast(null), east(">"), southeast(null), south("v"), southwest(null), west("<"), northwest(null);
+    north("^"), northeast("┐"), east(">"), southeast("┘"), south("v"), southwest("└"), west("<"), northwest("┌");
 
     private final String symbol;
 
@@ -18,6 +20,11 @@ public enum Direction {
 
     public String getSymbol() {
         return symbol;
+    }
+    public char getCharacter() { return symbol.charAt(0); }
+
+    public static List<Character> getCharacters() {
+        return Arrays.stream(values()).map(Direction::getCharacter).toList();
     }
 
     public Direction turnRight() {
