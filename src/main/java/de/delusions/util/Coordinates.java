@@ -138,12 +138,10 @@ public class Coordinates {
         return Math.abs(x - other.x) + Math.abs(y - other.y);
     }
 
-    public Coordinates mirror(Coordinates that){
-        int xDiff = Math.abs(this.x - that.x);
-        int yDiff = Math.abs(this.y - that.y);
-        return new Coordinates(
-                x + (this.x>that.x ? xDiff :-xDiff),
-                y + (this.y>that.y ? yDiff : -yDiff));
+    public Coordinates vector(Coordinates that,int factor,int value){
+        int deltaX = that.x - this.x;
+        int deltaY = that.y - this.y;
+        return new Coordinates(this.x + factor*deltaX, this.y + factor*deltaY,value);
     }
 
     @Override
