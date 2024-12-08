@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.Pattern;
@@ -23,57 +22,59 @@ public class Day7 extends Day<Long> {
     static final Pattern REGEX = Pattern.compile("(\\d+)");
 
     enum Operator {
-        ADD{
+        ADD {
             Long operate(Long a, Long b) {
                 return a + b;
             }
+
             Long deoperate(Long a, Long b) {
                 return a > b ? a - b : null;
             }
         }, MUL {
             @Override
             Long operate(Long a, Long b) {
-                return a*b;
+                return a * b;
             }
 
             Long deoperate(Long a, Long b) {
                 return a % b == 0 ? a / b : null;
             }
-        }
-        , CON {
+        }, CON {
             @Override
             Long operate(Long a, Long b) {
-                return Long.parseLong(a.toString()+b.toString());
+                return Long.parseLong(a.toString() + b.toString());
             }
 
             Long deoperate(Long a, Long b) {
-                Long powerOf10 = BigDecimal.valueOf(Math.pow(10,Long.valueOf(b.toString().length()))).longValue();
-                return a>=b && (a-b) % powerOf10==0 ? (a-b)/powerOf10 : null;
+                Long powerOf10 = BigDecimal.valueOf(Math.pow(10, Long.valueOf(b.toString().length()))).longValue();
+                return a >= b && (a - b) % powerOf10 == 0 ? (a - b) / powerOf10 : null;
             }
         };
+
         abstract Long deoperate(Long a, Long b);
+
         abstract Long operate(Long a, Long b);
     }
 
-    record Equation(String input,long solution, List<Long> operands) {
+    record Equation(String input, long solution, List<Long> operands) {
         static Equation fromString(String line) {
             List<Long> list = REGEX.matcher(line).results().map(m -> Long.parseLong(m.group(1))).toList();
-            return new Equation(line,list.getFirst(), list.subList(1, list.size()));
+            return new Equation(line, list.getFirst(), list.subList(1, list.size()));
         }
 
         boolean solveByFirst(List<Operator> operators) {
             Stack<Equation> solutions = new Stack<>();
-            solutions.add(new Equation(this.input,this.operands.getFirst(), this.operands.subList(1, this.operands.size())));
+            solutions.add(new Equation(this.input, this.operands.getFirst(), this.operands.subList(1, this.operands.size())));
             while (!solutions.isEmpty()) {
                 Equation candidate = solutions.pop();
-                if(candidate.operands.isEmpty()) {
-                    if(candidate.solution == this.solution) return true;
+                if (candidate.operands.isEmpty()) {
+                    if (candidate.solution == this.solution) return true;
                     continue;
                 }
                 for (Operator op : operators) {
                     Long newSolution = op.operate(candidate.solution, candidate.operands.getFirst());
-                    if (newSolution<=this.solution) {
-                        solutions.add(new Equation(this.input,newSolution, candidate.operands.subList(1, candidate.operands.size())));
+                    if (newSolution <= this.solution) {
+                        solutions.add(new Equation(this.input, newSolution, candidate.operands.subList(1, candidate.operands.size())));
                     }
                 }
             }
@@ -93,7 +94,7 @@ public class Day7 extends Day<Long> {
                 for (Operator op : operators) {
                     Long newSolution = op.deoperate(candidate.solution, candidate.operands.getLast());
                     if (newSolution != null) {
-                        solutions.add(new Equation(this.input,newSolution, candidate.operands.subList(0, candidate.operands.size() - 1)));
+                        solutions.add(new Equation(this.input, newSolution, candidate.operands.subList(0, candidate.operands.size() - 1)));
                     }
                 }
             }

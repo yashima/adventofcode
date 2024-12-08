@@ -10,10 +10,10 @@ public class Day7Test {
 
     @Test
     public void testConOperator() {
-//        assertThat(Day7.Operator.CON.deoperate(156L,6L)).isEqualTo(15L);
-//        assertThat(Day7.Operator.CON.deoperate(6L,6L)).isEqualTo(0L);
-//        assertThat(Day7.Operator.CON.deoperate(6234L,6L)).isNull();
-//        assertThat(Day7.Operator.CON.deoperate(63L,663L)).isNull();
+        assertThat(Day7.Operator.CON.deoperate(156L,6L)).isEqualTo(15L);
+        assertThat(Day7.Operator.CON.deoperate(6L,6L)).isEqualTo(0L);
+        assertThat(Day7.Operator.CON.deoperate(6234L,6L)).isNull();
+        assertThat(Day7.Operator.CON.deoperate(63L,663L)).isNull();
         assertThat(Day7.Operator.CON.deoperate(123453L,453L)).isEqualTo(123L);
     }
 
