@@ -118,12 +118,18 @@ public class Coordinates {
         return this;
     }
 
-    public Direction lookingTowards(Coordinates other) {
+    public Direction lookingTowards(Coordinates that) {
         Direction result = null;
-        if (x == other.x && y != other.y) { //north south
-            result = y > other.y ? Direction.north : Direction.south;
-        } else if (y == other.y && x != other.x) { //east west
-            result = x > other.x ? Direction.west : Direction.east;
+        if (x == that.x && y != that.y) { //north south
+            result = y > that.y ? Direction.west : Direction.east;
+        } else if (y == that.y && x != that.x) { //east west
+            result = x > that.x ? Direction.north : Direction.south;
+        } else if (Math.abs(this.x - that.x) == Math.abs(this.y - that.y)){
+            if(this.x>that.x){
+                result = this.y>that.y ? Direction.northwest : Direction.southwest;
+            } else {
+                result = this.y>that.y ? Direction.northeast : Direction.southeast;
+            }
         }
         return result;
     }
@@ -132,9 +138,17 @@ public class Coordinates {
         return Math.abs(x - other.x) + Math.abs(y - other.y);
     }
 
+    public Coordinates mirror(Coordinates that){
+        int xDiff = Math.abs(this.x - that.x);
+        int yDiff = Math.abs(this.y - that.y);
+        return new Coordinates(
+                x + (this.x>that.x ? xDiff :-xDiff),
+                y + (this.y>that.y ? yDiff : -yDiff));
+    }
+
     @Override
     public int hashCode() {
-        if(USE_FACING)
+        if (USE_FACING)
             return Objects.hash(getX(), getY(), getFacing());
         else
             return Objects.hash(getX(), getY());
@@ -148,11 +162,11 @@ public class Coordinates {
         if (!(o instanceof Coordinates that)) {
             return false;
         }
-        return getX() == that.getX() && getY() == that.getY() && (!USE_FACING || Objects.equals(getFacing(), that.getFacing())) ;
+        return getX() == that.getX() && getY() == that.getY() && (!USE_FACING || Objects.equals(getFacing(), that.getFacing()));
     }
 
     @Override
     public String toString() {
-        return "Coordinates{" + "x=" + x + ", y=" + y + (USE_FACING ? " "+ facing.getCharacter() : "")+ '}';
+        return "Coordinates{" + "x=" + x + ", y=" + y + (USE_FACING ? " " + facing.getCharacter() : "") + '}';
     }
 }

@@ -120,8 +120,8 @@ public class Matrix {
         return matrix[x][y];
     }
 
-    public int getValue(Coordinates coordinates,int defaultValue) {
-        if(!isInTheMatrix(coordinates)) return defaultValue;
+    public int getValue(Coordinates coordinates, int defaultValue) {
+        if (!isInTheMatrix(coordinates)) return defaultValue;
         int y = coordinates.y - yOffset;
         int x = coordinates.x - xOffset;
         return matrix[x][y];
@@ -154,7 +154,7 @@ public class Matrix {
 
     public boolean isInTheMatrix(Coordinates... coordinates) {
         try {
-            for(Coordinates c : coordinates) {
+            for (Coordinates c : coordinates) {
                 getValue(c);
             }
             return true;
@@ -175,7 +175,7 @@ public class Matrix {
         return matrix[0].length;
     }
 
-    public List<Coordinates> findValues(List<Integer> values,boolean firstOnly) {
+    public List<Coordinates> findValues(List<Integer> values, boolean firstOnly) {
         List<Coordinates> positions = new ArrayList<>();
         for (int x = 0; x < getXLength(); x++) {
             for (int y = 0; y < getYLength(); y++) {
@@ -191,8 +191,30 @@ public class Matrix {
         return positions;
     }
 
+    /**
+     * A list of coordinates that do not match the given value.
+     * These coordinates include the value found instead.
+     *
+     * @param notValue the value we don't want
+     * @return a list of coordinates with values that do not match the notValue
+     */
+    public List<Coordinates> findNotValues(char notValue) {
+        List<Coordinates> positions = new ArrayList<>();
+        for (int x = 0; x < getXLength(); x++) {
+            for (int y = 0; y < getYLength(); y++) {
+                Coordinates coordinates = createCoords(x, y);
+                int currentValue = getValue(coordinates);
+                if (notValue != currentValue) {
+                    coordinates.setValue(currentValue);
+                    positions.add(coordinates);
+                }
+            }
+        }
+        return positions;
+    }
+
     public List<Coordinates> findValues(int value, boolean firstOnly) {
-       return findValues(List.of(value), firstOnly);
+        return findValues(List.of(value), firstOnly);
     }
 
     public int[][] getMatrix() {
