@@ -51,13 +51,14 @@ public class Dijkstra<PATH extends Pathable<PATH, ?, MAP>, MAP> {
         return null;
     }
 
+    //TODO check if code can be removed from this method
     public List<PATH> findAllReachableEndings(MAP theMap){
         List<PATH> paths = new ArrayList<>();
-        Stack<PATH> opens = new Stack<>();
+        PriorityQueue<PATH> opens = new PriorityQueue<>();
         visited = new HashSet<>();
         opens.add(start);
         while(!opens.isEmpty()){
-            PATH path = opens.pop();
+            PATH path = opens.poll();
             visited.add(path);
             if (path.goal(theMap)) { //found one
                 paths.add(path);
@@ -65,6 +66,12 @@ public class Dijkstra<PATH extends Pathable<PATH, ?, MAP>, MAP> {
             path.getNeighbors(theMap).forEach(n -> {
                 if (!visited.contains(n) && !opens.contains(n)) {
                     opens.add(n);
+                } else if (opens.contains(n)) {
+                    PATH old = opens.stream().filter(n::equals).findFirst().orElse(null);
+                    if (old != null && n.compareTo(old) < 1) {
+                        opens.remove(old);
+                        opens.add(n);
+                    }
                 }
             });
 
@@ -72,17 +79,4 @@ public class Dijkstra<PATH extends Pathable<PATH, ?, MAP>, MAP> {
         return paths;
     }
 
-    public List<PATH> findAllUniquePaths( MAP theMap){
-        List<PATH> paths = new ArrayList<>();
-        Stack<PATH> opens = new Stack<>();
-        opens.add(start);
-        while(!opens.isEmpty()){
-            PATH path = opens.pop();
-            if (path.goal(theMap)) { //found one
-                paths.add(path);
-            }
-            path.getNeighbors(theMap).forEach(opens::add);
-        };
-        return paths;
-    }
 }
