@@ -19,7 +19,7 @@ public class Day10 extends Day<Integer> {
 
 
     public Day10() {
-        super("Hoof It", 36, 81,733, 0);
+        super("Hoof It", 36, 81,733, 1514);
     }
 
 
@@ -34,7 +34,7 @@ public class Day10 extends Day<Integer> {
     public Integer part1(Stream<String> input) {
         Matrix map = Matrix.createFromStream(input);
         List<Coordinates> trailheads = map.findValues('0', false);
-        return trailheads.stream().map( c -> findAllPaths(new Path(c,0),map)).mapToInt(List::size).sum();
+        return trailheads.stream().map( c -> new Dijkstra<>(new Path(c,0)).findAllUniquePaths(map)).mapToInt(List::size).sum();
     }
 
     class Path extends Coordinates implements Pathable<Path,Integer,Matrix> {
@@ -45,7 +45,6 @@ public class Day10 extends Day<Integer> {
         }
 
         int elevation = 0;
-        Path previous;
 
         @Override
         public List<Path> getNeighbors(Matrix theMap) {
@@ -57,16 +56,10 @@ public class Day10 extends Day<Integer> {
             for( Coordinates c :  List.of(north, south, east, west)){
                 if( theMap.isInTheMatrix(c) && theMap.getValue(c)-48 == 1 + elevation){
                     Path n = new Path(c,elevation+1);
-                    n.previous = this;
                     neighbors.add(n);
                 }
             }
             return neighbors;
-        }
-
-        @Override
-        public Integer distance() {
-            return 0;//TODO
         }
 
         @Override
@@ -75,27 +68,20 @@ public class Day10 extends Day<Integer> {
         }
 
         @Override
+        public Integer distance() {
+            throw new UnsupportedOperationException("not needed");
+        }
+
+        @Override
         public Path previous() {
-            return previous;
+            throw new UnsupportedOperationException("not needed");
         }
         @Override
         public int compareTo(Path o) {
-            return 0; //TODO
+            throw new UnsupportedOperationException("not needed");
         }
     }
 
 
-    public List<Path> findAllPaths(Path start, Matrix theMap){
-        List<Path> paths = new ArrayList<>();
-        PriorityQueue<Path> opens = new PriorityQueue<>();
-        opens.add(start);
-        while(!opens.isEmpty()){
-            Path path = opens.poll();
-            if (path.goal(theMap)) { //found one
-                paths.add(path);
-            }
-            path.getNeighbors(theMap).forEach(opens::add);
-        };
-        return paths;
-    }
+
 }
