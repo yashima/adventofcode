@@ -18,6 +18,10 @@ public enum Direction {
         return List.of(north, east, south, west);
     }
 
+    public static Direction[] cardinals() {
+        return new Direction[] {north, east, south, west};
+    }
+
     public String getSymbol() {
         return symbol;
     }
