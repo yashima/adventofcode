@@ -96,6 +96,10 @@ public class Matrix {
         return Arrays.stream(getRow(x));
     }
 
+    public Stream<Coordinates> coordinatesStream() {
+        return IntStream.range(0, getXLength()).boxed().flatMap(x -> IntStream.range(0, getYLength()).boxed().map(y -> createCoords(x, y)));
+    }
+
     public void setValue(int x, int y, int value) {
         this.matrix[x - xOffset][y - yOffset] = value;
     }
