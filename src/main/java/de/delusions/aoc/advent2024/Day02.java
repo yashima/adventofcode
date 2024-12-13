@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Day;
 import org.slf4j.Logger;
@@ -11,10 +11,10 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-public class Day2 extends Day<Long> {
-    private static final Logger LOG = LoggerFactory.getLogger(Day2.class);
+public class Day02 extends Day<Long> {
+    private static final Logger LOG = LoggerFactory.getLogger(Day02.class);
 
-    public Day2() {
+    public Day02() {
         super(2, "Red-Nosed Reports", 2l, 4L, 421l, 476L);
     }
 

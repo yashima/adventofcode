@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -12,22 +12,22 @@ public class Day2Test {
     @DataProvider(name = "reportData")
     public Object[][] createReportData() {
         return new Object[][] {
-                { new Day2.Report(new ArrayList<>(List.of(1L,2L,3L,4L,5L)), true), true },
-                { new Day2.Report(new ArrayList<>(List.of(7L,6L,4L,2L,1L)), true), true },
-                { new Day2.Report(new ArrayList<>(List.of(1L, 2L, 7L, 8L, 9L)), true), false },
-                { new Day2.Report(new ArrayList<>(List.of(9L, 7L, 6L, 2L, 1L)), true), false },
-                { new Day2.Report(new ArrayList<>(List.of(1L ,3L, 2L, 4L )), true), true },
-                { new Day2.Report(new ArrayList<>(List.of(8L,6L,4L,4L,1L)), true), true },
-                { new Day2.Report(new ArrayList<>(List.of(6L,4L,4L,1L)), true), true },
-                { new Day2.Report(new ArrayList<>(List.of(1L, 3L, 6L, 7L, 9L)), true), true },
-                { new Day2.Report(new ArrayList<>(List.of(48L, 51L, 52L, 55L, 58L, 61L, 58L, 57L)),true),false},
-                { new Day2.Report(new ArrayList<>(List.of(22L, 25L, 28L, 30L, 28L, 32L)),true),true}
+                { new Day02.Report(new ArrayList<>(List.of(1L,2L,3L,4L,5L)), true), true },
+                { new Day02.Report(new ArrayList<>(List.of(7L,6L,4L,2L,1L)), true), true },
+                { new Day02.Report(new ArrayList<>(List.of(1L, 2L, 7L, 8L, 9L)), true), false },
+                { new Day02.Report(new ArrayList<>(List.of(9L, 7L, 6L, 2L, 1L)), true), false },
+                { new Day02.Report(new ArrayList<>(List.of(1L ,3L, 2L, 4L )), true), true },
+                { new Day02.Report(new ArrayList<>(List.of(8L,6L,4L,4L,1L)), true), true },
+                { new Day02.Report(new ArrayList<>(List.of(6L,4L,4L,1L)), true), true },
+                { new Day02.Report(new ArrayList<>(List.of(1L, 3L, 6L, 7L, 9L)), true), true },
+                { new Day02.Report(new ArrayList<>(List.of(48L, 51L, 52L, 55L, 58L, 61L, 58L, 57L)),true),false},
+                { new Day02.Report(new ArrayList<>(List.of(22L, 25L, 28L, 30L, 28L, 32L)),true),true}
 
         };
     }
 
     @Test(dataProvider = "reportData")
-    public void testSimpleDamper(Day2.Report report, boolean expected) {
+    public void testSimpleDamper(Day02.Report report, boolean expected) {
         assertThat(report.safe()).isEqualTo(expected);
     }
 
@@ -48,7 +48,7 @@ public class Day2Test {
 
     @Test(dataProvider = "diffData")
     public void testUnsafeDiff(int diff, boolean inc, boolean expected) {
-        assertThat(Day2.Report.unsafeDiff(diff, inc)).isEqualTo(expected);
+        assertThat(Day02.Report.unsafeDiff(diff, inc)).isEqualTo(expected);
     }
 
     @Test

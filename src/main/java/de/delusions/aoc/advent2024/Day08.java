@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class Day8 extends Day<Integer> {
+public class Day08 extends Day<Integer> {
 
-    public Day8() {
+    public Day08() {
         super("Resonant Collinearity", 14, 34, 228, 0);
     }
 

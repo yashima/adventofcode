@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-public class Day4 extends Day<Integer> {
+public class Day04 extends Day<Integer> {
 
 
-    public Day4() {
+    public Day04() {
         super("Ceres Search", 18, 9, 2454, 0);
     }
 

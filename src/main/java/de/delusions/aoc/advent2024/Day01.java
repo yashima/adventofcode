@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Day;
 
@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day1 extends Day<Integer> {
+public class Day01 extends Day<Integer> {
 
-    public Day1() {
+    public Day01() {
         super(1, "Historian Hysteria",11,31 ,1341714,27384707);
     }
 

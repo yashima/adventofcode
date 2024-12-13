@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Day;
 import org.slf4j.Logger;
@@ -11,12 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day9 extends Day<String> {
-    private static final Logger LOG = LoggerFactory.getLogger(Day9.class);
+public class Day09 extends Day<String> {
+    private static final Logger LOG = LoggerFactory.getLogger(Day09.class);
 
     private static final int EMPTY = -1;
 
-    public Day9() {
+    public Day09() {
         super("Disk Fragmenter", "1928", "2858", "6432869891895", "6467290479134");
     }
 

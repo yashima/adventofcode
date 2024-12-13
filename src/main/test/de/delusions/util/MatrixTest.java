@@ -1,6 +1,5 @@
-package de.delusions.aoc.util;
+package de.delusions.util;
 
-import de.delusions.util.Matrix;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Calendar;
 import java.util.stream.Stream;
 
 public abstract class Day<T> {
@@ -81,7 +82,8 @@ public abstract class Day<T> {
 
     public static Day<?> loadDayClass(int dayNumber, Object... args) {
         try {
-            String className = "de.delusions.aoc.days.Day" + dayNumber;
+            int year = Calendar.getInstance().get(Calendar.YEAR);
+            String className = String.format("de.delusions.aoc.advent%04d.Day%02d" ,year, dayNumber);
             Class<?> dayClass = Class.forName(className);
             Constructor<?>[] constructors = dayClass.getConstructors();
             for(Constructor<?> constructor : constructors) {

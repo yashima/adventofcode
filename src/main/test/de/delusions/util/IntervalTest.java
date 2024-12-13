@@ -1,6 +1,5 @@
-package de.delusions.aoc.util;
+package de.delusions.util;
 
-import de.delusions.util.Interval;
 import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

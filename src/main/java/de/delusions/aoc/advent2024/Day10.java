@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.algorithms.Dijkstra;
 import de.delusions.algorithms.Pathable;
@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.stream.Stream;
 
 public class Day10 extends Day<Integer> {
