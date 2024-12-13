@@ -1,4 +1,4 @@
-package de.delusions.aoc;
+package de.delusions.aoc.advent2024;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.delusions.tools.ConfigProperties;

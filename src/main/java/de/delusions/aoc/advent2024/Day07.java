@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Day;
 import org.slf4j.Logger;
@@ -10,12 +10,12 @@ import java.util.Stack;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static de.delusions.aoc.days.Day7.Operator.*;
+import static de.delusions.aoc.advent2024.Day07.Operator.*;
 
-public class Day7 extends Day<Long> {
-    private static final Logger LOG = LoggerFactory.getLogger(Day7.class);
+public class Day07 extends Day<Long> {
+    private static final Logger LOG = LoggerFactory.getLogger(Day07.class);
 
-    public Day7() {
+    public Day07() {
         super("Bridge Repair", 3749L, 11387L, 4555081946288L, 227921760109726L);
     }
 

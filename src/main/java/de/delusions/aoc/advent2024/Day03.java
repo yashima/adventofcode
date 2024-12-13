@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Day;
 
@@ -9,10 +9,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day3 extends Day<Integer> {
+public class Day03 extends Day<Integer> {
 
 
-    public Day3() {
+    public Day03() {
         super("Mull It Over", 161, 48, 174103751, 100411201);
     }
 

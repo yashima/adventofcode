@@ -1,14 +1,14 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Day;
 
 import java.util.*;
 import java.util.stream.Stream;
 
-public class Day5 extends Day<Integer> {
+public class Day05 extends Day<Integer> {
 
 
-    public Day5(){
+    public Day05(){
         super( "Print Queue",143,123,5964,0);
     }
 

@@ -1,9 +1,9 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import org.testng.annotations.Test;
 
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +22,7 @@ public class Day11Test {
 
     @Test
     public void testInsertList(){
-        List<Long> blink = new Day11().blink(List.of(0L), 30);
+        List<Long> blink = Collections.singletonList(new Day11().blink(List.of(0L), 30));
         Set<Long> set = new HashSet<>(blink);
         assertThat(blink.size()).isEqualTo(156451);
         assertThat(set.size()).isEqualTo(54);

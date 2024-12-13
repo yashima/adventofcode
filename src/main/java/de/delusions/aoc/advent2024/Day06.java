@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
@@ -14,10 +14,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class Day6 extends Day<Integer> {
-    private static final Logger LOG = LoggerFactory.getLogger(Day6.class);
+public class Day06 extends Day<Integer> {
+    private static final Logger LOG = LoggerFactory.getLogger(Day06.class);
 
-    public Day6() {
+    public Day06() {
         super("Guard Gallivant", 41, 6, 4982, 1663);
         Coordinates.USE_FACING = true;
     }

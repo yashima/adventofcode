@@ -1,12 +1,10 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Day;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

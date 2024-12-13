@@ -1,4 +1,4 @@
-package de.delusions.aoc;
+package de.delusions.aoc.advent2024;
 
 import org.testng.annotations.Test;
 

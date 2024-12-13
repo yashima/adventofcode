@@ -1,4 +1,4 @@
-package de.delusions.aoc.days;
+package de.delusions.aoc.advent2024;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Direction;
