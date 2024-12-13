@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class Day15 extends Day<Integer> {
-    static int MAX_DIM = 4000000;
+    static final int MAX_DIM = 4000000;
 
     Day15() {
         super( 15, "Beacon Exclusion Zone" );
@@ -36,7 +36,7 @@ public class Day15 extends Day<Integer> {
         for ( int y = 0; y <= MAX_DIM; y++ ) {
             List<Interval> coveredCoordinates = collectCoveredIntervals( data, y, false );
             if ( coveredCoordinates.size() > 1 ) {
-                distressBeacon = new Coordinates( (int)coveredCoordinates.get( 0 ).getUpper() + 1, y );
+                distressBeacon = new Coordinates( (int)coveredCoordinates.getFirst().getUpper() + 1, y );
                 break;
             }
         }
@@ -47,12 +47,11 @@ public class Day15 extends Day<Integer> {
     List<SensorBeacon> parse( Stream<String> input ) {
         Pattern compile = Pattern.compile( "Sensor at x=(-?\\d+), y=(-?\\d+): closest beacon is at x=(-?\\d+), y=(-?\\d+)" );
 
-        List<SensorBeacon> data = input.map( line -> {
+        return input.map(line -> {
             Matcher m = compile.matcher( line );
             return m.matches() ? new SensorBeacon( new Coordinates( new String[]{m.group( 1 ), m.group( 2 )}, 3 ),
                                                    new Coordinates( new String[]{m.group( 3 ), m.group( 4 )}, 4 ) ) : null;
         } ).filter( Objects::nonNull ).toList();
-        return data;
     }
 
     List<Interval> collectCoveredIntervals( List<SensorBeacon> sensorBeacons, int y, boolean noMaxDim ) {

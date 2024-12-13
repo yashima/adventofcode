@@ -60,7 +60,7 @@ public class Day09 extends Day<String> {
         List<Block> blockList = readBlockList(input);
         int[] blocks = blockList.stream().map(Block::blocks).flatMapToInt(Arrays::stream).toArray();
 
-        LOG.debug("Empty blocks {}",Arrays.stream(blocks).filter(n -> n == EMPTY).count());
+        LOG.debug("Part0: Empty blocks {}",Arrays.stream(blocks).filter(n -> n == EMPTY).count());
 
         // Move non-empty blocks forward in the array, filling empty spots from the back
         for (int forward = 0; forward < blocks.length; forward++) {
@@ -92,7 +92,7 @@ public class Day09 extends Day<String> {
 
         int[] blocks = blockList.stream().flatMapToInt(b -> Arrays.stream(b.blocks())).toArray();
 
-        LOG.debug("Empty blocks {}",Arrays.stream(blocks).filter(n -> n == EMPTY).count());
+        LOG.debug("Part1: Empty blocks {}",Arrays.stream(blocks).filter(n -> n == EMPTY).count());
 
         return calculateCheckSum(blocks);
     }
@@ -115,13 +115,12 @@ public class Day09 extends Day<String> {
         AtomicInteger id = new AtomicInteger(0);
         AtomicInteger currentStart = new AtomicInteger(0);
 
-        List<Block> blockList = input
+        return input
                 .collect(Collectors.joining())
                 .chars()
                 .map(character -> character - 48)
                 .mapToObj(size -> Block.create(empty.getAndSet(!empty.get()) ? EMPTY : id.getAndIncrement(),size,currentStart.getAndAdd(size)))
                 .toList();
-        return blockList;
     }
 
     /**
@@ -139,7 +138,7 @@ public class Day09 extends Day<String> {
     private static String calculateCheckSum(int[] blocks) {
         BigInteger sum = BigInteger.ZERO;
         for(int i = 0; i< blocks.length; i++){
-            sum = sum.add(BigInteger.valueOf(blocks[i]==EMPTY ? 0 :  blocks[i]*i));
+            sum = sum.add(BigInteger.valueOf(blocks[i]==EMPTY ? 0 : (long) blocks[i] *i));
         }
         return sum.toString();
     }

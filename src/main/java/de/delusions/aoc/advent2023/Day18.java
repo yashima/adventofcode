@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 public class Day18 extends Day<String> {
 
-    static Pattern p = Pattern.compile( "([RDLU]{1}) ([0-9]+) .#([a-f,0-9]{5})(.)" );
+    static final Pattern p = Pattern.compile( "([RDLU]{1}) ([0-9]+) .#([a-f,0-9]{5})(.)" );
 
 
     public Day18( String... expected ) {super( 18, "Lavaduct Lagoon", expected );}
@@ -45,10 +45,10 @@ public class Day18 extends Day<String> {
     static DigCommands parseFrom( String line) {
         Matcher m = p.matcher( line );
         if ( m.find() ) {
-            Integer lastHexDigit = Integer.parseInt( m.group( 4 ), 16 );
+            int lastHexDigit = Integer.parseInt( m.group( 4 ), 16 );
             return new DigCommands( getDirection( m.group( 1 ).charAt( 0 ) ),
                                     Integer.parseInt( m.group( 2 ) ),
-                                    getDirection( lastHexDigit.toString().charAt( 0 ) ),
+                                    getDirection( Integer.toString(lastHexDigit).charAt( 0 ) ),
                                     Integer.parseInt( m.group( 3 ), 16 ));
         }
         throw new IllegalStateException( "Line '" + line + "' could not be parsed" );

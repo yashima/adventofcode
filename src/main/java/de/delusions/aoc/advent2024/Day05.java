@@ -76,7 +76,7 @@ public class Day05 extends Day<Integer> {
     @Override
     public Integer part0(Stream<String> input) {
         PrintQueue queue = parsePrintQueue(input);
-        return queue.pages.stream().filter(p -> p.isOrdered(queue.order)).mapToInt(p -> p.middle()).sum();
+        return queue.pages.stream().filter(p -> p.isOrdered(queue.order)).mapToInt(Pages::middle).sum();
 
     }
 

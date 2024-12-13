@@ -24,7 +24,7 @@ public class Day23 extends Day<Integer> {
         super( 23, "Unstable Diffusion" );
     }
 
-    List<Direction> directionPriority = List.of( north, south, west, east );
+    final List<Direction> directionPriority = List.of( north, south, west, east );
 
     @Override
     public Integer part0( Stream<String> input ) {
@@ -54,7 +54,7 @@ public class Day23 extends Day<Integer> {
         return ( xMax - xMin ) * ( yMax - yMin ) - elves.size();
     }
 
-    private int moveElves( int cycle ) {
+    private void moveElves(int cycle ) {
         Map<Coordinates, Coordinates> proposals = new HashMap<>();
         elves.forEach( elf -> {
             Coordinates proposal = proposeMove( cycle, elf, elves );
@@ -69,7 +69,6 @@ public class Day23 extends Day<Integer> {
             elves.remove( elf );
             elves.add( proposal );
         } );
-        return proposals.size();
     }
 
     @Override

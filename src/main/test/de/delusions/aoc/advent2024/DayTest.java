@@ -28,7 +28,7 @@ public abstract class DayTest {
 
     void assertPart(int part) {
         Example testCase = getTestCase(part);
-        Day day = getDay();
+        Day<?> day = getDay();
         Object result = day.part0(testCase.input().lines());
         assert result.equals(testCase.solutions().getFirst());
     }

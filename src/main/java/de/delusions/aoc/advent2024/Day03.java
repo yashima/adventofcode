@@ -23,7 +23,7 @@ public class Day03 extends Day<Integer> {
             if (m.group(2) != null && multido.get()) {
                 int a = Integer.parseInt(m.group(2));
                 int b = Integer.parseInt(m.group(3));
-                sum.accumulateAndGet(a * b, (i, j) -> i + j);
+                sum.accumulateAndGet(a * b, Integer::sum);
             } else{
                 if (m.group(4) != null) {
                     multido.set(m.group(4).equals("do()"));

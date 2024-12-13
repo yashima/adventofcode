@@ -22,9 +22,9 @@ public class Day06 extends Day<Integer> {
         Coordinates.USE_FACING = true;
     }
 
-    char OBSTACLE = '#';
-    char VISITED = 'X';
-    char PRISTINE = '.';
+    final char OBSTACLE = '#';
+    final char VISITED = 'X';
+    final char PRISTINE = '.';
 
     @Override
     public Integer part0(Stream<String> input) {

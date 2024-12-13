@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.algorithms.Dijkstra;
 import de.delusions.algorithms.Pathable;
@@ -20,9 +20,9 @@ import java.util.stream.Stream;
 public class Day21 extends Day<Integer> {
     static final char ROCK = '#';
 
-    static int ODD_PLOTS = 7458;
+    static final int ODD_PLOTS = 7458;
 
-    static int EVEN_PLOTS = 7451;
+    static final int EVEN_PLOTS = 7451;
 
     public Day21( Integer... expected ) {super( 21, "Step Counter", expected );}
 

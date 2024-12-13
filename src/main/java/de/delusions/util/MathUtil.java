@@ -6,26 +6,11 @@ import java.util.List;
 
 public class MathUtil {
 
-    public static List<Integer> calculatePrimeFactors(int number) {
-        List<Integer> factors = new ArrayList<>();
-        if (number == 1) {
-            return factors;
-        }
-        int factor = 2;
-        while (factor * factor <= number) {
-            while (number % factor == 0) {
-                factors.add(factor);
-                number = number / factor;
-            }
-            factor++;
-        }
-        if (number != 1) {
-            factors.add(number);
-        }
-        return factors;
+    public static List<Integer> calculatePrimeFactors(Integer number) {
+        return calculateBiggerPrimeFactors(number.longValue()).stream().map(Long::intValue).toList();
     }
 
-    public static List<Long> calculateBiggerPrimeFactors(long number) {
+    public static List<Long> calculateBiggerPrimeFactors(Long number) {
         List<Long> factors = new ArrayList<>();
         if (number == 1) {
             return factors;

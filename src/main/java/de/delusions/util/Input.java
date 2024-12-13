@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 public class Input {
 
-    public static Path DOWNLOAD = Paths.get(System.getProperty("user.home") + "\\Downloads\\input");
+    public static final Path DOWNLOAD = Paths.get(System.getProperty("user.home") + "\\Downloads\\input");
 
     private final int day;
 

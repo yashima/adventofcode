@@ -16,35 +16,33 @@ public class Day08 extends Day<Integer> {
         super("Resonant Collinearity", 14, 34, 228, 0);
     }
 
-    static char ANTINODE = '#';
+    static final char ANTINODE = '#';
 
     Matrix roofs;
 
     @Override
     public Integer part0(Stream<String> input) {
-        roofs = Matrix.createFromStream(input);
-        Map<Integer, List<Coordinates>> antennas = roofs.findNotValues('.').stream().collect(Collectors.groupingBy(Coordinates::getValue));
-        Set<Coordinates> antinodes = new HashSet<>();
-        findAllAntinodes(antennas, antinodes, this::mirroredAntinodes);
-        return (int) antinodes.stream().filter(roofs::isInTheMatrix).count();
+        return solveIt(input, this::mirroredAntinodes);
     }
 
 
     @Override
     public Integer part1(Stream<String> input) {
+        return solveIt(input, this::endlessAntinodes);
+    }
+
+    private int solveIt(Stream<String> input, BiFunction<Coordinates, Coordinates, List<Coordinates>> calculateFunc) {
         roofs = Matrix.createFromStream(input);
         Map<Integer, List<Coordinates>> antennas = roofs.findNotValues('.').stream().collect(Collectors.groupingBy(Coordinates::getValue));
         Set<Coordinates> antinodes = new HashSet<>();
-        findAllAntinodes(antennas, antinodes, this::endlessAntinodes);
+        findAllAntinodes(antennas, antinodes, calculateFunc);
         return (int) antinodes.stream().filter(roofs::isInTheMatrix).count();
     }
 
     private void findAllAntinodes(Map<Integer, List<Coordinates>> antennas, Set<Coordinates> antinodes, BiFunction<Coordinates, Coordinates, List<Coordinates>> calculateFunc) {
         for (List<Coordinates> antennaType : antennas.values()) {
             IntStream.range(0, antennaType.size()).forEach(i ->
-                    IntStream.range(i + 1, antennaType.size()).forEach(j -> {
-                        antinodes.addAll(calculateFunc.apply(antennaType.get(i), antennaType.get(j)));
-                    })
+                    IntStream.range(i + 1, antennaType.size()).forEach(j -> antinodes.addAll(calculateFunc.apply(antennaType.get(i), antennaType.get(j))))
             );
         }
     }

@@ -17,7 +17,7 @@ public class Day12 extends Day<Integer> {
 
     static Matrix HILL;
 
-    static List<Coordinates> GOALS = new ArrayList<>();
+    static final List<Coordinates> GOALS = new ArrayList<>();
 
     Day12() {
         super( 12, "Hill Climbing Algorithm" );
@@ -36,7 +36,7 @@ public class Day12 extends Day<Integer> {
     public Integer part1( Stream<String> input ) {
         HILL = new Matrix( input.map( line -> line.chars().map( c -> c - 96 ).toArray() ).toArray( int[][]::new ) );
         GOALS.addAll( HILL.findValues( ( (int) 'a' ) - 96, false ) );
-        Coordinates startPos = HILL.findValues( ( (int) 'E' ) - 96, true ).get( 0 );
+        Coordinates startPos = HILL.findValues( ( (int) 'E' ) - 96, true ).getFirst();
 
         Map<Coordinates, Path> openList = new HashMap<>();
         Map<Coordinates, Path> closedList = new HashMap<>();
@@ -73,19 +73,19 @@ public class Day12 extends Day<Integer> {
     }
 
     static class Path {
-        Path parent;
+        final Path parent;
 
-        Coordinates pos;
+        final Coordinates pos;
 
-        String move;
+        final String move;
 
-        int height;
+        final int height;
 
-        int cost;
+        final int cost;
 
-        int fnord;
+        final int fnord;
 
-        int steps;
+        final int steps;
 
 
         Path( int x, int y, Path parent, String move ) {

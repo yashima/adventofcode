@@ -33,7 +33,7 @@ public class Day03 extends Day<Integer> {
             elfGroups.peek().add( elf );
         } );
         return elfGroups.stream().map(
-            group -> group.get( 0 ).chars().filter( type -> isInPack( group.get( 1 ), type ) && isInPack( group.get( 2 ), type ) ).map(
+            group -> group.getFirst().chars().filter(type -> isInPack( group.get( 1 ), type ) && isInPack( group.get( 2 ), type ) ).map(
                 this::priority ).findFirst().orElseGet( null ) ).reduce( 0, Integer::sum );
 
 

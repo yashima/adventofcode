@@ -51,9 +51,5 @@ public class Day2Test {
         assertThat(Day02.Report.unsafeDiff(diff, inc)).isEqualTo(expected);
     }
 
-    @Test
-    public void testComplexDamper(){
 
-    }
-    
 }

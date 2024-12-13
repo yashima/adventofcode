@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 import de.delusions.util.Matrix;
@@ -24,7 +24,7 @@ public class Day13 extends Day<Integer> {
     /**
      * How characters in the input map to binary for bitwise comparisons
      */
-    static Map<Character, Integer> BINARY = Map.of( '#', 1, '.', 0 );
+    static final Map<Character, Integer> BINARY = Map.of( '#', 1, '.', 0 );
 
     @Override
     public Integer part1( Stream<String> input ) {

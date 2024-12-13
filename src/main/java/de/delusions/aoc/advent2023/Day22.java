@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 import de.delusions.util.Interval;
@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class Day22 extends Day<Integer> {
-    Pattern p = Pattern.compile( "([0-9]+),([0-9]+),([0-9]+)~([0-9,]+),([0-9]+),([0-9]+)" );
+    final Pattern p = Pattern.compile( "([0-9]+),([0-9]+),([0-9]+)~([0-9,]+),([0-9]+),([0-9]+)" );
 
     public Day22( Integer... expected ) {super( 22, "Sand Slabs", expected );}
 

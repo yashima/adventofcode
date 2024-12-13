@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class Day11 extends Day<Long> {
 
-    public static Character STAR = '#';
+    public static final Character STAR = '#';
 
     public Day11( Long... expected ) {
         super( 11, "Cosmic Expansion", expected );

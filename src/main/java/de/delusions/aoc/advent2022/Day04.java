@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 public class Day04 extends Day<Long> {
 
-    static Pattern day4Pattern = Pattern.compile( "([0-9]+)-([0-9]+),([0-9]+)-([0-9]+)" );
+    static final Pattern day4Pattern = Pattern.compile( "([0-9]+)-([0-9]+),([0-9]+)-([0-9]+)" );
 
     Day04() {
         super( 4, "Camp Cleanup" );

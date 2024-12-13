@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 import de.delusions.util.Interval;
@@ -42,7 +42,7 @@ public class Day19 extends Day<Long> {
         };
     }
 
-    Map<String, Workflow> workflows = new HashMap<>();
+    final Map<String, Workflow> workflows = new HashMap<>();
 
     List<Part> parts;
 

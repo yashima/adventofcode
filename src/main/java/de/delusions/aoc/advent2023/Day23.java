@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.algorithms.Dijkstra;
 import de.delusions.algorithms.Pathable;
@@ -23,7 +23,7 @@ public class Day23 extends Day<Integer> {
 
     static Coordinates GOAL;
 
-    static Coordinates START = new Coordinates( 0, 1 );
+    static final Coordinates START = new Coordinates( 0, 1 );
 
     static int PART = 0;
 
@@ -80,9 +80,7 @@ public class Day23 extends Day<Integer> {
                 opens.push( s );
             } );
         }
-        endpoints.forEach( e -> {
-            crossing.neighbors.put( e, e.getValue() );
-        } );
+        endpoints.forEach( e -> crossing.neighbors.put( e, e.getValue() ));
     }
 
     boolean isCrossing( Coordinates candidate ) {

@@ -83,7 +83,7 @@ public class InputDownloader {
     public void downloadExamples() throws IOException, InterruptedException {
         Path filePath = getExamplePath(day);
         if (Files.exists(filePath)) {
-            LOG.info("File {} already exists. Skipping download.", filePath.getFileName());
+            LOG.info("Example file {} already exists. Skipping download.", filePath.getFileName());
             return;
         }
         String url = String.format("https://adventofcode.com/%s/day/%s", year, day);

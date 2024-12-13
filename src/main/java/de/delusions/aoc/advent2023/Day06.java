@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 
@@ -31,21 +31,21 @@ public class Day06 extends Day<Long> {
         List<Long> distances = Arrays.stream( rawData.get( 1 ) ).map( Long::parseLong ).toList();
         List<Race> result = new ArrayList<>();
         for ( int idx = 0; idx < times.size(); idx++ ) {
-            result.add( new Race( times.get( idx ), distances.get( idx ), 1 ) );
+            result.add( new Race( times.get( idx ), distances.get( idx )) );
         }
         return result;
     }
 
     private Race readRaceDataPart1( Stream<String> input ) {
         List<String> lines = input.toList();
-        return new Race( extractNumber( lines.get( 0 ) ), extractNumber( lines.get( 1 ) ), 1 );
+        return new Race( extractNumber( lines.get( 0 ) ), extractNumber( lines.get( 1 ) ));
     }
 
     private long extractNumber( String line ) {
         return Long.parseLong( line.substring( line.indexOf( ":" ) + 1 ).replaceAll( " ", "" ) );
     }
 
-    record Race(long time, long distance, long speed) {
+    record Race(long time, long distance) {
         long calculateWinningMoves() {
             long press = 0;
             while ( loses( press ) ) {
@@ -61,7 +61,7 @@ public class Day06 extends Day<Long> {
         }
 
         boolean loses( long press ) {
-            return distance >= ( time - press ) * ( press * speed );
+            return distance >= ( time - press ) * press ;
         }
     }
 }

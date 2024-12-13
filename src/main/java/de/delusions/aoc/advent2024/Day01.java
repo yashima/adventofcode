@@ -47,7 +47,7 @@ public class Day01 extends Day<Integer> {
     public Integer part1(Stream<String> input) {
         HistoriansHaveBadHandWriting h = new HistoriansHaveBadHandWriting(new ArrayList<>(), new ArrayList<>());
         input.forEach(h::addLine);
-        Map<Integer, Integer> map = h.a.stream().collect(Collectors.toMap(i -> i, i ->  h.countEntries(i), (i,j)->i + h.countEntries(j) ));
+        Map<Integer, Integer> map = h.a.stream().collect(Collectors.toMap(i -> i, h::countEntries, (i, j)->i + h.countEntries(j) ));
         return map.keySet().stream().map(i -> map.get(i)*i).mapToInt(Integer::intValue).sum();
 
     }

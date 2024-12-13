@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 
@@ -14,8 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static main.java.de.delusions.aoc.advent2023.Day20.Pulse.HIGH;
-import static main.java.de.delusions.aoc.advent2023.Day20.Pulse.LOW;
+import static de.delusions.aoc.advent2023.Day20.Pulse.HIGH;
+import static de.delusions.aoc.advent2023.Day20.Pulse.LOW;
 
 public class Day20 extends Day<Long> {
 
@@ -29,7 +29,7 @@ public class Day20 extends Day<Long> {
 
     public Day20( Long... expected ) {super( 20, "Pulse Propagations", expected );}
 
-    Pattern p = Pattern.compile( "^([%&])*([a-z]+) -> (.*)$" );
+    final Pattern p = Pattern.compile( "^([%&])*([a-z]+) -> (.*)$" );
 
     @Override
     public Long part0( Stream<String> input ) {
@@ -78,11 +78,7 @@ public class Day20 extends Day<Long> {
         endpoints.forEach( e -> moduleMap.put( e.id, e ) );
 
         //now find me all the inputs for all the conjunctions and add them.
-        moduleMap.values().stream().filter( m -> m instanceof Conjunction ).forEach( conjunction -> {
-            moduleMap.values().stream().filter( in -> in.receivers.contains( conjunction.id ) ).forEach( in -> {
-                ( (Conjunction) conjunction ).addInput( in.id );
-            } );
-        } );
+        moduleMap.values().stream().filter( m -> m instanceof Conjunction ).forEach( conjunction -> moduleMap.values().stream().filter(in -> in.receivers.contains( conjunction.id ) ).forEach(in -> ( (Conjunction) conjunction ).addInput( in.id )));
 
         return moduleMap;
     }
@@ -154,7 +150,7 @@ public class Day20 extends Day<Long> {
 
     static class Conjunction extends Module {
 
-        Map<String, Pulse> inputs = new HashMap<>();
+        final Map<String, Pulse> inputs = new HashMap<>();
 
         Conjunction( String id, List<String> targets ) {
             super( id, targets );

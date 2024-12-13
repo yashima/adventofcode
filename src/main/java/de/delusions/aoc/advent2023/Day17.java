@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.algorithms.Dijkstra;
 import de.delusions.algorithms.Pathable;

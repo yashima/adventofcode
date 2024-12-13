@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class Day13 extends Day<Integer> {
 
-    static AtomicInteger PACKET_ID = new AtomicInteger( 1 );
+    static final AtomicInteger PACKET_ID = new AtomicInteger( 1 );
 
     Day13() {
         super( 13, "Distress Signal" );
@@ -41,11 +41,11 @@ public class Day13 extends Day<Integer> {
     }
 
     static class Packet {
-        PacketContent left;
+        final PacketContent left;
 
-        PacketContent right;
+        final PacketContent right;
 
-        int position = PACKET_ID.getAndIncrement();
+        final int position = PACKET_ID.getAndIncrement();
 
         Packet( String left, String right ) {
             this.left = new PacketContent( left );
@@ -69,7 +69,7 @@ public class Day13 extends Day<Integer> {
     static class PacketContent implements Comparable<PacketContent> {
         Integer value = null;
 
-        List<PacketContent> contents = new ArrayList<>();
+        final List<PacketContent> contents = new ArrayList<>();
 
         PacketContent( String packetString ) {
             Matcher packetMatcher = Pattern.compile( "\\[(.*)\\]" ).matcher( packetString );
@@ -83,7 +83,7 @@ public class Day13 extends Day<Integer> {
                 StringBuilder childPacketString = new StringBuilder();
                 for ( String child : children ) {
                     depth = depth + child.chars().map( c -> c == '[' ? 1 : ( c == ']' ? -1 : 0 ) ).reduce( 0, Integer::sum );
-                    childPacketString.append( ( childPacketString.length() == 0 ) ? "" : "," ).append( child );
+                    childPacketString.append( ( childPacketString.isEmpty() ) ? "" : "," ).append( child );
                     if ( depth == 0 ) {
                         contents.add( new PacketContent( childPacketString.toString() ) );
                         childPacketString = new StringBuilder();

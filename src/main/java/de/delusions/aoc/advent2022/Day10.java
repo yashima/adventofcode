@@ -8,13 +8,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class Day10 extends Day<Integer> {
-    static int WIDTH = 40;
+    static final int WIDTH = 40;
 
-    AtomicInteger clock = new AtomicInteger( 0 );
+    final AtomicInteger clock = new AtomicInteger( 0 );
 
-    AtomicInteger register = new AtomicInteger( 1 );
+    final AtomicInteger register = new AtomicInteger( 1 );
 
-    List<String> crt = new ArrayList<>();
+    final List<String> crt = new ArrayList<>();
 
     Day10() {
         super( 10, "Cathode-Ray Tube" );

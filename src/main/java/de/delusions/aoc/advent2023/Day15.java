@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 
@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 public class Day15 extends Day<Integer> {
     static final Pattern p = Pattern.compile( "([a-z]+)(.)([0-9])?" );
 
-    Map<Integer, List<LensInstruction>> bucketMap = new HashMap<>();
+    final Map<Integer, List<LensInstruction>> bucketMap = new HashMap<>();
 
     public Day15( Integer... expected ) {
         super( 15, "Lens Library", expected );

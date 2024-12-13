@@ -3,16 +3,14 @@ package de.delusions.aoc.advent2022;
 import de.delusions.util.Day;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class Day20 extends Day<Long> {
 
-    static AtomicInteger ID = new AtomicInteger();
 
     List<CryptPair> numbers;
 
-    long key = 811589153L;
+    final long key = 811589153L;
 
     Integer ZERO = null;
 
@@ -20,11 +18,10 @@ public class Day20 extends Day<Long> {
         super( 20, "Grove Positioning System" );
     }
 
-    int getZeroPosition() {
+    void getZeroPosition() {
         if ( ZERO == null ) {
             ZERO = numbers.indexOf( numbers.stream().filter( p -> p.number == 0 ).findFirst().get() );
         }
-        return ZERO;
     }
 
     CryptPair getZero() {
@@ -72,7 +69,7 @@ public class Day20 extends Day<Long> {
             cryptPairs.get( i ).setNeighbors( prev, next );
         }
         CryptPair first = cryptPairs.get( 0 );
-        CryptPair last = cryptPairs.get( cryptPairs.size() - 1 );
+        CryptPair last = cryptPairs.getLast();
         first.setNeighbors( last, cryptPairs.get( 1 ) );
         last.setNeighbors( cryptPairs.get( cryptPairs.size() - 2 ), first );
         return cryptPairs;
@@ -87,13 +84,6 @@ public class Day20 extends Day<Long> {
         return result;
     }
 
-    String prettyPrint() {
-        return prettyPrint( getZero(), numbers.size() - 1 );
-    }
-
-    String prettyPrint( CryptPair pair, int depth ) {
-        return pair.number + ", " + ( depth > 0 ? prettyPrint( pair.next, depth - 1 ) : "" );
-    }
 
     class CryptPair {
 

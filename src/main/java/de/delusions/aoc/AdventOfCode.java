@@ -1,5 +1,6 @@
 package de.delusions.aoc;
 
+import de.delusions.aoc.advent2024.Day08;
 import de.delusions.util.Day;
 
 import java.time.LocalDate;
@@ -9,7 +10,7 @@ public class AdventOfCode {
 
         LocalDate currentDate = LocalDate.now();
         Day<?> toDay = Day.loadDayClass(currentDate.getDayOfMonth());
-        runAllVariants(toDay);
+        runAllVariants(new Day08());
 
     }
 

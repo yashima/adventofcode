@@ -45,7 +45,7 @@ public class Day09 extends Day<Integer> {
 
 
     static class RowEnd { //only used by Day9
-        String name;
+        final String name;
 
         int row = 0;
 

@@ -22,11 +22,11 @@ import java.util.stream.Stream;
 
 public class Day16 extends Day<Integer> {
 
-    static String START = "AA";
+    static final String START = "AA";
 
-    static AtomicInteger ID = new AtomicInteger( 0 );
+    static final AtomicInteger ID = new AtomicInteger( 0 );
 
-    static int TIME = 30;
+    static final int TIME = 30;
 
     static Map<String, Valve> VALVES;
 
@@ -43,7 +43,7 @@ public class Day16 extends Day<Integer> {
     @Override
     public Integer part0( Stream<String> input ) {
         init( input );
-        List<Path<Valve>> paths = new ArrayList<>( List.of( new Path<Valve>( null, VALVES.get( START ), 0, 0 ) ) );
+        List<Path<Valve>> paths = new ArrayList<>( List.of(new Path<>(null, VALVES.get(START), 0, 0) ) );
         List<Path<Valve>> results = getPaths( paths, this::getLegalChildPaths );
         return results.stream().map( Path::getTotalHeuristic ).max( Integer::compareTo ).orElse( 0 );
     }
@@ -51,18 +51,16 @@ public class Day16 extends Day<Integer> {
     @Override
     public Integer part1( Stream<String> input ) {
         //no need to init again?
-        List<Path<Valve>> paths = new ArrayList<>( List.of( new Path<Valve>( null, VALVES.get( START ), 4, 0 ) ) );
+        List<Path<Valve>> paths = new ArrayList<>( List.of(new Path<>(null, VALVES.get(START), 4, 0) ) );
         Map<Path<Valve>, Set<Integer>> results =
             getPaths( paths, this::getLegalChildPaths2 ).stream().collect( Collectors.toMap( Function.identity(), Path::getNodeIdsWithoutStart ) );
         Set<Integer> unions = new HashSet<>();
 
-        results.keySet().parallelStream().forEach( path -> {
-            results.keySet().parallelStream().forEach( compare -> {
-                if ( results.get( path ).stream().noneMatch( a -> results.get( compare ).contains( a ) ) ) {
-                    unions.add( path.getTotalHeuristic() + compare.getTotalHeuristic() );
-                }
-            } );
-        } );
+        results.keySet().parallelStream().forEach( path -> results.keySet().parallelStream().forEach(compare -> {
+            if ( results.get( path ).stream().noneMatch( a -> results.get( compare ).contains( a ) ) ) {
+                unions.add( path.getTotalHeuristic() + compare.getTotalHeuristic() );
+            }
+        } ));
         return unions.stream().max( Integer::compareTo ).orElse( -1 );
     }
 
@@ -141,8 +139,8 @@ public class Day16 extends Day<Integer> {
         StringBuilder builder = new StringBuilder();
         int size = valveLine.length;
         builder.append( "    " );
-        for ( int i = 0; i < size; i++ ) {
-            builder.append( valveLine[i].name ).append( "  " );
+        for (Valve valve : valveLine) {
+            builder.append(valve.name).append("  ");
         }
         builder.append( "\n" );
         for ( int i = 0; i < size; i++ ) {
@@ -157,7 +155,7 @@ public class Day16 extends Day<Integer> {
 
 
     static class Valve implements PathNode<Valve>, Comparable<Valve> {
-        static Pattern pattern = Pattern.compile( "Valve ([A-Z]{2}) has flow rate=(\\d+); tunnels? leads? to valves? (.*)" );
+        static final Pattern pattern = Pattern.compile( "Valve ([A-Z]{2}) has flow rate=(\\d+); tunnels? leads? to valves? (.*)" );
 
         String name;
 
@@ -165,7 +163,7 @@ public class Day16 extends Day<Integer> {
 
         Map<String, Integer> tunnelsTo;
 
-        int id;
+        final int id;
 
         Valve( String line ) {
             id = ID.getAndIncrement();

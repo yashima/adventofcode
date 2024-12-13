@@ -53,7 +53,7 @@ public class Day21 extends Day<Long> {
     }
 
     static class HumanDetection extends RuntimeException {
-        long result;
+        final long result;
 
         HumanDetection( long result ) {
             super();
@@ -62,11 +62,11 @@ public class Day21 extends Day<Long> {
     }
 
     static class MathMonkey {
-        static Pattern OP_REGEX = Pattern.compile( "([a-z]{4}) (.) ([a-z]{4})" );
+        static final Pattern OP_REGEX = Pattern.compile( "([a-z]{4}) (.) ([a-z]{4})" );
 
-        String name;
+        final String name;
 
-        String mathString;
+        final String mathString;
 
         int constant = -1;
 

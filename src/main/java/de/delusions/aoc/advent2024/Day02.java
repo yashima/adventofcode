@@ -15,7 +15,7 @@ public class Day02 extends Day<Long> {
     private static final Logger LOG = LoggerFactory.getLogger(Day02.class);
 
     public Day02() {
-        super(2, "Red-Nosed Reports", 2l, 4L, 421l, 476L);
+        super(2, "Red-Nosed Reports", 2L, 4L, 421L, 476L);
     }
 
     public record Report(List<Long> levels, boolean activatedDamper) {
@@ -56,7 +56,7 @@ public class Day02 extends Day<Long> {
             return list.subList(1, list.size()).stream().filter(Objects::nonNull).map(l -> l - prev.getAndSet(l)).filter(diff -> unsafeDiff(diff, inc)).count();
         }
 
-        static long maxDiff = 3l;
+        static final long maxDiff = 3L;
 
         static boolean unsafeDiff(long diff, boolean inc) {
             return Math.abs(diff) > maxDiff || (inc && diff <= 0) || (!inc && diff >= 0);

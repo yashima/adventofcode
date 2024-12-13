@@ -16,7 +16,7 @@ public class Day04 extends Day<Integer> {
         super("Ceres Search", 18, 9, 2454, 0);
     }
 
-    char[] SEARCH = {'X', 'M', 'A', 'S'};
+    final char[] SEARCH = {'X', 'M', 'A', 'S'};
 
     @Override
     public Integer part0(Stream<String> input) {

@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
@@ -15,7 +15,7 @@ public class Day10 extends Day<Integer> {
     /**
      * Map of pipes and the directions they map.
      */
-    static Map<Character, Pipe> PIPES = Map.of( '.', new Pipe( '.', false, '.', '.' ),
+    static final Map<Character, Pipe> PIPES = Map.of( '.', new Pipe( '.', false, '.', '.' ),
                                                 '-', new Pipe( '-', true, '─', '═', Direction.east, Direction.west ),
                                                 '|', new Pipe( '|', true, '│', '║', Direction.south, Direction.north ),
                                                 'L', new Pipe( 'L', false, '└', '╚', Direction.north, Direction.east ),
@@ -42,7 +42,7 @@ public class Day10 extends Day<Integer> {
     }
 
     /* Characters signaling that we're inside the loop if we are walking clockwise */
-    static List<Character> clock = List.of( '└', '┘', '┌', '┐', '│' );
+    static final List<Character> clock = List.of( '└', '┘', '┌', '┐', '│' );
 
     /* Characters signaling that we're inside the loop if we are walking counterclockwise */
     static List<Character> counter = List.of( '║', '╚', '╗', '╔', '╝' );

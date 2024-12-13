@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 import de.delusions.util.Direction;
@@ -17,13 +17,13 @@ public class Day14 extends Day<Integer> {
 
     public static final char ROLLING_STONE = 'O';
 
-    static int SIGNATURE_LENGTH = 50;
+    static final int SIGNATURE_LENGTH = 50;
 
-    static int START_CYCLE_DETECTION = 1000;
+    static final int START_CYCLE_DETECTION = 1000;
 
-    static int FULL_CYCLES = 1000000000;
+    static final int FULL_CYCLES = 1000000000;
 
-    static int TEST_CYCLES = 10000;
+    static final int TEST_CYCLES = 10000;
 
     public Day14( Integer... expected ) {
         super( 14, "Parabolic Reflector Dish", expected );

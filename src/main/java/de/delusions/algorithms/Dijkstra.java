@@ -81,8 +81,8 @@ public class Dijkstra<PATH extends Pathable<PATH, ?, MAP>, MAP> {
             if (path.goal(theMap)) { //found one
                 paths.add(path);
             }
-            path.getNeighbors(theMap).forEach(opens::add);
-        };
+            opens.addAll(path.getNeighbors(theMap));
+        }
         return paths;
     }
 }

@@ -27,7 +27,7 @@ public class Day11 extends Day<Long> {
         return blink(readStones(input), 75);
     }
 
-    static Pattern REGEX = Pattern.compile("(\\d+)");
+    static final Pattern REGEX = Pattern.compile("(\\d+)");
 
     static List<Long> readStones(Stream<String> input) {
         return REGEX.matcher(input.collect(Collectors.joining())).results().map(m -> m.group(1)).map(Long::parseLong).toList();
@@ -41,9 +41,7 @@ public class Day11 extends Day<Long> {
             stack.addAll(prevBlink.keySet());
             while (!stack.isEmpty()) {
                 Long current = stack.pop();
-                nextStep(current).forEach(stone -> {
-                    nextBlink.merge(stone, prevBlink.get(current), Long::sum);
-                });
+                nextStep(current).forEach(stone -> nextBlink.merge(stone, prevBlink.get(current), Long::sum));
             }
             prevBlink.clear();
             prevBlink.putAll(nextBlink);
@@ -51,7 +49,7 @@ public class Day11 extends Day<Long> {
         return prevBlink.values().stream().mapToLong(Long::longValue).sum();
     }
 
-    Map<Long, List<Long>> cache = new HashMap<>();
+    final Map<Long, List<Long>> cache = new HashMap<>();
 
     List<Long> nextStep(Long stone) {
         List<Long> result;
@@ -68,7 +66,7 @@ public class Day11 extends Day<Long> {
     }
 
     static List<Long> split(Long number) {
-        long powerOfTen = (long) Math.pow(10, number.toString().length() / 2);
+        long powerOfTen = (long) Math.pow(10, (double) number.toString().length() / 2);
         return List.of(number / powerOfTen, number % powerOfTen);
     }
 

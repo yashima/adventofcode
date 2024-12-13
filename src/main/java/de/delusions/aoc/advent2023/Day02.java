@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 
@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 public class Day02 extends Day<Long> {
 
-    Pattern R = Pattern.compile( "(\\d+) (green|blue|red)" );
+    final Pattern R = Pattern.compile( "(\\d+) (green|blue|red)" );
 
     public Day02( Long... expected ) {
         super( 2, "Cube Conundrum", expected );
@@ -47,9 +47,9 @@ public class Day02 extends Day<Long> {
 
 
     static class Game {
-        int id;
+        final int id;
 
-        Map<Color, Integer> maxStones = new HashMap<>();
+        final Map<Color, Integer> maxStones = new HashMap<>();
 
         Game( int id ) {
             this.id = id;

@@ -10,15 +10,15 @@ import java.util.Set;
 import java.util.function.Function;
 
 public class Path<T extends PathNode<T>> {
-    Path<T> parent;
+    final Path<T> parent;
 
-    T node;
+    final T node;
 
-    int totalCost;
+    final int totalCost;
 
-    int heuristic;
+    final int heuristic;
 
-    int totalHeuristic;
+    final int totalHeuristic;
 
     public Path( Path<T> parent, T node, int cost, int heuristic ) {
         this.parent = parent;

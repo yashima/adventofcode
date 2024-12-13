@@ -31,7 +31,7 @@ public class Day22 extends Day<Integer> {
 
     static final String mapRegex = "[#. ]*";
 
-    static List<Edge> edges = List.of( new Edge( ONE, north, TWO, south, false, true ), //
+    static final List<Edge> edges = List.of( new Edge( ONE, north, TWO, south, false, true ), //
                                        new Edge( ONE, west, THREE, south, true, false ),//
                                        new Edge( ONE, east, SIX, west, false, true ), //
                                        new Edge( TWO, north, ONE, south, false, true ),//
@@ -60,7 +60,7 @@ public class Day22 extends Day<Integer> {
                                        new Edge( P_SIX, east, P_FOUR, north, true, false ),//
                                        new Edge( P_SIX, south, P_TWO, south, false, false ) );//
 
-    AtomicReference<String> commands = new AtomicReference<>();
+    final AtomicReference<String> commands = new AtomicReference<>();
 
     Matrix map;
 
@@ -168,18 +168,7 @@ public class Day22 extends Day<Integer> {
     boolean adjustPositionByEdge() {
         int squareX = currentPosition.x / edgeSize;
         int squareY = currentPosition.y / edgeSize;
-        Edge edge = null;
-        for ( Square square : Square.values() ) {
-            if ( square.test == this.isTestMode() && square.squareX == squareX && square.squareY == squareY ) {
-                for ( Edge e : edges ) {
-                    if ( e.fromSquare == square && e.fromEdge == facing ) {
-                        edge = e;
-                        break;
-                    }
-                }
-                break;
-            }
-        }
+        Edge edge = getEdge(squareX, squareY);
         if ( edge == null ) {
             throw new IllegalStateException( "Pos=" + currentPosition + " facing=" + facing );
         }
@@ -206,12 +195,7 @@ public class Day22 extends Day<Integer> {
         else if ( edge.newFacing == west ) {
             newY = newY + edgeSize - 1;
         }
-        else if ( edge.newFacing == south ) {
-            newX = newX;
-        }
-        else if ( edge.newFacing == east ) {
-            newY = newY;
-        }
+
         Coordinates nextPosition = map.createCoords( newX, newY );
         if ( map.getValue( nextPosition ) == WALL ) {
             return true;
@@ -219,6 +203,22 @@ public class Day22 extends Day<Integer> {
         currentPosition = nextPosition;
         facing = edge.newFacing;
         return false;
+    }
+
+    private Edge getEdge(int squareX, int squareY) {
+        Edge edge = null;
+        for ( Square square : Square.values() ) {
+            if ( square.test == this.isTestMode() && square.squareX == squareX && square.squareY == squareY) {
+                for ( Edge e : edges ) {
+                    if ( e.fromSquare == square && e.fromEdge == facing ) {
+                        edge = e;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return edge;
     }
 
     Matrix parse( Stream<String> input ) {

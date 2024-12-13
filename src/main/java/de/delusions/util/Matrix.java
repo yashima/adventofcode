@@ -14,11 +14,11 @@ import java.util.stream.Stream;
 public class Matrix {
     //y = cols , -1 = more west, +1 more east
     //x = rows , -1 = more north, +1 more south
-    int[][] matrix; //int rows | cols
+    final int[][] matrix; //int rows | cols
 
-    int xOffset;
+    final int xOffset;
 
-    int yOffset;
+    final int yOffset;
     Map<Integer, String> printMap = new HashMap<>();
 
     public Matrix(int[][] initialized) {

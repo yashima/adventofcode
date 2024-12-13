@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 
@@ -12,9 +12,9 @@ import java.util.stream.Stream;
 
 public class Day12 extends Day<Integer> {
 
-    static Pattern SPRING_REG = Pattern.compile( "([#\\?]+)" );
+    static final Pattern SPRING_REG = Pattern.compile( "([#\\?]+)" );
 
-    static Pattern NUMBER_REG = Pattern.compile( "(\\d+)" );
+    static final Pattern NUMBER_REG = Pattern.compile( "(\\d+)" );
 
     public Day12( Integer... expected ) {
         super( 12, "Hot Springs", expected );
@@ -129,19 +129,18 @@ public class Day12 extends Day<Integer> {
                 //do nothing?
             }
             List<SpringRow> result = new ArrayList<>();
-            SpringRow row = oldRow;
-            if ( row.isDone() ) {
-                result.add( row );
+            if ( oldRow.isDone() ) {
+                result.add(oldRow);
                 return result;
             }
-            else if ( row.groups().isEmpty() || row.brokenGroups().isEmpty() ) {
+            else if ( oldRow.groups().isEmpty() || oldRow.brokenGroups().isEmpty() ) {
                 return result;
             }
-            String group = row.groups().getFirst();
-            int broken = row.brokenGroups().getFirst();
+            String group = oldRow.groups().getFirst();
+            int broken = oldRow.brokenGroups().getFirst();
             if ( group.startsWith( "?" ) ) {//make two branches one with . and one with #
-                result.add( makeAChoicyRow( row, group.substring( 1 ) ) );
-                result.add( makeAChoicyRow( row, group.replaceFirst( "\\?", "#" ) ) );
+                result.add( makeAChoicyRow(oldRow, group.substring( 1 ) ) );
+                result.add( makeAChoicyRow(oldRow, group.replaceFirst( "\\?", "#" ) ) );
             }
             else {
                 //we're not starting with ? but with #, so that # must be part of the first group, try to split it off:
@@ -150,13 +149,13 @@ public class Day12 extends Day<Integer> {
                 //null indicates some kind of failure, in any case the branch ends.
                 if ( remaining != null ) {
                     //split was successful and matched the first group:
-                    row.groups().removeFirst();
+                    oldRow.groups().removeFirst();
                     if ( !remaining.isBlank() ) {
-                        row.groups().addFirst( remaining );
+                        oldRow.groups().addFirst( remaining );
                     }
-                    row.brokenGroups().removeFirst();
-                    if ( !row.isEarlyMismatch() ) {
-                        result.add( row );
+                    oldRow.brokenGroups().removeFirst();
+                    if ( !oldRow.isEarlyMismatch() ) {
+                        result.add(oldRow);
                     }
                     else {
                         //  System.err.println(row);
@@ -189,8 +188,8 @@ public class Day12 extends Day<Integer> {
         @Override
         public boolean equals( Object o ) {
             if ( this == o ) {return true;}
-            if ( !( o instanceof SpringRow springRow ) ) {return false;}
-            return Objects.equals( groups, springRow.groups ) && Objects.equals( brokenGroups, springRow.brokenGroups );
+            if ( !(o instanceof SpringRow(List<String> groups1, List<Integer> brokenGroups1)) ) {return false;}
+            return Objects.equals( groups, groups1) && Objects.equals( brokenGroups, brokenGroups1);
         }
 
         @Override

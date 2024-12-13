@@ -36,7 +36,7 @@ public class Day10 extends Day<Integer> {
         return trailheads.stream().map( c -> new Dijkstra<>(new Path(c,0)).findAllUniquePaths(map)).mapToInt(List::size).sum();
     }
 
-    class Path extends Coordinates implements Pathable<Path,Integer,Matrix> {
+    static class Path extends Coordinates implements Pathable<Path,Integer,Matrix> {
 
         public Path(Coordinates coords,int elevation) {
             super(coords.x, coords.y);

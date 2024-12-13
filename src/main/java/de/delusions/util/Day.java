@@ -1,7 +1,6 @@
 package de.delusions.util;
 
 import de.delusions.tools.ConfigProperties;
-import de.delusions.tools.InputDownloader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,14 +13,15 @@ import java.util.stream.Stream;
 public abstract class Day<T> {
     private static final Logger LOG = LoggerFactory.getLogger(Day.class);
 
-    T[] expected;
+    final T[] expected;
 
-    int day;
+    final int day;
 
-    String tag;
+    final String tag;
 
     boolean testMode = false;
 
+    @SafeVarargs
     public Day(String tag, T... expected) {
         this.day = Integer.parseInt(getClass().getSimpleName().substring(3));
         this.tag = tag;
@@ -75,7 +75,7 @@ public abstract class Day<T> {
             }
 
         } catch (IOException e) {
-            LOG.error("Input could not be retrieved: " + e.getMessage());
+            LOG.error("Input could not be retrieved: {}", e.getMessage());
             return null;
         }
     }

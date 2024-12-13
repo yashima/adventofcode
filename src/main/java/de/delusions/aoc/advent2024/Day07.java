@@ -46,7 +46,7 @@ public class Day07 extends Day<Long> {
             }
 
             Long deoperate(Long a, Long b) {
-                Long powerOf10 = BigDecimal.valueOf(Math.pow(10, Long.valueOf(b.toString().length()))).longValue();
+                long powerOf10 = BigDecimal.valueOf(Math.pow(10, (long) b.toString().length())).longValue();
                 return a >= b && (a - b) % powerOf10 == 0 ? (a - b) / powerOf10 : null;
             }
         };

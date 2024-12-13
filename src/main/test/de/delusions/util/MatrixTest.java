@@ -5,14 +5,14 @@ import org.testng.annotations.Test;
 
 public class MatrixTest {
 
-    String testCase = """
+    final String testCase = """
             1..2
             .56.
             .87.
             4..3
             """;
 
-    String testCase2 = """
+    final String testCase2 = """
             #..O#
             ..#.O
             .OO.#

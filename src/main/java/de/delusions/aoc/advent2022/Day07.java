@@ -54,13 +54,13 @@ public class Day07 extends Day<Integer> {
     }
 
     static class Directory { //so far only used by Day7
-        Map<String, Directory> directories = new HashMap<>();
+        final Map<String, Directory> directories = new HashMap<>();
 
-        Map<String, Integer> files = new HashMap<>();
+        final Map<String, Integer> files = new HashMap<>();
 
-        Directory parent;
+        final Directory parent;
 
-        String name;
+        final String name;
 
         Directory( String name, Directory parent ) {
             this.name = name;

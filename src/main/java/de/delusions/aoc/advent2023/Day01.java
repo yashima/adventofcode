@@ -1,4 +1,4 @@
-package main.java.de.delusions.aoc.advent2023;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 
@@ -40,7 +40,7 @@ public class Day01 extends Day<Long> {
             String match = matcher.group( 0 );
             digitsFound.add( Long.valueOf( NUMBERS.getOrDefault( match, match ) ) );
         }
-        return digitsFound.get( 0 ) * 10 + digitsFound.get( digitsFound.size() - 1 );
+        return digitsFound.getFirst() * 10 + digitsFound.getLast();
     }
 
     @Override

@@ -48,9 +48,9 @@ public class Day11 extends Day<Long> {
 
 
     static class Monkey {
-        BigInteger MAGIC = BigInteger.valueOf( 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 );
+        final BigInteger MAGIC = BigInteger.valueOf( 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 );
 
-        Stack<BigInteger> items = new Stack<>();
+        final Stack<BigInteger> items = new Stack<>();
 
         Function<BigInteger, BigInteger> monkeyFingers;
 
