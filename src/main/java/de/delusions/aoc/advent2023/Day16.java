@@ -1,4 +1,4 @@
-package de.delusions.aoc;
+package main.java.de.delusions.aoc.advent2023;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.stream.Stream;
 
-import static de.delusions.aoc.Day16.Mirror.EMPTY;
+import static main.java.de.delusions.aoc.advent2023.Day16.Mirror.EMPTY;
 import static de.delusions.util.Direction.*;
 
 public class Day16 extends Day<Integer> {

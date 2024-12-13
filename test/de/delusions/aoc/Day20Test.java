@@ -1,14 +1,15 @@
 package de.delusions.aoc;
 
+import main.java.de.delusions.aoc.advent2023.Day20;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static de.delusions.aoc.Day20.*;
-import static de.delusions.aoc.Day20.Pulse.HIGH;
-import static de.delusions.aoc.Day20.Pulse.LOW;
+import static main.java.de.delusions.aoc.advent2023.Day20.*;
+import static main.java.de.delusions.aoc.advent2023.Day20.Pulse.HIGH;
+import static main.java.de.delusions.aoc.advent2023.Day20.Pulse.LOW;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class Day20Test {

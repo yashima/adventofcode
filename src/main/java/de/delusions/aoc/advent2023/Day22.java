@@ -1,4 +1,4 @@
-package de.delusions.aoc;
+package main.java.de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 import de.delusions.util.Interval;

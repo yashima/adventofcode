@@ -1,4 +1,4 @@
-package de.delusions.aoc;
+package main.java.de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 
@@ -14,8 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static de.delusions.aoc.Day20.Pulse.HIGH;
-import static de.delusions.aoc.Day20.Pulse.LOW;
+import static main.java.de.delusions.aoc.advent2023.Day20.Pulse.HIGH;
+import static main.java.de.delusions.aoc.advent2023.Day20.Pulse.LOW;
 
 public class Day20 extends Day<Long> {
 

@@ -2,6 +2,7 @@ package de.delusions.aoc;
 
 import de.delusions.util.Direction;
 import de.delusions.util.Matrix;
+import main.java.de.delusions.aoc.advent2023.Day14;
 import org.testng.annotations.Test;
 
 import static de.delusions.util.Direction.north;

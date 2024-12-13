@@ -1,6 +1,7 @@
 package de.delusions.aoc;
 
-import de.delusions.aoc.Day12.SpringRow;
+import main.java.de.delusions.aoc.advent2023.Day12;
+import main.java.de.delusions.aoc.advent2023.Day12.SpringRow;
 import org.testng.annotations.Test;
 
 import java.util.List;

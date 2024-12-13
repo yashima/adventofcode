@@ -1,4 +1,4 @@
-package de.delusions.aoc;
+package main.java.de.delusions.aoc.advent2023;
 
 import de.delusions.util.Day;
 import de.delusions.util.MathUtil;
@@ -12,8 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static de.delusions.aoc.Day08.Command.LEFT;
-import static de.delusions.aoc.Day08.Command.RIGHT;
+import static main.java.de.delusions.aoc.advent2023.Day08.Command.LEFT;
+import static main.java.de.delusions.aoc.advent2023.Day08.Command.RIGHT;
 
 public class Day08 extends Day<String> {
     private static final String START = "AAA";

@@ -2,9 +2,10 @@ package de.delusions.aoc;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Matrix;
+import main.java.de.delusions.aoc.advent2023.Day16;
 import org.testng.annotations.Test;
 
-import static de.delusions.aoc.Day16.Mirror.*;
+import static main.java.de.delusions.aoc.advent2023.Day16.Mirror.*;
 import static de.delusions.util.Direction.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
