@@ -361,6 +361,16 @@ public class Matrix {
         //only set value if in matrix, else ignore
     }
 
+    public Matrix getSubMatrix(int x, int y, int width, int height) {
+        int[][] subMatrix = new int[width][height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                subMatrix[i][j] = getValue(createCoords(x + i, y + j));
+            }
+        }
+        return new Matrix(subMatrix);
+    }
+
     public record IndexedRow(int index, int[] row) {
     }
 }
