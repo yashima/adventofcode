@@ -19,7 +19,7 @@ public class Day13 extends Day<Long> {
     private static final Logger LOG = LoggerFactory.getLogger(Day13.class);
 
     public Day13() {
-        super("", 480L, 0L, 26299L, 0L);
+        super("Claw Contraption", 480L, 875318608908L, 26299L, 107824497933339L);
     }
 
     final Pattern INPUT = Pattern.compile("Button A: X.(\\d+), Y.(\\d+)Button B: X.(\\d+), Y.(\\d+)Prize: X.(\\d+), Y.(\\d+)");
@@ -86,7 +86,7 @@ public class Day13 extends Day<Long> {
                         Vector.create(Integer.parseInt(m.group(5)), Integer.parseInt(m.group(6))))).toList();
 
 
-        return machines.stream().map(Claw::solveVectors).filter(Solution::isValid).peek(System.out::println).mapToLong(Solution::tokens).sum();
+        return machines.stream().map(Claw::solveVectors).filter(Solution::isValid).mapToLong(Solution::tokens).sum();
     }
 
     @Override
@@ -96,7 +96,7 @@ public class Day13 extends Day<Long> {
                         Vector.create(Integer.parseInt(m.group(3)), Integer.parseInt(m.group(4))),
                         Vector.createOff(Integer.parseInt(m.group(5)), Integer.parseInt(m.group(6))))).toList();
 
-        return machines.stream().map(Claw::solveVectors).filter(Solution::isValid).peek(System.out::println).mapToLong(Solution::tokens).sum();
+        return machines.stream().map(Claw::solveVectors).filter(Solution::isValid).mapToLong(Solution::tokens).sum();
     }
 
 
