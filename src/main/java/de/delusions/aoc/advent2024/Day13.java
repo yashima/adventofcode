@@ -1,15 +1,11 @@
 package de.delusions.aoc.advent2024;
 
-import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,7 +22,7 @@ public class Day13 extends Day<Long> {
 
     static final BigDecimal OFF_BY_ONE = BigDecimal.valueOf(10000000000000L);
 
-    record Vector(BigDecimal a1, BigDecimal a2) {
+    record Vector(BigDecimal x, BigDecimal y) {
 
         static Vector create(int x, int y) {
             return new Vector(BigDecimal.valueOf(x), BigDecimal.valueOf(y));
@@ -47,22 +43,19 @@ public class Day13 extends Day<Long> {
         //b = (z2 x1 -z1 x2) / (x1 y2 - x2y1)
         //a = (z1 - b y1) / x1
         static Solution solveVectors(Vector buttonA, Vector buttonB, Vector price) {
-            BigDecimal divisor = buttonA.a1.multiply(buttonB.a2).subtract(buttonA.a2.multiply(buttonB.a1));
-            BigDecimal divMe = price.a2.multiply(buttonA.a1).subtract(price.a1.multiply( buttonA.a2));
+            BigDecimal divisor = buttonA.x.multiply(buttonB.y).subtract(buttonA.y.multiply(buttonB.x));
+            BigDecimal divMe = price.y.multiply(buttonA.x).subtract(price.x.multiply( buttonA.y));
 
             BigDecimal factorB = divMe.divide(divisor, 1, BigDecimal.ROUND_HALF_UP);
-            BigDecimal factorA = price.a1.subtract(factorB.multiply(buttonB.a1));
-            factorA = factorA.divide(buttonA.a1, 1, BigDecimal.ROUND_HALF_UP);
+            BigDecimal factorA = price.x.subtract(factorB.multiply(buttonB.x));
+            factorA = factorA.divide(buttonA.x, 1, BigDecimal.ROUND_HALF_UP);
             return new Solution(factorA,factorB);
         }
     }
 
     record Solution(BigDecimal a, BigDecimal b) {
         long tokens() {
-            if (isValid()) {
-                return a.multiply(BigDecimal.valueOf(3)).add(b).longValue();
-            }
-            return 0L;
+            return a.multiply(BigDecimal.valueOf(3)).add(b).longValue();
         }
 
         boolean isValid(){
