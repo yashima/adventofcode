@@ -24,10 +24,16 @@ public class Day13 extends Day<Long> {
 
     final Pattern INPUT = Pattern.compile("Button A: X.(\\d+), Y.(\\d+)Button B: X.(\\d+), Y.(\\d+)Prize: X.(\\d+), Y.(\\d+)");
 
+    static final BigDecimal OFF_BY_ONE = BigDecimal.valueOf(10000000000000L);
+
     record Vector(BigDecimal a1, BigDecimal a2) {
 
         static Vector create(int x, int y) {
             return new Vector(BigDecimal.valueOf(x), BigDecimal.valueOf(y));
+        }
+
+        static Vector createOff(int x, int y) {
+            return new Vector(BigDecimal.valueOf(x).add(OFF_BY_ONE), BigDecimal.valueOf(y).add(OFF_BY_ONE));
         }
 
     }
@@ -85,7 +91,12 @@ public class Day13 extends Day<Long> {
 
     @Override
     public Long part1(Stream<String> input) {
-        return 0L;
+        List<Claw> machines = INPUT.matcher(input.collect(Collectors.joining())).results().map(m ->
+                new Claw(Vector.create(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2))),
+                        Vector.create(Integer.parseInt(m.group(3)), Integer.parseInt(m.group(4))),
+                        Vector.createOff(Integer.parseInt(m.group(5)), Integer.parseInt(m.group(6))))).toList();
+
+        return machines.stream().map(Claw::solveVectors).filter(Solution::isValid).peek(System.out::println).mapToLong(Solution::tokens).sum();
     }
 
 
