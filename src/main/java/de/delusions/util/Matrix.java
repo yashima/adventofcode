@@ -393,6 +393,7 @@ public class Matrix {
 
 
     //TODO set directory in properties
+    //TODO replace necessity for $ffmpeg -f image2 -framerate 50 -i images/frame-15-%05d.png -vcodec libx264 -crf 22 videotest2.mp4
     public void saveImage(int day, int frame)  {
         BufferedImage image = toBufferedImage();
         Path filePath = Paths.get(String.format("images/frame-%02d-%05d.png",day,frame));
