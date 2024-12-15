@@ -27,6 +27,7 @@ public class Matrix {
 
     final int yOffset;
     Map<Integer, String> printMap = new HashMap<>();
+    Map<Integer,Color> colorMap = new HashMap<>();
 
     public Matrix(int[][] initialized) {
         this(initialized, 0, 0);
@@ -72,6 +73,15 @@ public class Matrix {
     public void setPrintMap(Map<Integer, String> printMap) {
         this.printMap = printMap;
     }
+
+    public void setColorMap(Map<Integer,Color> colorMap) {
+        this.colorMap = colorMap;
+    }
+    public void setColor(int value, Color color) {
+        this.colorMap.put(value,color);
+    }
+
+
 
     public int cleanup() {
         AtomicInteger max = new AtomicInteger(0);
@@ -383,7 +393,6 @@ public class Matrix {
 
 
     //TODO set directory in properties
-    //TODO configurable colormap
     public void saveImage(int day, int frame)  {
         BufferedImage image = toBufferedImage();
         Path filePath = Paths.get(String.format("images/frame-%02d-%05d.png",day,frame));
@@ -399,8 +408,8 @@ public class Matrix {
     BufferedImage toBufferedImage() {
         BufferedImage image = new BufferedImage(this.getYLength(), this.getXLength(), BufferedImage.TYPE_INT_RGB);
         this.coordinatesStream().forEach(c -> {
-            int value = getValue(c);
-            image.setRGB(c.y, c.x, value == 0 ? Color.white.getRGB() : Color.black.getRGB());
+            int color = colorMap.getOrDefault(getValue(c),Color.WHITE).getRGB();
+            image.setRGB(c.y, c.x, color);
         });
         return image;
     }
