@@ -70,7 +70,9 @@ public class Coordinates {
     }
 
     public Coordinates moveToNext() {
-        return moveTo(facing, 1, 1);
+        Coordinates coordinates = moveTo(facing, 1, 1);
+        coordinates.setFacing(facing);
+        return coordinates;
     }
 
     public Coordinates moveDay22(Direction move) {

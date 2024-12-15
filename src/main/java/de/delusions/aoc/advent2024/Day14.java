@@ -1,23 +1,14 @@
 package de.delusions.aoc.advent2024;
 
-import de.delusions.tools.ConfigProperties;
 import de.delusions.util.Coordinates;
 import de.delusions.util.Day;
 import de.delusions.util.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -104,40 +95,13 @@ public class Day14 extends Day<Integer> {
                 int value = aRoom.getValue(current);
                 aRoom.setValue(current, value + 1);
             });
-            saveImage(aRoom.transposeRight(), frame.get());
+            aRoom.transposeRight().saveImage(14, frame.get());
         }
         LOG.debug("Go look at the images in the images folder and pick the frame with the xmas tree");
         return 7055;
     }
 
 
-    void saveImage(Matrix aRoom,int frame)  {
-        BufferedImage image = toBufferedImage(aRoom);
-        Path filePath = Paths.get(String.format("images/frame%05d.png",frame));
-        try {
-            if(!filePath.toFile().exists()) {
-                ImageIO.write(image, "png", new File(filePath.toString()));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
-    BufferedImage toBufferedImage(Matrix aRoom) {
-        BufferedImage image = new BufferedImage(aRoom.getYLength(), aRoom.getXLength(), BufferedImage.TYPE_INT_RGB);
-        aRoom.coordinatesStream().forEach(c -> {
-            int value = aRoom.getValue(c);
-            image.setRGB(c.y, c.x, value == 0 ? Color.white.getRGB() : Color.black.getRGB());
-        });
-        return image;
-    }
-
-    double standardDeviation(int[] numbers){
-        BigDecimal avg = BigDecimal.valueOf(Arrays.stream(numbers).sum()).divide(BigDecimal.valueOf(numbers.length),1,RoundingMode.DOWN);
-        return Math.sqrt(Arrays.stream(numbers)
-                .mapToObj(n -> BigDecimal.valueOf(n).subtract(avg).pow(2))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(numbers.length),1, RoundingMode.DOWN).doubleValue());
-    }
 
 }

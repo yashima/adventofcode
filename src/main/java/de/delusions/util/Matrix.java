@@ -1,5 +1,12 @@
 package de.delusions.util;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -372,5 +379,29 @@ public class Matrix {
     }
 
     public record IndexedRow(int index, int[] row) {
+    }
+
+
+    //TODO set directory in properties
+    //TODO configurable colormap
+    public void saveImage(int day, int frame)  {
+        BufferedImage image = toBufferedImage();
+        Path filePath = Paths.get(String.format("images/frame-%02d-%05d.png",day,frame));
+        try {
+            if(!filePath.toFile().exists()) {
+                ImageIO.write(image, "png", new File(filePath.toString()));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    BufferedImage toBufferedImage() {
+        BufferedImage image = new BufferedImage(this.getYLength(), this.getXLength(), BufferedImage.TYPE_INT_RGB);
+        this.coordinatesStream().forEach(c -> {
+            int value = getValue(c);
+            image.setRGB(c.y, c.x, value == 0 ? Color.white.getRGB() : Color.black.getRGB());
+        });
+        return image;
     }
 }

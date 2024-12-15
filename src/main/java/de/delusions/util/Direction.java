@@ -21,6 +21,10 @@ public enum Direction {
         return new Direction[] {north, east, south, west};
     }
 
+    public static Direction getBySymbol(int symbol) {
+        return Arrays.stream(values()).filter(d -> d.getCharacter() == symbol).findFirst().orElse(null);
+    }
+
     public String getSymbol() {
         return symbol;
     }
