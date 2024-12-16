@@ -45,6 +45,10 @@ public class Coordinates {
         this.value = value;
     }
 
+    public Coordinates getPrevious() {
+        return previous;
+    }
+
     public int getX() {
         return x;
     }

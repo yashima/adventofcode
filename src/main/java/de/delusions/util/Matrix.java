@@ -234,6 +234,11 @@ public class Matrix {
         return positions;
     }
 
+    public Coordinates findValue(int value) {
+        List<Coordinates> values = findValues(List.of(value), true);
+        return values.size()>0 ? values.getFirst() : null;
+    }
+
     public List<Coordinates> findValues(int value, boolean firstOnly) {
         return findValues(List.of(value), firstOnly);
     }
