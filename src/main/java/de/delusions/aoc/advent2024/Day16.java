@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -23,29 +22,24 @@ public class Day16 extends Day<Integer> {
         super("Reindeer Maze", 11048, 45, 160624, 692);
     }
 
-    Coordinates GOAL;
-
     @Override
     public Integer part0(Stream<String> input) {
         Matrix labyrinth = Matrix.createFromStream(input);
-        GOAL = labyrinth.findValue('E');
-        return new Dijkstra<>(new RunRudolphRun(labyrinth.findValue('S'), 0,Direction.east,null)).findBestPath(labyrinth).distance();
+        return new Dijkstra<>(new RunRudolphRun(labyrinth.findValue('S'), 0, Direction.east, null)).findBestPath(labyrinth).distance();
     }
 
     @Override
     public Integer part1(Stream<String> input) {
         Matrix labyrinth = Matrix.createFromStream(input);
-        GOAL = labyrinth.findValue('E');
-        List<RunRudolphRun> paths = new Dijkstra<>(new RunRudolphRun(labyrinth.findValue('S'), 0, Direction.east,null)).findAllBestPaths(labyrinth);
-        //625 too low
-        paths.stream().map(this::collectVisitedPlaces).flatMap(Collection::stream).forEach(c -> labyrinth.setValue(c,'0'));
-        return labyrinth.findValues('0',false).size();
+        List<RunRudolphRun> paths = new Dijkstra<>(new RunRudolphRun(labyrinth.findValue('S'), 0, Direction.east, null)).findAllBestPaths(labyrinth);
+        paths.stream().map(this::collectVisitedPlaces).flatMap(Collection::stream).forEach(c -> labyrinth.setValue(c, '0'));
+        return labyrinth.findValues('0', false).size();
     }
 
-    Set<Coordinates> collectVisitedPlaces(RunRudolphRun path){
+    Set<Coordinates> collectVisitedPlaces(RunRudolphRun path) {
         HashSet<Coordinates> coordinates = new HashSet<>();
         RunRudolphRun current = path;
-        while(current != null){
+        while (current != null) {
             coordinates.add(current.current);
             current = current.previous;
         }
@@ -59,7 +53,7 @@ public class Day16 extends Day<Integer> {
         Direction facing;
         RunRudolphRun previous;
 
-        RunRudolphRun(Coordinates c, int steps, Direction facing,RunRudolphRun previous) {
+        RunRudolphRun(Coordinates c, int steps, Direction facing, RunRudolphRun previous) {
             this.current = c;
             this.steps = steps;
             this.facing = facing;
@@ -72,16 +66,20 @@ public class Day16 extends Day<Integer> {
                     .filter(d -> d != facing.opposite())
                     .map(d -> current.moveTo(d).setFacing(d))
                     .filter(c -> theMap.getValue(c) != WALL)
-                    .map(c -> new RunRudolphRun(c, this.steps + 1 + (this.facing == c.getFacing() ? 0 : 1000),c.getFacing(),this))
+                    .map(c -> new RunRudolphRun(c, this.steps + 1 + (this.facing == c.getFacing() ? 0 : 1000), c.getFacing(), this))
                     .toList();
             return result;
         }
 
         @Override
-        public Integer distance() { return steps; }
+        public Integer distance() {
+            return steps;
+        }
 
         @Override
-        public boolean goal(Matrix theMap) { return theMap.getValue(current) == 'E';}
+        public boolean goal(Matrix theMap) {
+            return theMap.getValue(current) == 'E';
+        }
 
         @Override
         public RunRudolphRun previous() {
