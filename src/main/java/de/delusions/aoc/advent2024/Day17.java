@@ -5,7 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
@@ -18,7 +20,7 @@ public class Day17 extends Day<String> {
 
     public Day17() {
 
-        super("Chronospatial Computer", "4,6,3,5,6,3,5,2,1,0", "117440","4,0,4,7,1,2,7,1,6", "");
+        super("Chronospatial Computer", "4,6,3,5,6,3,5,2,1,0", "117440", "4,0,4,7,1,2,7,1,6", "202322348616234");
     }
 
     Pattern REGEX = Pattern.compile("(\\d+)");
@@ -32,45 +34,29 @@ public class Day17 extends Day<String> {
         return printNumbers(seven_of_bit.output);
     }
 
-//0,3,5,4,3,0 -> a = a / 8
-
-
-// b = (a%8) xor 1 (das können ja nur zahlen von 0...7 sein)
-// c = a / (2 ^ b)
-// a = a / 8 ->
-
-//    2,4,1,1,7,5,0,3,1,4,4,5,5,5,3,0 -> 16 outputs d.h. a > Math.pow(8,16) -> **281,474,976,710,656**
-//    b = a % 8   (0,1,2,3,4,5,6,7)
-//    b = b xor 1 (1,0,3,2,5,4,7,0)
-//    c = a / (2 hoch b)
-//    a = a / 8
-//    b = b xor 4  (
-//    b = b xor c
-//    out b
-//    jump to start
-
     @Override
     public String part1(Stream<String> input) {
         List<Integer> numbers = REGEX.matcher(input.collect(Collectors.joining())).results().map(m -> Integer.parseInt(m.group(1))).toList();
-        List<Long> targetNums = numbers.stream().skip(3).map(i -> (long)i).toList();
-        String target = printNumbers(targetNums);
         Computer seven_of_bit = Computer.create(numbers);
-        long count = (long) Math.pow(8,targetNums.size()-1);
-        while(!target.equals(printNumbers(seven_of_bit.output))){
-            seven_of_bit.reset(count);
-            while (seven_of_bit.isRunning()) {
-                seven_of_bit.executeNextInstruction();
+        AtomicLong sum = new AtomicLong(0);
+        List<Long> target = new ArrayList();
+        seven_of_bit.program.stream().map(Instruction::getOpcode).toList().reversed().forEach( i -> {
+            target.add(0,(long)i);
+            long counter = sum.get()*8-1;
+            while(!seven_of_bit.output().equals(target)){
+                counter++;
+                seven_of_bit.reset(counter);
+                while (seven_of_bit.isRunning()) {
+                    seven_of_bit.executeNextInstruction();
+                }
+                sum.set(counter);
             }
-            count++;
-//            if(count % 1000000 == 0){
-//                LOG.info("Count: {} Out={}",count, printNumbers(seven_of_bit.output));
-//            }
-        }
-        return ""+(count-1);
-
+        });
+        return sum.toString();
     }
 
-    String printNumbers (List<Long> numbers){
+
+    String printNumbers(List<Long> numbers) {
         return numbers.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
 
@@ -81,21 +67,22 @@ public class Day17 extends Day<String> {
             AtomicLong b = new AtomicLong(numbers.get(1));
             AtomicLong c = new AtomicLong(numbers.get(2));
             List<Instruction> program = numbers.stream().skip(3).map(i -> Instruction.values()[i]).toList();
-            return new Computer(a, b, c, new AtomicInteger(0), program,new ArrayList<>());
+            return new Computer(a, b, c, new AtomicInteger(0), program, new ArrayList<>());
         }
-        void moveProgramPointer(){
+
+        void moveProgramPointer() {
             programCounter.set(programCounter.get() + 2);
         }
 
-        boolean isRunning(){
+        boolean isRunning() {
             return programCounter.get() < program.size();
         }
 
-        int getLiteralOperand(){
-            return this.program.get(programCounter.get()+1).getOpcode();
+        int getLiteralOperand() {
+            return this.program.get(programCounter.get() + 1).getOpcode();
         }
 
-        void reset(long a){
+        void reset(long a) {
             this.a.set(a);
             this.b.set(0);
             this.c.set(0);
@@ -106,9 +93,9 @@ public class Day17 extends Day<String> {
         //operand is the next instruction + 1
 
         long getComboperand() {
-            long operand = this.program.get(programCounter.get()+1).getOpcode();
+            long operand = this.program.get(programCounter.get() + 1).getOpcode();
 
-            if (operand <4) {
+            if (operand < 4) {
                 return operand;
             } else if (operand == 4) {
                 return a.get();
@@ -120,10 +107,11 @@ public class Day17 extends Day<String> {
                 throw new IllegalArgumentException("Invalid operand: " + operand);
             }
         }
+
         public Instruction executeNextInstruction() {
             Instruction instruction = program.get(programCounter.get());
             instruction.execute(this);
-            if(instruction != Instruction.jnz){
+            if (instruction != Instruction.jnz) {
                 moveProgramPointer();
             }
             return instruction;
