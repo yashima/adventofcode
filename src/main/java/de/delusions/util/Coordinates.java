@@ -10,7 +10,7 @@ public class Coordinates {
 
     public final int y;
 
-    final Coordinates previous;
+    Coordinates previous;
 
     int value = 0;
 
@@ -49,6 +49,11 @@ public class Coordinates {
         return previous;
     }
 
+    public Coordinates setPrevious(Coordinates previous){
+        this.previous = previous;
+        return this;
+    }
+
     public int getX() {
         return x;
     }
@@ -72,6 +77,9 @@ public class Coordinates {
     public Coordinates moveTo(Direction move) {
         return moveTo(move, 1, 1);
     }
+
+    public Coordinates moveToPreserved(Direction move) {
+        return moveTo(move, 1, previous.getValue());}
 
     public Coordinates moveToNext() {
         Coordinates coordinates = moveTo(facing, 1, 1);
