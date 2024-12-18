@@ -17,13 +17,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day18 extends Day<Integer> {
+public class Day18 extends Day<String> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Day18.class);
 
     public Day18() {
 
-        super("", 22, 0, 382, 0);
+        super("RAM Run", "22", "6,1", "382", "0,0");
     }
 
     static final int CORRUPT = 1;
@@ -33,22 +33,41 @@ public class Day18 extends Day<Integer> {
     Pattern REGEX = Pattern.compile("(\\d+),(\\d+)");
 
     @Override
-    public Integer part0(Stream<String> input) {
-        int size = isTestMode() ? 7 : 71;
-        int simulationLimit = isTestMode() ? 12 : 1024;
+    public String part0(Stream<String> input) {
+        Matrix memorySpace = createMatrix();
+        anticipateFallingBytes(input).stream().limit(isTestMode() ? 12 : 1024).forEach(c -> memorySpace.setValue(c,CORRUPT));
+        return new Dijkstra<>(new Path(0,0)).findBestPath(memorySpace).steps+"" ;
+    }
 
+
+    @Override
+    public String part1(Stream<String> input) {
+        Matrix memorySpace = createMatrix();
+        List<Coordinates> fallingBytes = anticipateFallingBytes(input);
+        int time = isTestMode() ? 12 : 1024;
+        fallingBytes.stream().limit(time).forEach(c -> memorySpace.setValue(c, CORRUPT));
+        Path bestPath = new Path(0,0);
+        while(bestPath!=null && time< fallingBytes.size()){
+            time++;
+            memorySpace.setValue(fallingBytes.get(time), CORRUPT);
+            bestPath = new Dijkstra<>(new Path(0, 0)).findBestPath(memorySpace);
+        }
+        Coordinates lastByte = fallingBytes.get(time);
+        return String.format("%d,%d",lastByte.x,lastByte.y);
+    }
+
+    private Matrix createMatrix() {
+        int size = isTestMode() ? 7 : 71;
         Matrix memorySpace = new Matrix(size, size,0,0);
         memorySpace.setPrintMap(Map.of(0,".",1,"#",2,"O"));
-        Path start = new Path(0,0,0);
-        List<Coordinates> fallingBytes = input.map( l -> REGEX.matcher(l)).filter(m -> m.matches()).map(m -> new Coordinates(Integer.parseInt(m.group(1)),Integer.parseInt(m.group(2)))).collect(Collectors.toList());
-        fallingBytes.stream().limit(simulationLimit).forEach(c -> memorySpace.setValue(c,CORRUPT));
-        Dijkstra<Path,Matrix> dijkstra = new Dijkstra<>(start);
-        //140 too low
+        return memorySpace;
+    }
 
-        Path bestPath = dijkstra.findBestPath(memorySpace);
-        bestPath.collectPath().forEach(c -> memorySpace.setValue(c,PATH));
-        System.out.println(memorySpace.toString());
-        return bestPath.steps ;
+    private List<Coordinates> anticipateFallingBytes(Stream<String> input) {
+        return input
+                .map(l -> REGEX.matcher(l)).filter(m -> m.matches())
+                .map(m -> new Coordinates(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2))))
+                .collect(Collectors.toList());
     }
 
     class Path implements Pathable<Path,Integer,Matrix> {
@@ -56,9 +75,9 @@ public class Day18 extends Day<Integer> {
         int steps = 0;
         Coordinates coords;
 
-        public Path(int x, int y,int steps) {
+        public Path(int x, int y) {
             coords = new Coordinates(x,y);
-            this.steps = steps;
+            this.steps = 0;
         }
 
         public Path(Coordinates coords,int steps) {
@@ -124,10 +143,6 @@ public class Day18 extends Day<Integer> {
 
     }
 
-    @Override
-    public Integer part1(Stream<String> input) {
-        return 0;
-    }
 
 
 }
