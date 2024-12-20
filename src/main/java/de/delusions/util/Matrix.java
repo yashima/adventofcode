@@ -29,6 +29,8 @@ public class Matrix {
     Map<Integer, String> printMap = new HashMap<>();
     Map<Integer,Color> colorMap = new HashMap<>();
 
+    int emptyValue = 0;
+
     public Matrix(int[][] initialized) {
         this(initialized, 0, 0);
     }
@@ -170,7 +172,11 @@ public class Matrix {
     }
 
     public boolean isEmpty(Coordinates coordinates) {
-        return getValue(coordinates) == 0;
+        return getValue(coordinates) == emptyValue;
+    }
+
+    public void setEmptyValue(int emptyValue) {
+        this.emptyValue = emptyValue;
     }
 
     public boolean isInTheMatrix(Coordinates... coordinates) {
@@ -391,6 +397,15 @@ public class Matrix {
             }
         }
         return new Matrix(subMatrix);
+    }
+
+    int obstacle;
+    public void setObstacle(char c) {
+        this.obstacle = c;
+    }
+
+    public boolean isObstacle(Coordinates coordinates) {
+        return getValue(coordinates) == obstacle;
     }
 
     public record IndexedRow(int index, int[] row) {
