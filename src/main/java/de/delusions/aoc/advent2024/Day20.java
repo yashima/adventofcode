@@ -9,8 +9,10 @@ import de.delusions.util.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class Day20 extends Day<Long> {
@@ -33,61 +35,91 @@ public class Day20 extends Day<Long> {
 
     @Override
     public Long part1(Stream<String> input) {
-        return 0L;
+        Matrix races = Matrix.createFromStream(input);
+        races.setEmptyValue('.');
+        List<RaceTrack> bestPath = new Dijkstra<>(new RaceTrack(races.findValue('S'))).findBestPath(races).collectPath();
+        Long countCheats = 0L;
+        //888092 too low
+        for (int i = 0; i < bestPath.size(); i++) {
+            RaceTrack current = bestPath.get(i);
+            for(int j = i+1; j < bestPath.size(); j++){
+                RaceTrack other = bestPath.get(j);
+                int cheatLength = current.coords.manhattanDistance(other.coords);
+                if(cheatLength <=20 && current.steps - other.steps - cheatLength >= 100 ){
+                    countCheats++;
+                }
+            }
+        }
+        return countCheats;
+
+
     }
 
-    Map<Coordinates, AtomicLong> cheatTargetCount = new HashMap<>();
-
-    class RaceTrack implements Pathable<RaceTrack, Long, Matrix> {
+    static class RaceTrack implements Pathable<RaceTrack, Long, Matrix> {
 
         RaceTrack previous;
         Coordinates coords;
-        long steps = 0;
-        List<Coordinates> cheats;
+        long steps;
+        Map<Coordinates, Long> cheats = new HashMap<>();
 
         RaceTrack(Coordinates coords) {
             this(coords, null);
         }
-        RaceTrack(Coordinates coords, RaceTrack previous ) {
+
+        RaceTrack(Coordinates coords, RaceTrack previous) {
             this.coords = coords;
             this.previous = previous;
-            this.steps = previous==null ? 1 : previous.steps + 1;
+            this.steps = previous == null ? 1 : previous.steps + 1;
         }
 
-        RaceTrack setCheats(Matrix theMap){
-            this.cheats = findCheats(theMap);
+        RaceTrack setCheats(Matrix theMap) {
+            findCheats(theMap).forEach(c -> cheats.put(c, 2L));
             return this;
         }
 
         @Override
         public List<RaceTrack> getNeighbors(Matrix theMap) {
             return Arrays.stream(Direction.cardinals())
-                    .map(d -> coords.moveTo(d,1))
+                    .map(d -> coords.moveTo(d, 1))
                     .filter(c -> theMap.isEmpty(c) || theMap.getValue(c) == 'E')
                     .map(c -> new RaceTrack(c, this).setCheats(theMap))
                     .toList();
         }
 
-        long countValidCheats(Matrix races, int minAdvantage){
+        long countValidCheats(Matrix races, int minAdvantage) {
             long validCheats = 0;
             RaceTrack current = this.previous;
-            while(current!=null){
-                if(current.cheats!=null && current.cheats.contains(this.coords) && this.steps - current.steps -1 >= minAdvantage){
-                    validCheats++;
-                    races.setValue(current.coords, '0');
-                    races.setValue(this.coords, '2');
+            while (current != null) {
+                if (current.cheats != null) {
+                    long length = current.cheats.getOrDefault(this.coords, 0L);
+                    if (length > 0 && this.steps - current.steps - length >= minAdvantage) {
+                        validCheats++;
+                        races.setValue(current.coords, '0');
+                        races.setValue(this.coords, '2');
+                    }
+                    current = current.previous;
                 }
-                current = current.previous;
             }
-            return validCheats + (previous==null ? 0 : previous.countValidCheats(races, minAdvantage))  ;
+            return validCheats + (previous == null ? 0 : previous.countValidCheats(races, minAdvantage));
         }
 
-        public List<Coordinates> findCheats(Matrix theMap){
+
+        public List<Coordinates> findCheats(Matrix theMap) {
             return Arrays.stream(Direction.cardinals())
-                    .filter(d -> theMap.isObstacle(coords.moveTo(d,1)))
-                    .map(d -> coords.moveTo(d,2,0))
-                    .filter(c -> theMap.isInTheMatrix(c) && ( theMap.isEmpty(c) || theMap.getValue(c) == 'E'))
+                    .filter(d -> theMap.isObstacle(coords.moveTo(d, 1)))
+                    .map(d -> coords.moveTo(d, 2, 0))
+                    .filter(c -> theMap.isInTheMatrix(c) && (theMap.isEmpty(c) || theMap.getValue(c) == 'E'))
                     .toList();
+        }
+
+        public List<RaceTrack> collectPath() {
+            List<RaceTrack> result = new java.util.ArrayList<>();
+            RaceTrack current = this;
+            while (current != null) {
+                result.add(current);
+                current = current.previous;
+            }
+            return result;
         }
 
         @Override
