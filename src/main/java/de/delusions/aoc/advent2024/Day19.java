@@ -19,7 +19,7 @@ public class Day19 extends Day<Long> {
     Map<String, Memo> cache = new HashMap<>();
 
     public Day19() {
-        super("Linen Layout", 6L, 16L, 342L, 0L);
+        super("Linen Layout", 6L, 16L, 342L, 891192814474630L);
     }
 
     @Override
