@@ -21,9 +21,12 @@ public class Day21Test {
 
     @Test(dataProvider = "codeProvider")
     public void testGetCodeString(String code, String expectedResult) {
-       Day21.State result = new Day21.Robot(code).calculateOutput();
-        assertEquals(result.target().length(), expectedResult.length(),"Length wrong: " + code);
+       Day21.State result = new Day21.RobotsAllTheWayDown(code).pressSomeButtons();
+        //assertEquals(result.target().length(), expectedResult.length(),"Length wrong: " + code);
         assertEquals(result.target(), expectedResult,"Failed for code: " + code);
     }
 
+
+    //<^A>A<v<A>>^AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
+    //<Av<AAvA
 }
