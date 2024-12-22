@@ -16,17 +16,17 @@ public class Day21 extends Day<Long> {
         super("", 126384L, 0L, 0L, 0L);
     }
 
-  @Override
-        public Long part0(Stream<String> input) {
-            //205038 -> too high
-            //incomplete. solution fails to deliver optimal paths.
-            return input.map(RobotsAllTheWayDown::new).map(RobotsAllTheWayDown::pressSomeButtons).mapToLong(State::complexity).sum();
-        }
+    @Override
+    public Long part0(Stream<String> input) {
+        //205038 -> too high | 208147
+        //incomplete. solution fails to deliver optimal paths.
+        return input.map(RobotsAllTheWayDown::new).map(RobotsAllTheWayDown::pressSomeButtons).mapToLong(State::complexity).sum();
+    }
 
-        @Override
-        public Long part1(Stream<String> input) {
-            return 0L;
-        }
+    @Override
+    public Long part1(Stream<String> input) {
+        return 0L;
+    }
 
 
     //I was planning on doing something recursive with this and then I didn't:
@@ -55,7 +55,7 @@ public class Day21 extends Day<Long> {
         }
 
         State pressSomeButtons() {
-            while(state.level<MAX_LEVEL) {
+            while (state.level < MAX_LEVEL) {
                 StringBuilder sb = new StringBuilder();
                 String target = state.target;
                 LOG.debug("Level {} with target {}", state.level, target);
@@ -63,7 +63,7 @@ public class Day21 extends Day<Long> {
                     char position = positions[state.level];
                     char nextChar = target.charAt(0);
                     String inputNeeded = metaMap[state.level].get(String.format("%s:%s", position, nextChar));
-                    if(inputNeeded==null){
+                    if (inputNeeded == null) {
                         LOG.warn("No neededButtonPresses found for {}:{}", position, nextChar);
                     }
                     sb.append(inputNeeded).append('A');
@@ -77,31 +77,31 @@ public class Day21 extends Day<Long> {
         }
 
         void hardCodedMapsInitializationMagic() {
-            cursorMap.put("A:^", "<"); //from a
+            cursorMap.put("A:^", "<");
             cursorMap.put("A:>", "v");
-            cursorMap.put("A:v", "v<"); //or ,<v
+            cursorMap.put("A:v", "v<");
             cursorMap.put("A:<", "v<<");
             cursorMap.put("A:A", "");
 
-            cursorMap.put("^:A", ">"); //from ^
+            cursorMap.put("^:A", ">");
             cursorMap.put("^:v", "v");
             cursorMap.put("^:>", "v>");
-            cursorMap.put("^:<", "<");
-            cursorMap.put("^:^","");
+            cursorMap.put("^:<", "v<");
+            cursorMap.put("^:^", "");
 
-            cursorMap.put(">:>", ""); //from >
+            cursorMap.put(">:>", "");
             cursorMap.put(">:A", "^");
-            cursorMap.put(">:^", "<^"); //or <^
+            cursorMap.put(">:^", "<^");
             cursorMap.put(">:v", "<");
             cursorMap.put(">:<", "<<");
 
-            cursorMap.put("v:A", ">^"); //from v or ,>^
+            cursorMap.put("v:A", ">^");
             cursorMap.put("v:>", ">");
             cursorMap.put("v:<", "<");
             cursorMap.put("v:^", "^");
             cursorMap.put("v:v", "");
 
-            cursorMap.put("<:v", ">"); //from <
+            cursorMap.put("<:v", ">");
             cursorMap.put("<:>", ">>");
             cursorMap.put("<:A", ">>^");
             cursorMap.put("<:^", ">^");
@@ -125,7 +125,7 @@ public class Day21 extends Day<Long> {
             //9:A
 
             //ex4
-            numPad.put("A:4", "<<^^");
+            numPad.put("A:4", "^^<<");
             numPad.put("4:5", ">");
             numPad.put("5:6", ">");
             numPad.put("6:A", "vv");
@@ -135,8 +135,8 @@ public class Day21 extends Day<Long> {
 
             //083a
             numPad.put("0:8", "^^^");
-            numPad.put("8:3", "vv>");
-            numPad.put("3:A","v");
+            numPad.put("8:3", ">vv");
+            numPad.put("3:A", "v");
             //935a
             numPad.put("9:3", "vv");
             numPad.put("3:5", "^<");
@@ -144,18 +144,18 @@ public class Day21 extends Day<Long> {
             //964A
             numPad.put("9:6", "v");
             numPad.put("6:4", "<<");
-            numPad.put("4:A", "vv>>");
+            numPad.put("4:A", ">>vv");
 
             //149A
             numPad.put("1:4", "^");
-            numPad.put("4:9", "^>>");
+            numPad.put("4:9", ">>^");
             //789A
-            numPad.put("A:7", "^<^^");
+            numPad.put("A:7", "^^^<<");
             numPad.put("7:8", ">");
             numPad.put("8:9", ">");
 
             metaMap[0] = numPad;
-            for(int i=1; i<MAX_LEVEL; i++) {
+            for (int i = 1; i < MAX_LEVEL; i++) {
                 metaMap[i] = cursorMap;
             }
         }
