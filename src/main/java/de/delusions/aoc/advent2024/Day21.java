@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Day21 extends Day<Long> {
@@ -29,7 +32,7 @@ public class Day21 extends Day<Long> {
     public Long part1(Stream<String> input) {
         //TODO write another f...ing memoization cache
         return input
-                .map(code -> new RobotsAllTheWayDown(code,26))
+                .map(code -> new RobotsAllTheWayDown(code, 15))
                 .map(RobotsAllTheWayDown::pressSomeButtons)
                 .mapToLong(State::complexity)
                 .sum();
@@ -48,123 +51,116 @@ public class Day21 extends Day<Long> {
 
     }
 
+    record Edge(char from, char to) {
+        static Edge create(int f, int t) {
+            return new Edge((char) f, (char) t);
+        }
+    }
+
     static class RobotsAllTheWayDown {
-        Map<String, String> cursorMap = new HashMap<>();
-        Map<String, String> numPad = new HashMap<>();
-        Map<String, String>[] metaMap;
-        char[] positions;
+        Map<Edge, String> cursorMap = new HashMap<>();
+        Map<Edge, String> numPad = new HashMap<>();
+        Map<Edge, String>[] metaMap;
+        AtomicInteger[] positions;
         int maxLevel;
         State state;
 
         RobotsAllTheWayDown(String code) {
-            this(code,3);
+            this(code, 3);
         }
 
         RobotsAllTheWayDown(String code, int maxLevel) {
             this.state = State.createFromCode(code);
             this.maxLevel = maxLevel;
             metaMap = new Map[maxLevel];
-            positions = "A".repeat(maxLevel).toCharArray();
+            positions = new AtomicInteger[maxLevel];
+            IntStream.range(0, maxLevel).forEach(i -> positions[i] = new AtomicInteger('A'));
             hardCodedMapsInitializationMagic();
         }
 
         State pressSomeButtons() {
             while (state.level < maxLevel) {
-                StringBuilder sb = new StringBuilder();
-                String target = state.target;
-                //LOG.debug("Level {} with target {}", state.level, target);
-                while (target.length() > 0) {
-                    char position = positions[state.level];
-                    char nextChar = target.charAt(0);
-                    String inputNeeded = metaMap[state.level].get(String.format("%s:%s", position, nextChar));
-                    if (inputNeeded == null) {
-                        LOG.warn("No neededButtonPresses found for {}:{}", position, nextChar);
-                    }
-                    sb.append(inputNeeded).append('A');
-                    positions[state.level] = nextChar;
-                    target = target.substring(1);
-                }
-                state = new State(state.number, sb.toString(), "", state.level + 1);
+                this.state = nextState(this.state);
             }
-            //LOG.debug("Level {} with target {}", state.level, state.target);
             return state;
         }
 
+        static Map<String, String> CACHE = new HashMap<>();
+
+        private State nextState(State state) {
+            if (state.level >= maxLevel) {
+                return state;
+            }
+            String result = CACHE.computeIfAbsent(
+                    state.target,
+                    s -> s.chars()
+                            .mapToObj(this::selectOutput)
+                            .collect(Collectors.joining()));
+
+            CACHE.put(state.target, result);
+            return new State(state.number, result, "", state.level + 1);
+        }
+
+
+        private String selectOutput(int nextChar) {
+            return metaMap[state.level].get(Edge.create(positions[state.level].getAndSet(nextChar), nextChar));
+        }
+
+
         void hardCodedMapsInitializationMagic() {
-            cursorMap.put("A:^", "<");
-            cursorMap.put("A:>", "v");
-            cursorMap.put("A:v", "v<");
-            cursorMap.put("A:<", "v<<");
-            cursorMap.put("A:A", "");
+            cursorMap.put(new Edge('A', '^'), "<A");
+            cursorMap.put(new Edge('A', '>'), "vA");
+            cursorMap.put(new Edge('A', 'v'), "v<A");
+            cursorMap.put(new Edge('A', '<'), "v<<A");
+            cursorMap.put(new Edge('A', 'A'), "A");
+            cursorMap.put(new Edge('^', 'A'), ">A");
+            cursorMap.put(new Edge('^', '>'), "v>A");
+            cursorMap.put(new Edge('^', '<'), "v<A");
+            cursorMap.put(new Edge('^', '^'), "A");
+            cursorMap.put(new Edge('>', '>'), "A");
+            cursorMap.put(new Edge('>', 'A'), "^A");
+            cursorMap.put(new Edge('>', '^'), "<^A");
+            cursorMap.put(new Edge('>', 'v'), "<A");
+            cursorMap.put(new Edge('v', 'A'), ">^A");
+            cursorMap.put(new Edge('v', '>'), ">A");
+            cursorMap.put(new Edge('v', '<'), "<A");
+            cursorMap.put(new Edge('v', 'v'), "A");
+            cursorMap.put(new Edge('<', 'v'), ">A");
+            cursorMap.put(new Edge('<', 'A'), ">>^A");
+            cursorMap.put(new Edge('<', '^'), ">^A");
+            cursorMap.put(new Edge('<', '<'), "A");
 
-            cursorMap.put("^:A", ">");
-            //cursorMap.put("^:v", "v");
-            cursorMap.put("^:>", "v>");
-            cursorMap.put("^:<", "v<");
-            cursorMap.put("^:^", "");
-
-            cursorMap.put(">:>", "");
-            cursorMap.put(">:A", "^");
-            cursorMap.put(">:^", "<^");
-            cursorMap.put(">:v", "<");
-            //cursorMap.put(">:<", "<<");
-
-            cursorMap.put("v:A", ">^");
-            cursorMap.put("v:>", ">");
-            cursorMap.put("v:<", "<");
-            //cursorMap.put("v:^", "^");
-            cursorMap.put("v:v", "");
-
-            cursorMap.put("<:v", ">");
-            //cursorMap.put("<:>", ">>");
-            cursorMap.put("<:A", ">>^");
-            cursorMap.put("<:^", ">^");
-            cursorMap.put("<:<", "");
-
-            //ex1
-            numPad.put("A:0", "<");
-            numPad.put("0:2", "^");
-            numPad.put("2:9", ">^^");
-            numPad.put("9:A", "vvv");
-            //ex2
-            numPad.put("A:9", "^^^");
-            numPad.put("9:8", "<");
-            numPad.put("8:0", "vvv");
-            numPad.put("0:A", ">");
-            //ex3
-            numPad.put("A:1", "^<<");
-            numPad.put("1:7", "^^");
-            numPad.put("7:9", ">>");
-            //ex4
-            numPad.put("A:4", "^^<<");
-            numPad.put("4:5", ">");
-            numPad.put("5:6", ">");
-            numPad.put("6:A", "vv");
-            //ex5
-            numPad.put("A:3", "^");
-            numPad.put("3:7", "<<^^");
-
-            //083a
-            numPad.put("0:8", "^^^");
-            numPad.put("8:3", "vv>");
-            numPad.put("3:A", "v");
-
-            //935a
-            numPad.put("9:3", "vv");
-            numPad.put("3:5", "<^");
-            numPad.put("5:A", "vv>");
-            //964A
-            numPad.put("9:6", "v");
-            numPad.put("6:4", "<<");
-            numPad.put("4:A", ">>vv");
-
-            //149A
-            numPad.put("1:4", "^");
-            numPad.put("4:9", ">>^");
-            //789A
-            numPad.put("A:7", "^^^<<");
-            numPad.put("7:8", ">");
-            numPad.put("8:9", ">");
+            numPad.put(new Edge('A', '0'), "<A");
+            numPad.put(new Edge('0', '2'), "^A");
+            numPad.put(new Edge('2', '9'), ">^^A");
+            numPad.put(new Edge('9', 'A'), "vvvA");
+            numPad.put(new Edge('A', '9'), "^^^A");
+            numPad.put(new Edge('9', '8'), "<A");
+            numPad.put(new Edge('8', '0'), "vvvA");
+            numPad.put(new Edge('0', 'A'), ">A");
+            numPad.put(new Edge('A', '1'), "^<<A");
+            numPad.put(new Edge('1', '7'), "^^A");
+            numPad.put(new Edge('7', '9'), ">>A");
+            numPad.put(new Edge('A', '4'), "^^<<A");
+            numPad.put(new Edge('4', '5'), ">A");
+            numPad.put(new Edge('5', '6'), ">A");
+            numPad.put(new Edge('6', 'A'), "vvA");
+            numPad.put(new Edge('A', '3'), "^A");
+            numPad.put(new Edge('3', '7'), "<<^^A");
+            numPad.put(new Edge('0', '8'), "^^^A");
+            numPad.put(new Edge('8', '3'), "vv>A");
+            numPad.put(new Edge('3', 'A'), "vA");
+            numPad.put(new Edge('9', '3'), "vvA");
+            numPad.put(new Edge('3', '5'), "<^A");
+            numPad.put(new Edge('5', 'A'), "vv>A");
+            numPad.put(new Edge('9', '6'), "vA");
+            numPad.put(new Edge('6', '4'), "<<A");
+            numPad.put(new Edge('4', 'A'), ">>vvA");
+            numPad.put(new Edge('1', '4'), "^A");
+            numPad.put(new Edge('4', '9'), ">>^A");
+            numPad.put(new Edge('A', '7'), "^^^<<A");
+            numPad.put(new Edge('7', '8'), ">A");
+            numPad.put(new Edge('8', '9'), ">A");
 
             metaMap[0] = numPad;
             for (int i = 1; i < maxLevel; i++) {
