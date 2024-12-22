@@ -4,59 +4,45 @@ import de.delusions.util.Day;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.stream.IntStream;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 
 public class Day22 extends Day<Long> {
     private static final Logger LOG = LoggerFactory.getLogger(Day22.class);
 
+    static BigInteger NO_64 = BigInteger.valueOf(64);
+    static BigInteger NO_32 = BigInteger.valueOf(32);
+    static BigInteger NO_2048 = BigInteger.valueOf(2048);
+    static BigInteger NO_16777216 = BigInteger.valueOf(16777216);
+
+    static AtomicInteger ID_COUNTER = new AtomicInteger(1);
+    static Map<String, List<Integer>> SEQUENCE_CACHE = new HashMap<>();
+
     public Day22() {
-        super("", 37327623L, 0L, 0L, 0L);
+        super("Monkey Market", 37327623L, 23L, 19927218456L, 0L);
     }
 
-    //
-//    Each step of the above process involves mixing and pruning:
-//
-//    To mix a value into the secret number, calculate the bitwise XOR of the given value and the secret number. Then, the secret number becomes the result of that operation. (If the secret number is 42 and you were to mix 15 into the secret number, the secret number would become 37.)
-//    To prune the secret number, calculate the value of the secret number modulo 16777216. Then, the secret number becomes the result of that operation. (If the secret number is 100000000 and you were to prune the secret number, the secret number would become 16113920.)
 
     class Generator {
-        int start;
-        BigInteger current;
-        int step;
+        int id = ID_COUNTER.getAndIncrement();
 
-        static  BigInteger NO_64 = BigInteger.valueOf(64);
-        static  BigInteger NO_32 = BigInteger.valueOf(32);
-        static  BigInteger NO_2048 = BigInteger.valueOf(2048);
-        static  BigInteger NO_16777216 = BigInteger.valueOf(16777216);
+        int start;
+
+        BigInteger current;
+
+        int step;
+        int[] prices = new int[2000];
+        int[] diff = new int[2000];
+
+        Map<String, Integer> localCache = new HashMap<>();
 
         Generator(int start) {
             this.start = start;
             this.current = BigInteger.valueOf(start);
             this.step = 0;
-        }
-
-        long getCurrent(){
-            return current.longValue();
-        }
-
-        void step() {
-            step++;
-            current = prune(mix(current.multiply(NO_64)));
-            current = prune(mix(current.divide(NO_32)));
-            current = prune(mix(current.multiply(NO_2048)));
-        }
-
-        long getSequenceNumber(int index){
-            current = BigInteger.valueOf(start);
-            step = 0;
-            while(step < index){
-                step();
-            }
-            return getCurrent();
         }
 
         BigInteger mix(BigInteger value) {
@@ -66,14 +52,63 @@ public class Day22 extends Day<Long> {
         BigInteger prune(BigInteger value) {
             return value.mod(NO_16777216);
         }
+
+        void step() {
+            current = prune(mix(current.multiply(NO_64)));
+            current = prune(mix(current.divide(NO_32)));
+            current = prune(mix(current.multiply(NO_2048)));
+            prices[step] = current.intValue() % 10;
+            diff[step] = step == 0 ? 0 : prices[step] - prices[step - 1];
+            cacheDiffSequence();
+            step++;
+        }
+
+        long getSequenceNumber(int index) {
+            current = BigInteger.valueOf(start);
+            step = 0;
+            while (step < index) {
+                step();
+            }
+            return current.longValue();
+        }
+
+        Generator finalizePrices(int index) {
+            getSequenceNumber(index);
+            //merge cache
+            boolean firstTime = SEQUENCE_CACHE.isEmpty();
+            localCache.forEach((key, value) -> {
+                SEQUENCE_CACHE.putIfAbsent(key, new ArrayList<>());
+                SEQUENCE_CACHE.get(key).add(value);
+            });
+            return this;
+        }
+
+        void cacheDiffSequence() {
+            if (this.step >= 4) {
+                String diffSeq = String.format("%d,%d,%d,%d", diff[step - 3], diff[step - 2], diff[step - 1], diff[step]);
+                if (!localCache.containsKey(diffSeq)) {
+                    localCache.put(diffSeq, prices[step]);
+                }
+            }
+        }
     }
 
     @Override
     public Long part0(Stream<String> input) {
-        return input.mapToInt(Integer::parseInt).mapToObj(Generator::new).mapToLong( g -> g.getSequenceNumber(2000)).sum();
+        return input.mapToInt(Integer::parseInt).mapToObj(Generator::new).mapToLong(g -> g.getSequenceNumber(2000)).sum();
     }
+
     @Override
     public Long part1(Stream<String> input) {
-        return 0L;
+        ID_COUNTER.set(1);
+        SEQUENCE_CACHE.clear();
+
+        input.mapToInt(Integer::parseInt).mapToObj(Generator::new).forEach(g -> g.finalizePrices(2000));
+
+        //-2,1,-1,3
+        long bananas = SEQUENCE_CACHE.values().stream()
+                .mapToLong(l -> l.stream().mapToInt(i -> i).sum())
+                .max().orElse(-1);
+        return bananas;
     }
 }
