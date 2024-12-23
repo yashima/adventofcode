@@ -18,16 +18,14 @@ public class Day22 extends Day<Long> {
     static BigInteger NO_2048 = BigInteger.valueOf(2048);
     static BigInteger NO_16777216 = BigInteger.valueOf(16777216);
 
-    static AtomicInteger ID_COUNTER = new AtomicInteger(1);
     static Map<String, List<Integer>> SEQUENCE_CACHE = new HashMap<>();
 
     public Day22() {
-        super("Monkey Market", 37327623L, 23L, 19927218456L, 0L);
+        super("Monkey Market", 37327623L, 23L, 19927218456L, 2189L);
     }
 
 
     class Generator {
-        int id = ID_COUNTER.getAndIncrement();
 
         int start;
 
@@ -75,7 +73,6 @@ public class Day22 extends Day<Long> {
         Generator finalizePrices(int index) {
             getSequenceNumber(index);
             //merge cache
-            boolean firstTime = SEQUENCE_CACHE.isEmpty();
             localCache.forEach((key, value) -> {
                 SEQUENCE_CACHE.putIfAbsent(key, new ArrayList<>());
                 SEQUENCE_CACHE.get(key).add(value);
@@ -100,15 +97,12 @@ public class Day22 extends Day<Long> {
 
     @Override
     public Long part1(Stream<String> input) {
-        ID_COUNTER.set(1);
         SEQUENCE_CACHE.clear();
 
         input.mapToInt(Integer::parseInt).mapToObj(Generator::new).forEach(g -> g.finalizePrices(2000));
 
-        //-2,1,-1,3
-        long bananas = SEQUENCE_CACHE.values().stream()
+        return SEQUENCE_CACHE.values().stream()
                 .mapToLong(l -> l.stream().mapToInt(i -> i).sum())
                 .max().orElse(-1);
-        return bananas;
     }
 }
