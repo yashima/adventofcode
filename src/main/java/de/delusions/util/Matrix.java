@@ -408,6 +408,10 @@ public class Matrix {
         return getValue(coordinates) == obstacle;
     }
 
+    public Matrix findValuesInColumn(int y, char c) {
+        return this;
+    }
+
     public record IndexedRow(int index, int[] row) {
     }
 

@@ -63,9 +63,9 @@ public class Day25 extends Day<Long> {
         for (int i = 0; i < lines.size() / BLOCK; i++) {
             List<String> lockLines = lines.subList(i * BLOCK + 1, i * BLOCK + 1 + LOCK_SIZE);
             if (lines.get(i * BLOCK).contains("#")) {
-                locks.add(new Lock(ID_COUNTER.incrementAndGet(), Matrix.createFromString(lockLines)));
+                locks.add(new Lock(ID_COUNTER.incrementAndGet(), Matrix.createFromStream(lockLines.stream())));
             } else {
-                keys.add(new Key(ID_COUNTER.incrementAndGet(), Matrix.createFromString(lockLines)));
+                keys.add(new Key(ID_COUNTER.incrementAndGet(), Matrix.createFromStream(lockLines.stream())));
             }
         }
 

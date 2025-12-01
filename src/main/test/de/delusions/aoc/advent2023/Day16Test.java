@@ -1,11 +1,11 @@
-package de.delusions.aoc;
+package de.delusions.aoc.advent2023;
 
 import de.delusions.util.Coordinates;
 import de.delusions.util.Matrix;
-import main.java.de.delusions.aoc.advent2023.Day16;
+import de.delusions.aoc.advent2023.Day16;
 import org.testng.annotations.Test;
 
-import static main.java.de.delusions.aoc.advent2023.Day16.Mirror.*;
+import static de.delusions.aoc.advent2023.Day16.Mirror.*;
 import static de.delusions.util.Direction.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
