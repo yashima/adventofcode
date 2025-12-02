@@ -5,10 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+/**
+ * Day 2: Much easier to program than day 1. Especially since I was able to generalize part 2 from part 1 mostly.
+ * I needed unit tests again to make sure my solution covers both part 1 and part 2.
+ */
 @Slf4j
 public class Day02 extends Day<Long> {
 

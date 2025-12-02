@@ -11,7 +11,6 @@ import static org.testng.Assert.*;
 
 public class Day01Test {
 
-
     static Day01.Dial dial = new Day01.Dial(100,50);
 
     @ParameterizedTest()
