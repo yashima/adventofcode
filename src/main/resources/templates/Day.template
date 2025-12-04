@@ -1,0 +1,22 @@
+package de.delusions.aoc.advent{$year};
+
+import de.delusions.util.Day;
+
+import java.util.stream.Stream;
+
+public class Day{$day}
+} extends Day<Long> {
+    public Day{$day}() {
+        super("tag", 0L,0L,0L,0L);
+    }
+
+    @Override
+    public Long part0(Stream<String> input) {
+        return 0L;
+    }
+
+    @Override
+    public Long part1(Stream<String> input) {
+        return 0L;
+    }
+}
