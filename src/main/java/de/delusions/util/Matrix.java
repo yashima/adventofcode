@@ -202,6 +202,20 @@ public class Matrix {
         return matrix[0].length;
     }
 
+    public List<Coordinates> findNeighbors(Coordinates coordinates) {
+        if(isInTheMatrix(coordinates)) {
+            List<Coordinates> neighbors = new ArrayList<>();
+            for(Direction d : Direction.values()) {
+                Coordinates neighbor = coordinates.moveTo(d);
+                if(isInTheMatrix(neighbor)) {
+                    neighbors.add(neighbor);
+                }
+            }
+            return neighbors;
+        }
+        return List.of();
+    }
+
     public List<Coordinates> findValues(List<Integer> values, boolean firstOnly) {
         List<Coordinates> positions = new ArrayList<>();
         for (int x = 0; x < getXLength(); x++) {
