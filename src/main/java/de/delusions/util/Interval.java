@@ -11,6 +11,9 @@ public class Interval implements Comparable<Interval> {
 
     long upper;
 
+    public static Interval from(String input){
+        return new Interval(input.split("-")[0], input.split("-")[1]);
+    }
 
     public Interval(String lower, String upper) {
         this(Long.parseLong(lower), Long.parseLong(upper));
