@@ -1,17 +1,26 @@
 package de.delusions.util;
 
 import de.delusions.tools.ConfigProperties;
+import de.delusions.tools.DynamicCompiler;
+import de.delusions.tools.InputDownloader;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Calendar;
+import java.util.List;
 import java.util.stream.Stream;
 
+@Slf4j
 public abstract class Day<T> {
-    private static final Logger LOG = LoggerFactory.getLogger(Day.class);
 
     final T[] expected;
 
@@ -51,9 +60,9 @@ public abstract class Day<T> {
         boolean verify = verify(result, part, test);
         String log = String.format("Day %01d '%s' Part %d: result=%s success=%s time=%dms", day, tag, part, result, verify, timer);
         if (verify) {
-            LOG.info(log);
+            Day.log.info(log);
         } else {
-            LOG.error(log);
+            Day.log.error(log);
         }
     }
 
@@ -75,8 +84,27 @@ public abstract class Day<T> {
             }
 
         } catch (IOException e) {
-            LOG.error("Input could not be retrieved: {}", e.getMessage());
+            log.error("Input could not be retrieved: {}", e.getMessage());
             return null;
+        }
+    }
+
+    public static void generateDay(String templateName,int day,boolean test)  {
+        int year = Calendar.getInstance().get(Calendar.YEAR);
+        String filename = String.format("src/main/%s/de/delusions/aoc/advent%04d/Day%02d%s.java", test?"test":"java", year, day,test?"Test":"");
+        Paths.get(filename).getParent().toFile().mkdirs();
+        if(Paths.get(filename).toFile().exists()) {
+            //do not recreate file
+           return;
+        }
+        try (InputStream input = InputDownloader.class.getClassLoader().getResourceAsStream(String.format("templates/%s.template",templateName))) {
+            String template = new String(input.readAllBytes());
+            String content = template.replace("{$day}", String.format("%02d",day)).replace("{$year}", String.valueOf(year));
+            Paths.get(filename).toFile().createNewFile();
+            Files.writeString(Paths.get(filename), content);
+
+        } catch (IOException e) {
+            log.error("Could not generate Day template: {}", e.getMessage());
         }
     }
 

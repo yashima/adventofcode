@@ -80,11 +80,18 @@ public class InputDownloader {
 
     private static final String TITLE_REGEX = "^---\\s*Day\\s+(\\d+):\\s*(.*?)\\s*---$";
     private static final Pattern TITLE_PATTERN = Pattern.compile(TITLE_REGEX);
-    public void downloadExamples() throws IOException, InterruptedException {
+
+    /**
+     * Parse website for examples and store in a json. Also return title of puzzle
+     * @return the title of today's puzzle if the download is fresh
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public String downloadExamples() throws IOException, InterruptedException {
         Path filePath = getExamplePath(day);
         if (Files.exists(filePath)) {
             LOG.info("Example file {} already exists. Skipping download.", filePath.getFileName());
-            return;
+            return null;
         }
         String url = String.format("https://adventofcode.com/%s/day/%s", year, day);
         String body = makeHttpRequest(url);
@@ -122,7 +129,9 @@ public class InputDownloader {
             }
             testCases.put(testCase);
             saveToFile(filePath, day.toString(2));
+            return day.getString("tagline");
         }
+        return null;
     }
 
     private void saveToFile(Path path, String content) throws IOException {

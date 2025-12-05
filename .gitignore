@@ -30,3 +30,5 @@ src/main/resources/config.properties
 src/main/resources/inputs
 /DelusionalAdventOfCode.iml
 /input-2024/
+/adventofcode.iml
+/src/adventofcode2.iml

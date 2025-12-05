@@ -6,10 +6,15 @@ import de.delusions.util.Day;
 
 import java.time.LocalDate;
 
+import static de.delusions.util.Day.generateDay;
+
 public class AdventOfCode {
     public static void main(String[] args) {
 
         LocalDate currentDate = LocalDate.now();
+        //
+        generateDay("Day",currentDate.getDayOfMonth(),false);
+        generateDay("DayTest", currentDate.getDayOfMonth(), true);
         Day<?> toDay = Day.loadDayClass(currentDate.getDayOfMonth());
         runAllVariants(toDay);
 
