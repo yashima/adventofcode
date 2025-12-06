@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -52,6 +53,10 @@ public class Matrix {
 
     public static Matrix createFromStream(Stream<String> input) {
         return new Matrix(input.map(line -> line.chars().toArray()).toArray(int[][]::new));
+    }
+
+    public static Matrix createFromStream(Stream<String> input, Function<String, int[]> parseFunc) {
+        return  new Matrix(input.map(parseFunc::apply).toArray(int[][]::new));
     }
 
     public static String toCharString(int[] array) {
