@@ -120,8 +120,14 @@ public class Matrix {
         return Arrays.stream(getRow(x));
     }
 
+    /** Starts in the upper left corner, row by row */
     public Stream<Coordinates> coordinatesStream() {
         return IntStream.range(0, getXLength()).boxed().flatMap(x -> IntStream.range(0, getYLength()).boxed().map(y -> createCoords(x, y)));
+    }
+
+    /** Gives row X as a stream of coords */
+    public Stream<Coordinates> coordinatesStreamForRow(int xOffset) {
+        return IntStream.range(0, getYLength()).boxed().map(y -> createCoords(xOffset, y));
     }
 
     public void setValue(int x, int y, int value) {
@@ -326,7 +332,12 @@ public class Matrix {
                 if (printMap.isEmpty()) {
                     builder.append(Character.valueOf((char) getValue(createCoords(x, y))));
                 } else {
-                    builder.append(printMap.get(getValue(createCoords(x, y))));
+                    String printChar = printMap.get(getValue(createCoords(x, y)));
+                    if (printChar == null) {
+                        builder.append(getValue(createCoords(x, y)));
+                    } else {
+                        builder.append(printChar);
+                    }
                 }
             }
             builder.append("\n");
