@@ -13,6 +13,9 @@ import java.util.stream.Stream;
 /**
  * Day 2: Much easier to program than day 1. Especially since I was able to generalize part 2 from part 1 mostly.
  * I needed unit tests again to make sure my solution covers both part 1 and part 2.
+ *
+ * Part 1: Find numbers inside of ranges that consist of 2 repetitions like 11 or 200200
+ * Part 2: Find numbers that consist of n repetitions. Like 111 or 61616161 or 446446
  */
 @Slf4j
 public class Day02 extends Day<Long> {

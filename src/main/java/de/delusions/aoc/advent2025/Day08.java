@@ -10,6 +10,9 @@ import java.util.stream.Stream;
 /**
  * Not my finest day. The playground proved that sometimes code does weird things. Again.
  * Treemaps however are cool maps. I will keep those in mind for future reference. Those are fast even with 500.000 entries!
+ *
+ * Part 1: Sort pairs of coordinates by distance, take the shortest n and find out how they are grouped into 'networks'
+ * Part 2: Sort pairs by distance again, this time find out which pair finalizes the circuit to connect all coordinates
  */
 public class Day08 extends Day<Long> {
     public Day08() {

@@ -12,6 +12,9 @@ import java.util.stream.Stream;
 /**
  * Day 5: Checking intervals for numbers. And then merging all the intervals to get all the numbers.
  * I briefly considered just brute-forcing a huge list. But since I had the mathy stuff already from previous years...
+ *
+ * Part 1: Products in certain product ID ranges are fresh, others are spoiled. Find ids in the second part of the input that are still fresh
+ * Part 2: Count all the numbers that are part of the intervals
  */
 @Slf4j
 public class Day05 extends Day<Long> {

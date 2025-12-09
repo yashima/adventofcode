@@ -17,6 +17,10 @@ import java.util.stream.Stream;
  * I find it makes my code more readable and easier to maintain.
  * Part 2: is a parsing problem. After solving it, I realized I could have transposed the whole input for an even easier solution.
  * And I can also get back to using regular expressions to help with the parsing: yay!
+ *
+ * Problem descriptions:
+ * Part 1: The input describes math problems consisting of n numbers to be added or multiplied
+ * Part 2: The numbers are not written left to right but top to bottom because those are cephalopods.
  */
 @Slf4j
 public class Day06 extends Day<Long> {

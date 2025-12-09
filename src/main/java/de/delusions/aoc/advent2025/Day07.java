@@ -13,6 +13,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+/**
+ * Part 1: In the matrix tachyon beams fall from top and are multiplied by ^ splitters. How many splitters get hit by the beams?
+ * Part 2: Calculate the strength of the beams (many worlds) at the bottom (beams that merge with other beams add their strength)
+ */
 @Slf4j
 public class Day07 extends Day<Long> {
     public Day07() {

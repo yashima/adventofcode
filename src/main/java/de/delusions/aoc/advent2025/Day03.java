@@ -14,6 +14,9 @@ import java.util.stream.Stream;
  * - off-by-one error,
  * - long overflow no idea why but BigInteger works
  * - recursion
+ *
+ * Part 1: Find largest 2 digit number in a sequence
+ * Part 2: Find largest 12 digit number in a sequence
  */
 @Slf4j
 public class Day03 extends Day<Long> {

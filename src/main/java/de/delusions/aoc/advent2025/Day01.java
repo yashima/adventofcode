@@ -14,6 +14,9 @@ import java.util.stream.Stream;
  * It wishes it was the latter (or so the Auto Completion system says).
  *
  * I am using lombok now for some of the lazy annotations it provides.
+ *
+ * Part 1: Turn a dial Left and Right repeatedly according to commands, find how often it stops at 0
+ * Part 2: Also count every time it passes 0
  */
 @Slf4j
 public class Day01 extends Day<Integer> {

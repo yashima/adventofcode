@@ -10,6 +10,9 @@ import java.util.stream.Stream;
 /**
  * Day 4: Finding things in a matrix is really easy when you have already created a matrix class in previous years.
  * This was the easiest day so far. Re-use! Lazy programmers write library code :)
+ *
+ * Part 1: Find elements in a matrix that satisfy the condition of having fewer than 4 neighbors of the same type
+ * Part 2: Remove as many of the elements found in part 1, including ones that satisfy the condition after removing others
  */
 public class Day04 extends Day<Integer> {
     public Day04() {
