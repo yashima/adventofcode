@@ -32,6 +32,10 @@ public class Interval implements Comparable<Interval> {
         return this.lower <= bar.lower && this.upper >= bar.upper;
     }
 
+    public boolean containsExclusive(long value) {
+       return this.lower < value && this.upper > value;
+    }
+
     public boolean overlap(Interval bar) {
         return this.lower <= bar.lower && bar.lower <= this.upper || this.lower > bar.lower && this.lower <= bar.upper;
     }

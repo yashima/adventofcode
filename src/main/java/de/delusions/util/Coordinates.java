@@ -28,6 +28,10 @@ public class Coordinates {
         this(x, y, 0, null);
     }
 
+    public static Coordinates createFromLong(long x, long y,Direction facing) {
+        return new Coordinates((int) x, (int) y,facing);
+    }
+
     public Coordinates(int x, int y, Direction facing) {
         this(x, y, 0, null);
         this.facing = facing;
