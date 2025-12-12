@@ -3,8 +3,8 @@ package de.delusions.aoc.advent2025;
 import de.delusions.util.Day;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -18,42 +18,15 @@ public class Day10 extends Day<Long> {
 
     static Pattern pattern = Pattern.compile("\\(([\\d,]+)\\)");
 
-    static boolean isBitSet(int value, int pos) {
-        return (value & (1 << pos)) != 0;
-    }
-
     record LightsOn(int value, int depth) {
     }
 
-    record Joltages(List<Integer> values,int depth) {
-        Joltages pressButton(Integer button){
-            List<Integer> higherValues = new ArrayList<>();
-            for(int pos=0;pos<values.size();pos++) {
-                //we're starting with the target value and end when everything is zero. same thing really.
-                higherValues.add( values.get(pos)-(isBitSet(button,pos)? 1 : 0));
-            }
-            return new Joltages(higherValues,depth()+1);
-        }
-        String key(){
-            return values.stream().map(Object::toString).reduce("",(a,b)->a+b+",");
-        }
 
-        boolean done(){
-            return values.stream().allMatch(i -> i == 0);
-        }
-        boolean oops() { return values.stream().anyMatch(i -> i < 0);}
-    }
-
-
-
-    record Machine(int result, List<Integer> buttons,List<Integer> joltage) {
-        static Machine parse(String line) {
-            String lights = line.substring(1,line.indexOf(']'));
-            String joltage = line.substring(line.indexOf('{')+1,line.indexOf('}'));
-            return new Machine(
-                    convertLightsToBitmask(lights),
-                    pattern.matcher(line).results().map(m -> convertButtonsToBitmask(m.group(1), ",",lights.length())).toList(),
-                    Arrays.stream(joltage.split(",")).mapToInt(Integer::parseInt).boxed().toList().reversed());
+    record LightMachine(int result, List<Integer> buttons) {
+        static LightMachine parse(String line) {
+            return new LightMachine(
+                    convertLightsToBitmask(line.substring(1, line.indexOf(']'))),
+                    pattern.matcher(line).results().map(m -> convertButtonsToBitmask(m.group(1), ",", line.substring(1, line.indexOf(']')).length())).toList());
         }
 
         int numberOfLightButtonPresses() {
@@ -69,38 +42,14 @@ public class Day10 extends Day<Long> {
                 List<Integer> neighbors = buttons.stream().map(b -> cur.value ^ b).toList();
 
                 for (Integer next : neighbors) {
-                    if(next.equals(result)) { return cur.depth() + 1; }
+                    if (next.equals(result)) {
+                        return cur.depth() + 1;
+                    }
                     if (!visited.contains(next)) {
                         visited.add(next);
                         queue.add(new LightsOn(next, cur.depth() + 1));
                     }
                 }
-
-            }
-            return -1;
-        }
-
-        int numberOfJoltageButtonPresses() {
-            Queue<Joltages> queue = new ArrayDeque<>();
-            Set<String> visited = new HashSet<>();
-
-            Joltages initial = new Joltages(new ArrayList<Integer>(joltage), 0);
-            queue.add(initial);
-            visited.add(initial.key());
-
-            while (!queue.isEmpty()) {
-                Joltages cur = queue.remove();
-
-                List<Joltages> neighbors = buttons.stream().map(b -> cur.pressButton(b)).filter(Predicate.not(Joltages::oops)).toList();
-
-                for (Joltages next : neighbors) {
-                    if(next.done()) { return cur.depth() + 1; }
-                    if (!visited.contains(next.key())) {
-                        visited.add(next.key());
-                        queue.add(next);
-                    }
-                }
-
             }
             return -1;
         }
@@ -111,28 +60,101 @@ public class Day10 extends Day<Long> {
         return Integer.parseInt(lights.replace('.', '0').replace('#', '1'), 2);
     }
 
-    static int convertButtonsToBitmask(String numbers, String splitBy,int size) {
+    static int convertButtonsToBitmask(String numbers, String splitBy, int size) {
         char[] button = new char[size];
         Arrays.fill(button, '0');
         Arrays.stream(numbers.split(splitBy)).forEach(n -> button[Integer.parseInt(n)] = '1');
         return Integer.parseInt(new String(button), 2);
     }
 
+    static List<Integer> splitIntoInt(String input) {
+        return Arrays.stream(input.split(",")).mapToInt(Integer::parseInt).boxed().toList();
+    }
+
+    record GaussMachine(double[][] matrix,double[] joltages) {
+        static GaussMachine parse(String line) {
+            double[] joltages = splitIntoInt(line.substring(line.indexOf('{') + 1, line.indexOf('}'))).stream().mapToDouble( i -> Double.valueOf(i+"")).toArray();
+            List<List<Integer>> buttons = pattern.matcher(line).results().map(m -> splitIntoInt(m.group(1))).toList();
+            int maxbit = joltages.length;
+
+            double[][] gauss = new double[maxbit][buttons.size()];
+            IntStream.range(0,maxbit).forEach( zeile -> Arrays.fill(gauss[zeile], 0));
+
+            for (int spalte = 0; spalte < buttons.size(); spalte++) {
+                int finalSpalte = spalte;
+                buttons.get(spalte).forEach(i -> gauss[i][finalSpalte]=1);
+            }
+            return new GaussMachine(gauss,joltages);
+        }
+
+        @Override
+        public String toString() {
+            return "GaussMachine[ joltages="+Arrays.toString(joltages())+", matrix="+ Arrays.deepToString(matrix)+"]";
+        }
+
+        int solve() {
+            // solveGauss(matrix,joltages);
+            return 0;
+        }
+    }
+
+  static  double[] solveGauss(double[][] A, double[] b) {
+        int n = b.length;
+
+        // Vorwärtselimination
+        for (int p = 0; p < n; p++) {
+
+            // Pivot-Suche (optional, aber sinnvoll)
+            int max = p;
+            for (int i = p + 1; i < n; i++) {
+                if (Math.abs(A[i][p]) > Math.abs(A[max][p])) {
+                    max = i;
+                }
+            }
+            // Zeilen tauschen in A und b
+            double[] temp = A[p]; A[p] = A[max]; A[max] = temp;
+            double t = b[p];      b[p] = b[max]; b[max] = t;
+
+            // jetzt A[p][p] als Pivot benutzen
+            for (int i = p + 1; i < n; i++) {
+                double alpha = A[i][p] / A[p][p];
+                b[i] -= alpha * b[p];
+                for (int j = p; j < n; j++) {
+                    A[i][j] -= alpha * A[p][j];
+                }
+            }
+        }
+
+        // Rückwärtseinsetzen
+        double[] x = new double[n];
+        for (int i = n - 1; i >= 0; i--) {
+            double sum = 0.0;
+            for (int j = i + 1; j < n; j++) {
+                sum += A[i][j] * x[j];
+            }
+            x[i] = (b[i] - sum) / A[i][i];
+        }
+        return x;
+    }
+
+
+
     @Override
     public Long part0(Stream<String> input) {
         return input
-                .map(Machine::parse)
-                .mapToLong(Machine::numberOfLightButtonPresses)
+                .map(LightMachine::parse)
+                .mapToLong(LightMachine::numberOfLightButtonPresses)
                 .sum();
     }
+
 
     @Override
     public Long part1(Stream<String> input) {
         return input
-                .map(Machine::parse)
+                .map(GaussMachine::parse)
                 .peek(System.out::println)
-                .mapToLong(Machine::numberOfJoltageButtonPresses)
-                .peek(System.out::println)
+                .mapToLong(GaussMachine::solve)
                 .sum();
+
     }
 }

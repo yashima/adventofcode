@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.List;
+
 @Slf4j
 public class Day10Test {
 
@@ -29,7 +31,7 @@ public class Day10Test {
     @Test
     void testExampleMachine() {
         String line = "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}";
-        Day10.Machine machine = Day10.Machine.parse(line);
+        Day10.LightMachine machine = Day10.LightMachine.parse(line);
         Assertions.assertThat(machine.result()).isEqualTo(Integer.parseInt("0110", 2));
         Assertions.assertThat(machine.buttons()).containsExactly(1, 5, 2, 3, 10, 12);
     }
@@ -37,7 +39,7 @@ public class Day10Test {
     @Test
     void testExampleMachine2() {
         String line = "[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}";
-        Day10.Machine machine = Day10.Machine.parse(line);
+        Day10.LightMachine machine = Day10.LightMachine.parse(line);
         Assertions.assertThat(machine.result()).isEqualTo(Integer.parseInt("00010", 2));
         Assertions.assertThat(machine.buttons()).containsExactly(23, 6, 17, 28, 15);
 
@@ -46,7 +48,7 @@ public class Day10Test {
 
     @Test
     void testExampleMachine2Bfs() {
-        Day10.Machine machine = Day10.Machine.parse("[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}");
+        Day10.LightMachine machine = Day10.LightMachine.parse("[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}");
         Assertions.assertThat(machine.numberOfLightButtonPresses()).isEqualTo(3);
     }
 
@@ -63,10 +65,8 @@ public class Day10Test {
 
     @Test
     void testButtonJoltage() {
-        Day10.Machine machine = Day10.Machine.parse("[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}");
-        Day10.Joltages j = new Day10.Joltages(machine.joltage(), 0);
-        Assertions.assertThat(j.values()).containsExactly(2,7,12,5,7);
-        Assertions.assertThat(j.pressButton(machine.buttons().get(1)).values()).containsExactly(2,7,11,4,7);
+        Day10.GaussMachine machine = Day10.GaussMachine.parse("[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}");
+        System.out.println(machine);
     }
 
 }
