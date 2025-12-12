@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.List;
-
 @Slf4j
 public class Day10Test {
 
@@ -65,7 +63,7 @@ public class Day10Test {
 
     @Test
     void testButtonJoltage() {
-        Day10.GaussMachine machine = Day10.GaussMachine.parse("[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}");
+        Day10.LinearEquationMachine machine = Day10.LinearEquationMachine.parse("[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}");
         System.out.println(machine);
     }
 
