@@ -46,12 +46,6 @@ public class Day09 extends Day<Long> {
             return deltaX * deltaY;
         }
 
-        Long sizeOfBorder(){
-            long deltaX = getDelta(0) + 1;
-            long deltaY = getDelta(1) + 1;
-            return deltaX + deltaY;
-        }
-
         List<Pair> getRectangleEdges() {
             Pair inverted = invertCorners();
             return List.of(new Pair(a(), inverted.a), new Pair(a(), inverted.b), new Pair(b(), inverted.b),  new Pair(b(), inverted.a) );
@@ -139,15 +133,6 @@ public class Day09 extends Day<Long> {
                     .toList();
         }
 
-        /**
-         * Checks if the given edge is completely on the edge represented by this pair
-         * @param edge the edge to check
-         * @return true if the edge is completely on the edge represented by this pair
-         */
-        boolean contains(Pair edge){
-            return range().contains(edge.range()) && constant() == edge.constant();
-        }
-
     }
 
 
@@ -166,7 +151,6 @@ public class Day09 extends Day<Long> {
         }
         return max;
     }
-
 
     /**
      * Find the largest rectangle inside the orthogonal polygon with red corners
