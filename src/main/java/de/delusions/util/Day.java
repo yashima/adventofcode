@@ -1,5 +1,6 @@
 package de.delusions.util;
 
+import ch.qos.logback.classic.Level;
 import de.delusions.tools.ConfigProperties;
 import de.delusions.tools.DynamicCompiler;
 import de.delusions.tools.InputDownloader;
@@ -54,6 +55,9 @@ public abstract class Day<T> {
 
     public void run(boolean test, int part) {
         this.testMode = test; //keep this
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        logger.setLevel(test ? Level.DEBUG : ch.qos.logback.classic.Level.INFO);
+
         long timer = System.currentTimeMillis();
         T result = part == 0 ? part0(getInput(test, part)) : part1(getInput(test, part));
         timer = System.currentTimeMillis() - timer;

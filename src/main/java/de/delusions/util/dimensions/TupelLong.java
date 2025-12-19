@@ -34,9 +34,20 @@ public class TupelLong extends Tupel<Long>{
     @Getter
     int id;
 
+    public Long x(){
+        return get(0);
+    }
+
+    public Long y(){
+        return get(1);
+    }
+
+    public Long z(){
+        return get(2);
+    }
+
     public TupelLong(int id,Long... data) {
         super(data);
-        this.id = id;
     }
 
     public Long distanceManhattan(TupelLong other) {
@@ -78,9 +89,7 @@ public class TupelLong extends Tupel<Long>{
 
     @Override
     public String toString() {
-        return "TupelLong{" +
-                "id=" + id +
-                ", data=" + Arrays.toString(data) +
-                '}';
+        return Arrays.toString(data);
+
     }
 }

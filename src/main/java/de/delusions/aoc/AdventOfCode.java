@@ -15,7 +15,7 @@ public class AdventOfCode {
         //
         generateDay("Day",currentDate.getDayOfMonth(),false);
         generateDay("DayTest", currentDate.getDayOfMonth(), true);
-        Day<?> toDay = Day.loadDayClass(currentDate.getDayOfMonth());
+        Day<?> toDay = Day.loadDayClass(9);
         runAllVariants(toDay);
 
     }

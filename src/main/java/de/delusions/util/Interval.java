@@ -15,6 +15,10 @@ public class Interval implements Comparable<Interval> {
         return new Interval(input.split("-")[0], input.split("-")[1]);
     }
 
+    public static Interval fromUnordered(long x,long y){
+        return new Interval(Math.min(x,y), Math.max(x,y));
+    }
+
     public Interval(String lower, String upper) {
         this(Long.parseLong(lower), Long.parseLong(upper));
     }
@@ -32,6 +36,9 @@ public class Interval implements Comparable<Interval> {
         return this.lower <= bar.lower && this.upper >= bar.upper;
     }
 
+    /**
+     * Contains the value but does not include the boundary.
+     */
     public boolean containsExclusive(long value) {
        return this.lower < value && this.upper > value;
     }
